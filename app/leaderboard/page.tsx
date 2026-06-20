@@ -146,8 +146,8 @@ export default async function LeaderboardPage() {
           )}
 
           {/* No data at all */}
-          {(!data.personal || data.personal.length === 0) &&
-            (!data.university || data.university.length === 0) && (
+          {((!showPersonal || !data.personal || data.personal.length === 0) &&
+            (!data.university || data.university.length === 0)) && (
               <div className="bg-glass border border-border rounded-card p-6 text-center">
                 <p className="text-ink/50 text-sm">준비중</p>
               </div>
