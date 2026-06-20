@@ -1,0 +1,218 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { marked } from "marked";
+import { getProgramBySlug, getHotPrograms } from "@/lib/data/programs";
+import { ProgramCard } from "@/components/program/ProgramCard";
+
+export const revalidate = 300;
+
+type Props = { params: Promise<{ slug: string }> };
+
+// Return empty array so no slugs are pre-rendered at build time.
+// dynamicParams=true (default) means slugs are rendered on-demand at runtime (ISR).
+// When Supabase is provisioned, this can be replaced with getPrograms() slugs.
+export async function generateStaticParams() {
+  return [];
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const program = await getProgramBySlug(slug);
+  if (!program) return { title: "프로그램 없음 | DO:NUTS" };
+
+  return {
+    title: `${program.title} | DO:NUTS`,
+    description: program.description
+      ? program.description.slice(0, 120)
+      : `${program.title} - DO:NUTS 프로그램`,
+    openGraph: {
+      title: program.title,
+      description: program.description?.slice(0, 120) ?? `${program.title} - DO:NUTS`,
+      images: program.cover_image ? [{ url: program.cover_image }] : undefined,
+    },
+  };
+}
+
+function statusLabel(status: string | null): string {
+  switch (status) {
+    case "recruiting": return "모집중";
+    case "ongoing": return "진행중";
+    case "closed": return "마감";
+    case "completed": return "종료";
+    default: return status ?? "";
+  }
+}
+
+function ExternalNotice({ url }: { url: string }) {
+  const isExternal = url.startsWith("http");
+  const label = isExternal ? "외부 사이트에서 운영되는 프로그램입니다." : "별도 페이지에서 확인할 수 있습니다.";
+
+  return (
+    <div className="bg-glass border border-border rounded-card p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <p className="text-ink/60 text-sm flex-1">{label}</p>
+      {isExternal ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 px-5 py-2 rounded-pill bg-coral-cta text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          바로가기 →
+        </a>
+      ) : (
+        <Link
+          href={url}
+          className="shrink-0 px-5 py-2 rounded-pill bg-coral-cta text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          바로가기 →
+        </Link>
+      )}
+    </div>
+  );
+}
+
+export default async function ProgramDetailPage({ params }: Props) {
+  const { slug } = await params;
+  const [program, hotPrograms] = await Promise.all([
+    getProgramBySlug(slug),
+    getHotPrograms(),
+  ]);
+
+  if (!program) notFound();
+
+  const descHtml = program.description
+    ? await Promise.resolve(marked(program.description))
+    : null;
+
+  const relatedPrograms = hotPrograms.filter((p) => p.slug !== slug).slice(0, 4);
+
+  const ctaHref = program.entry_link ?? program.external_url ?? null;
+  const ctaLabel = program.cta_label ?? "참가 신청";
+  const ctaIsExternal = ctaHref ? !ctaHref.startsWith("/") : false;
+
+  return (
+    <div className="py-8 flex flex-col gap-10">
+      {/* External URL notice */}
+      {program.external_url && <ExternalNotice url={program.external_url} />}
+
+      {/* Hero */}
+      <section className="flex flex-col gap-3">
+        {program.category && (
+          <span className="inline-flex self-start px-3 py-1 rounded-pill bg-glass border border-border text-xs text-gold font-medium tracking-wide">
+            {program.category}
+          </span>
+        )}
+        <h1 className="text-3xl font-bold text-ink leading-tight">{program.title}</h1>
+        <div className="flex flex-wrap gap-4 text-sm text-ink/50">
+          {program.status && (
+            <span className="text-gold/80 font-medium">{statusLabel(program.status)}</span>
+          )}
+          {program.member_count > 0 && <span>👥 {program.member_count}명</span>}
+          {program.location && <span>📍 {program.location}</span>}
+          {program.start_date && (
+            <span>📅 {program.start_date.slice(0, 10).replace(/-/g, ".")}</span>
+          )}
+        </div>
+      </section>
+
+      {/* 2-col body */}
+      <section className="flex flex-col lg:flex-row gap-8 items-start">
+        {/* Left: poster + description */}
+        <div className="flex-1 min-w-0 flex flex-col gap-6">
+          {program.cover_image && (
+            <div className="relative w-full max-w-sm rounded-card overflow-hidden aspect-square">
+              <Image
+                src={program.cover_image}
+                alt={program.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 384px"
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
+
+          {descHtml && (
+            <div
+              className="prose-dark text-ink/80 text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: descHtml }}
+            />
+          )}
+        </div>
+
+        {/* Right: manager card + CTA */}
+        <div className="w-full lg:w-64 shrink-0 flex flex-col gap-4">
+          {/* Manager card */}
+          {program.manager_name && (
+            <div className="bg-glass border border-border rounded-card p-5 flex flex-col gap-3">
+              <h3 className="text-xs font-semibold text-ink/40 uppercase tracking-widest">
+                담당자
+              </h3>
+              <div className="flex items-center gap-3">
+                {program.manager_avatar ? (
+                  <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0">
+                    <Image
+                      src={program.manager_avatar}
+                      alt={program.manager_name}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-11 h-11 rounded-full bg-ink/10 flex items-center justify-center text-ink/30 shrink-0">
+                    👤
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink text-sm">{program.manager_name}</p>
+                  {program.manager_role && (
+                    <p className="text-xs text-ink/50 truncate">{program.manager_role}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          {ctaHref && (
+            ctaIsExternal ? (
+              <a
+                href={ctaHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-3 rounded-pill bg-coral-cta text-white text-center font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                {ctaLabel}
+              </a>
+            ) : (
+              <Link
+                href={ctaHref}
+                className="block w-full py-3 rounded-pill bg-coral-cta text-white text-center font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                {ctaLabel}
+              </Link>
+            )
+          )}
+        </div>
+      </section>
+
+      {/* Related HOT programs */}
+      {relatedPrograms.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <span>🔥</span>
+            <h2 className="text-base font-bold text-ink">HOT 프로그램</h2>
+          </div>
+          <div className="flex flex-col gap-3">
+            {relatedPrograms.map((p) => (
+              <ProgramCard key={p.id} program={p} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
