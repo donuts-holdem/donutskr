@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { SpecialPage, BlindRow, BlindStructure } from "@/lib/types";
 import { BlindStructureTable } from "@/components/schedule/BlindStructureTable";
 
@@ -136,12 +137,12 @@ export function SpecialPageView({ page, structure }: Props) {
               {page.cta_label ?? "참가 신청하기"}
             </a>
           ) : (
-            <a
+            <Link
               href={page.entry_link}
               className="inline-flex items-center justify-center px-8 py-3 rounded-pill bg-coral-cta text-white font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               {page.cta_label ?? "참가 신청하기"}
-            </a>
+            </Link>
           )}
         </section>
       )}
