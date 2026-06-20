@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Program } from "@/lib/types";
 
 interface PartnerListProps {
@@ -48,7 +49,7 @@ export function PartnerList({ partners }: PartnerListProps) {
                     {inner}
                   </a>
                 ) : (
-                  <a href={href}>{inner}</a>
+                  <Link href={href}>{inner}</Link>
                 )}
               </li>
             );
