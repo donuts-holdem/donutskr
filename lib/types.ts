@@ -53,3 +53,13 @@ export interface SiteConfig {
   leaderboard_tab_visible: boolean; leaderboard_api_url: string | null; leaderboard_personal_rank_visible: boolean;
   footer_sponsors: { name: string; logo?: string }[];
 }
+
+export type ProgramGroup = "poker" | "social" | "others";
+export interface Program {
+  id: string; slug: string; title: string; category: string | null; program_group: ProgramGroup;
+  status: string | null; member_count: number; location: string | null;
+  start_date: string | null; end_date: string | null; description: string | null;
+  cover_image: string | null; manager_name: string | null; manager_role: string | null; manager_avatar: string | null;
+  cta_label: string | null; entry_link: string | null; external_url: string | null;
+  is_hot: boolean; is_affiliate: boolean; is_visible: boolean; sort_order: number;
+}
