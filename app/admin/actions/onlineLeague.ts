@@ -22,7 +22,7 @@ export async function updateOnlineLeague(fd: FormData) {
     cta_url: s("cta_url"),
     sheet_url: s("sheet_url"),
   };
-  const { error } = await supabase.from("online_league").update(payload).eq("id", 1);
+  const { error } = await supabase.from("online_league_settings").update(payload).eq("id", 1);
   if (error) throw error;
   revalidatePublic(["/online-league"]);
 }

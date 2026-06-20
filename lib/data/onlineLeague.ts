@@ -36,7 +36,7 @@ function mapOnlineLeague(r: any): OnlineLeague {
 export async function getOnlineLeague(): Promise<OnlineLeague> {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase
-    .from("online_league")
+    .from("online_league_settings")
     .select("*")
     .eq("id", 1)
     .single();
