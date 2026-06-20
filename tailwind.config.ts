@@ -9,8 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        bg: "#0A0908",
+        ink: "#FFFFFF",
+        gold: "#FFE58A",
+        coral: { from: "#D94B45", to: "#F08B6F" },
+        glass: "rgba(255,255,255,0.04)",
+        border: "rgba(255,255,255,0.10)",
+      },
+      borderRadius: { card: "24px", pill: "999px" },
+      fontFamily: {
+        sans: [
+          "var(--font-inter)",
+          "Wanted Sans",
+          "Pretendard",
+          "system-ui",
+          "sans-serif",
+        ],
+      },
+      backgroundImage: {
+        "coral-cta": "linear-gradient(90deg,#D94B45,#F08B6F)",
       },
     },
   },
