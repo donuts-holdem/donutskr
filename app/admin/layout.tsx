@@ -4,10 +4,11 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 
 const NAV_LINKS = [
+  { href: "/admin/programs", label: "프로그램" },
   { href: "/admin/seasons", label: "시즌" },
-  { href: "/admin/schedule", label: "일정" },
-  { href: "/admin/structures", label: "스트럭처" },
-  { href: "/admin/league", label: "리그" },
+  { href: "/admin/events", label: "일정" },
+  { href: "/admin/blind-structures", label: "스트럭처" },
+  { href: "/admin/online-league", label: "리그" },
   { href: "/admin/tabs", label: "탭" },
   { href: "/admin/special-pages", label: "특수페이지" },
   { href: "/admin/settings", label: "설정" },
