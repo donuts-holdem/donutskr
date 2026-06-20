@@ -26,7 +26,7 @@ export default async function EditEventPage({ params }: Props) {
         이벤트 수정: {event.title}
       </h1>
       <EventForm event={event} structures={structures} seasons={seasons} action={updateEvent.bind(null, id)} />
-      <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+      <div className="border-t border-white/10" style={{ marginTop: "2rem", paddingTop: "1.5rem" }}>
         <p style={{ color: "var(--muted-3)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>위험 구역</p>
         <DeleteButton onDelete={deleteEvent.bind(null, id)} />
       </div>

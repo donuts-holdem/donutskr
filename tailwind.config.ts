@@ -15,6 +15,7 @@ const config: Config = {
         coral: { from: "#D94B45", to: "#F08B6F" },
         glass: "rgba(255,255,255,0.04)",
         border: "rgba(255,255,255,0.10)",
+        danger: "#EF4444",
       },
       borderRadius: { card: "24px", pill: "999px" },
       fontFamily: {

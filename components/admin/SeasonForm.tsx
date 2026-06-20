@@ -14,14 +14,7 @@ const SEASON_CODES: { value: SeasonCode; label: string }[] = [
   { value: "winter", label: "겨울 (winter)" },
 ];
 
-const inputStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.15)",
-  color: "var(--color-ink)",
-  borderRadius: "6px",
-  padding: "6px 10px",
-  width: "100%",
-};
+const inputClassName = "bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full";
 
 const labelStyle: React.CSSProperties = {
   display: "block",
@@ -42,7 +35,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             type="text"
             defaultValue={season?.name ?? ""}
             required
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -53,7 +46,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             id="code"
             name="code"
             defaultValue={season?.code ?? "spring"}
-            style={inputStyle}
+            className={inputClassName}
           >
             {SEASON_CODES.map(({ value, label }) => (
               <option key={value} value={value}>{label}</option>
@@ -70,7 +63,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             type="number"
             defaultValue={season?.year ?? new Date().getFullYear()}
             required
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -82,7 +75,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="start_date"
             type="date"
             defaultValue={season?.start_date ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -94,7 +87,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="end_date"
             type="date"
             defaultValue={season?.end_date ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -106,7 +99,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="hero_text"
             type="text"
             defaultValue={season?.hero_text ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -118,7 +111,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="sub_text"
             type="text"
             defaultValue={season?.sub_text ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -130,7 +123,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="badge_text"
             type="text"
             defaultValue={season?.badge_text ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -142,7 +135,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="hero_image"
             type="url"
             defaultValue={season?.hero_image ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -154,7 +147,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             name="bg_image"
             type="url"
             defaultValue={season?.bg_image ?? ""}
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -167,7 +160,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             type="text"
             defaultValue={season?.theme_color ?? ""}
             placeholder="예: #FFE58A"
-            style={inputStyle}
+            className={inputClassName}
           />
         </div>
 
@@ -185,7 +178,8 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
         <div>
           <button
             type="submit"
-            style={{ background: "var(--color-gold)", color: "#000", padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer" }}
+            className="text-bg"
+            style={{ background: "var(--color-gold)", padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer" }}
           >
             저장
           </button>

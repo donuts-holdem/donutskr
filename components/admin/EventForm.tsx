@@ -1,6 +1,6 @@
 "use client";
 
-import type { Event, BlindStructure, Season, EventCategory, EventStatus } from "@/lib/types";
+import type { Event, BlindStructure, Season } from "@/lib/types";
 
 interface EventFormProps {
   event?: Event;
@@ -20,7 +20,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             id="season_id"
             name="season_id"
             defaultValue={event?.season_id ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           >
             <option value="">-- 선택 --</option>
             {seasons.map((s) => (
@@ -38,7 +38,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             type="text"
             defaultValue={event?.title ?? ""}
             required
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -50,7 +50,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="round"
             type="text"
             defaultValue={event?.round ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -62,7 +62,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="event_type"
             type="text"
             defaultValue={event?.event_type ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -73,7 +73,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             id="category"
             name="category"
             defaultValue={event?.category ?? "upcoming"}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           >
             <option value="festival">festival</option>
             <option value="confirmed">confirmed</option>
@@ -89,7 +89,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             id="status"
             name="status"
             defaultValue={event?.status ?? "scheduled"}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           >
             <option value="scheduled">scheduled</option>
             <option value="confirmed">confirmed</option>
@@ -109,7 +109,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="date"
             type="date"
             defaultValue={event?.date ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -121,7 +121,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="weekday"
             type="text"
             defaultValue={event?.weekday ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -133,7 +133,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="location"
             type="text"
             defaultValue={event?.location ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -145,7 +145,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="address"
             type="text"
             defaultValue={event?.address ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -158,7 +158,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             type="text"
             defaultValue={event?.start_time ?? ""}
             placeholder="예: 14:00"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -171,7 +171,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             type="text"
             defaultValue={event?.reg_close_time ?? ""}
             placeholder="예: 16:00"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -184,7 +184,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             type="text"
             defaultValue={event?.end_time ?? ""}
             placeholder="예: 22:00"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -196,7 +196,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="buy_in"
             type="text"
             defaultValue={event?.buy_in ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -208,7 +208,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="entry_link"
             type="url"
             defaultValue={event?.entry_link ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -220,7 +220,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="button_label"
             type="text"
             defaultValue={event?.button_label ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -232,7 +232,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="description"
             rows={4}
             defaultValue={event?.description ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -243,7 +243,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             id="blind_structure_id"
             name="blind_structure_id"
             defaultValue={event?.blind_structure_id ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           >
             <option value="">-- 선택 --</option>
             {structures.map((s) => (
@@ -260,7 +260,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="timer_event_id"
             type="text"
             defaultValue={event?.timer_event_id ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -272,7 +272,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="timer_event_url"
             type="url"
             defaultValue={event?.timer_event_url ?? ""}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
@@ -295,14 +295,15 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             name="sort_order"
             type="number"
             defaultValue={event?.sort_order ?? 0}
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--color-ink)", borderRadius: "6px", padding: "6px 10px", width: "100%" }}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
           />
         </div>
 
         <div>
           <button
             type="submit"
-            style={{ background: "var(--color-gold)", color: "#000", padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer" }}
+            className="text-bg"
+            style={{ background: "var(--color-gold)", padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer" }}
           >
             저장
           </button>

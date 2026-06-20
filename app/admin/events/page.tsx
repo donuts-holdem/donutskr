@@ -10,9 +10,9 @@ export default async function AdminEventsPage() {
         <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>이벤트 관리</h1>
         <Link
           href="/admin/events/new"
+          className="text-bg"
           style={{
             background: "var(--color-gold)",
-            color: "#000",
             padding: "8px 16px",
             borderRadius: "6px",
             fontWeight: "600",
@@ -27,7 +27,7 @@ export default async function AdminEventsPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+            <tr className="border-b border-white/[0.12]" style={{}}>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>제목</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>카테고리</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>상태</th>
@@ -37,7 +37,7 @@ export default async function AdminEventsPage() {
           </thead>
           <tbody>
             {events.map((event) => (
-              <tr key={event.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <tr key={event.id} className="border-b border-white/[0.06]" style={{}}>
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{event.title}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{event.category}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{event.status}</td>

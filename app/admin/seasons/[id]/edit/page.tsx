@@ -20,7 +20,7 @@ export default async function EditSeasonPage({ params }: Props) {
         시즌 수정: {season.name}
       </h1>
       <SeasonForm season={season} action={updateSeason.bind(null, id)} />
-      <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+      <div className="border-t border-white/10" style={{ marginTop: "2rem", paddingTop: "1.5rem" }}>
         <p style={{ color: "var(--muted-3)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>위험 구역</p>
         <DeleteButton onDelete={deleteSeason.bind(null, id)} />
       </div>

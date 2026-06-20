@@ -12,9 +12,9 @@ export default async function AdminSeasonsPage() {
         <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>시즌 관리</h1>
         <Link
           href="/admin/seasons/new"
+          className="text-bg"
           style={{
             background: "var(--color-gold)",
-            color: "#000",
             padding: "8px 16px",
             borderRadius: "6px",
             fontWeight: "600",
@@ -29,7 +29,7 @@ export default async function AdminSeasonsPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+            <tr className="border-b border-white/[0.12]" style={{}}>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>이름</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>코드</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>연도</th>
@@ -39,7 +39,7 @@ export default async function AdminSeasonsPage() {
           </thead>
           <tbody>
             {seasons.map((season) => (
-              <tr key={season.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <tr key={season.id} className="border-b border-white/[0.06]" style={{}}>
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{season.name}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{season.code}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{season.year}</td>
