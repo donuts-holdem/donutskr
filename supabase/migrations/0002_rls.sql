@@ -7,7 +7,7 @@ begin
     'navigation_tabs','special_pages','online_league_settings','site_config'
   ] loop
     execute format('alter table public.%I enable row level security;', t);
-    execute format('create policy "auth write %1$s" on public.%1$s for all to authenticated using (true) with check (true);', t);
+    execute format('create policy "auth write %s" on public.%I for all to authenticated using (true) with check (true);', t, t);
   end loop;
 end $$;
 
