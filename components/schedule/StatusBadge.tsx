@@ -11,7 +11,7 @@ const LABEL: Record<EventStatus, string> = {
 };
 
 const STYLE: Record<EventStatus, string> = {
-  scheduled: "bg-amber-100 text-amber-800",
+  scheduled: "bg-gold/15 text-gold",
   confirmed: "bg-gold text-bg",
   running: "bg-coral-from text-ink",
   reg_closed: "bg-ink/20 text-ink/60",
