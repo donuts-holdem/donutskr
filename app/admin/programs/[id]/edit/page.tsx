@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getProgramBySlug } from "@/lib/data/programs";
 import { ProgramForm } from "@/components/admin/ProgramForm";
 import { updateProgram, deleteProgram } from "@/app/admin/actions/programs";
 import { DeleteButton } from "@/components/admin/DeleteButton";
