@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { revalidatePublic } from "@/lib/revalidate";
+import { uploadIfPresent } from "@/lib/upload";
 
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -14,8 +15,6 @@ function parse(fd: FormData) {
     hero_text: s("hero_text"),
     sub_text: s("sub_text"),
     badge_text: s("badge_text"),
-    hero_image: s("hero_image"),
-    bg_image: s("bg_image"),
     theme_color: s("theme_color"),
     footer_sponsor_visible: fd.get("footer_sponsor_visible") === "on",
   };
@@ -23,7 +22,9 @@ function parse(fd: FormData) {
 
 export async function createSeason(fd: FormData) {
   const supabase = await createServerSupabase();
-  const { error } = await supabase.from("seasons").insert(parse(fd));
+  const hero_image = await uploadIfPresent(supabase, fd, "hero_image", null);
+  const bg_image = await uploadIfPresent(supabase, fd, "bg_image", null);
+  const { error } = await supabase.from("seasons").insert({ ...parse(fd), hero_image, bg_image });
   if (error) throw error;
   revalidatePublic();
   redirect("/admin/seasons");
@@ -31,7 +32,10 @@ export async function createSeason(fd: FormData) {
 
 export async function updateSeason(id: string, fd: FormData) {
   const supabase = await createServerSupabase();
-  const { error } = await supabase.from("seasons").update(parse(fd)).eq("id", id);
+  const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
+  const hero_image = await uploadIfPresent(supabase, fd, "hero_image", s("hero_image_existing"));
+  const bg_image = await uploadIfPresent(supabase, fd, "bg_image", s("bg_image_existing"));
+  const { error } = await supabase.from("seasons").update({ ...parse(fd), hero_image, bg_image }).eq("id", id);
   if (error) throw error;
   revalidatePublic();
   redirect("/admin/seasons");

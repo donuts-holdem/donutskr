@@ -127,26 +127,34 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
           />
         </div>
 
-        {/* 이미지 URL */}
+        {/* 이미지 업로드 */}
         <div>
-          <label htmlFor="hero_image" style={labelStyle}>히어로 이미지 URL</label>
+          <label htmlFor="hero_image_file" style={labelStyle}>히어로 이미지</label>
+          {season?.hero_image && (
+            <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{season.hero_image}</p>
+          )}
+          {season && <input type="hidden" name="hero_image_existing" value={season.hero_image ?? ""} />}
           <input
-            id="hero_image"
-            name="hero_image"
-            type="url"
-            defaultValue={season?.hero_image ?? ""}
+            id="hero_image_file"
+            name="hero_image_file"
+            type="file"
+            accept="image/*"
             className={inputClassName}
           />
         </div>
 
-        {/* 배경 이미지 URL */}
+        {/* 배경 이미지 업로드 */}
         <div>
-          <label htmlFor="bg_image" style={labelStyle}>배경 이미지 URL</label>
+          <label htmlFor="bg_image_file" style={labelStyle}>배경 이미지</label>
+          {season?.bg_image && (
+            <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{season.bg_image}</p>
+          )}
+          {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
           <input
-            id="bg_image"
-            name="bg_image"
-            type="url"
-            defaultValue={season?.bg_image ?? ""}
+            id="bg_image_file"
+            name="bg_image_file"
+            type="file"
+            accept="image/*"
             className={inputClassName}
           />
         </div>

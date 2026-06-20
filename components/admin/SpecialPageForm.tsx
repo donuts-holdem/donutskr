@@ -57,12 +57,20 @@ export function SpecialPageForm({ page, action }: SpecialPageFormProps) {
         <input name="sponsor_name" type="text" defaultValue={page?.sponsor_name ?? ""} className={inputCls} />
       </div>
       <div>
-        <label style={labelCls}>스폰서 로고 URL</label>
-        <input name="sponsor_logo" type="text" defaultValue={page?.sponsor_logo ?? ""} className={inputCls} />
+        <label style={labelCls}>스폰서 로고</label>
+        {page?.sponsor_logo && (
+          <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{page.sponsor_logo}</p>
+        )}
+        {page && <input type="hidden" name="sponsor_logo_existing" value={page.sponsor_logo ?? ""} />}
+        <input name="sponsor_logo_file" type="file" accept="image/*" className={inputCls} />
       </div>
       <div>
-        <label style={labelCls}>포스터 URL</label>
-        <input name="poster" type="text" defaultValue={page?.poster ?? ""} className={inputCls} />
+        <label style={labelCls}>포스터</label>
+        {page?.poster && (
+          <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{page.poster}</p>
+        )}
+        {page && <input type="hidden" name="poster_existing" value={page.poster ?? ""} />}
+        <input name="poster_file" type="file" accept="image/*" className={inputCls} />
       </div>
       <div>
         <label style={labelCls}>갤러리 (JSON 배열, 예: ["url1","url2"])</label>

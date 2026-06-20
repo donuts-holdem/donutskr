@@ -236,6 +236,38 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           />
         </div>
 
+        {/* 포스터 이미지 */}
+        <div>
+          <label htmlFor="poster_image_file" style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)" }}>포스터 이미지</label>
+          {event?.poster_image && (
+            <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{event.poster_image}</p>
+          )}
+          {event && <input type="hidden" name="poster_image_existing" value={event.poster_image ?? ""} />}
+          <input
+            id="poster_image_file"
+            name="poster_image_file"
+            type="file"
+            accept="image/*"
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
+          />
+        </div>
+
+        {/* 스폰서 로고 */}
+        <div>
+          <label htmlFor="sponsor_logo_file" style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)" }}>스폰서 로고</label>
+          {event?.sponsor_logo && (
+            <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{event.sponsor_logo}</p>
+          )}
+          {event && <input type="hidden" name="sponsor_logo_existing" value={event.sponsor_logo ?? ""} />}
+          <input
+            id="sponsor_logo_file"
+            name="sponsor_logo_file"
+            type="file"
+            accept="image/*"
+            className="bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full"
+          />
+        </div>
+
         {/* 블라인드 스트럭처 */}
         <div>
           <label htmlFor="blind_structure_id" style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)" }}>블라인드 스트럭처</label>
