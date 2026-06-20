@@ -2,17 +2,17 @@ import Link from "next/link";
 import { getSiteConfig } from "@/lib/data/siteConfig";
 
 const NAV_LINKS = [
-  { label: "일정", href: "/schedule", external: false },
-  { label: "리더보드", href: "/leaderboard", external: false },
-  { label: "온라인 리그", href: "/online-league", external: false },
-  { label: "챌린지", href: "/challenge", external: false },
+  { label: "일정", href: "/schedule" },
+  { label: "리더보드", href: "/leaderboard" },
+  { label: "온라인 리그", href: "/online-league" },
+  { label: "챌린지", href: "/challenge" },
 ];
 
 export async function SeriesNav() {
   const config = await getSiteConfig();
 
   return (
-    <nav className="w-full border-b border-border mb-8">
+    <nav className="w-full border-b border-border">
       <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1">
         {NAV_LINKS.map((link) => (
           <Link
