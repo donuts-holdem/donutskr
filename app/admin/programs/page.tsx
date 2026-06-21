@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getPrograms } from "@/lib/data/programs";
+import { getAllPrograms } from "@/lib/data/programs";
 
 export default async function AdminProgramsPage() {
-  const programs = await getPrograms();
+  const programs = await getAllPrograms();
 
   return (
     <div>

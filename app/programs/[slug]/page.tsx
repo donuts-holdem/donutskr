@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { marked } from "marked";
+import sanitizeHtml from "sanitize-html";
 import { getProgramBySlug, getHotPrograms } from "@/lib/data/programs";
 import { ProgramCard } from "@/components/program/ProgramCard";
-
-export const revalidate = 300;
+import { programStatusLabel, formatDotDate, isExternalUrl } from "@/lib/program-display";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -35,18 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function statusLabel(status: string | null): string {
-  switch (status) {
-    case "recruiting": return "모집중";
-    case "ongoing": return "진행중";
-    case "closed": return "마감";
-    case "completed": return "종료";
-    default: return status ?? "";
-  }
-}
-
 function ExternalNotice({ url }: { url: string }) {
-  const isExternal = url.startsWith("http");
+  const isExternal = isExternalUrl(url);
   const label = isExternal ? "외부 사이트에서 운영되는 프로그램입니다." : "별도 페이지에서 확인할 수 있습니다.";
 
   return (
@@ -82,15 +72,25 @@ export default async function ProgramDetailPage({ params }: Props) {
 
   if (!program) notFound();
 
+  // Sanitize rendered markdown before injecting — admin content today, but a
+  // dangerouslySetInnerHTML sink fed by stored data must not pass raw HTML/JS.
   const descHtml = program.description
-    ? await Promise.resolve(marked(program.description))
+    ? sanitizeHtml(await marked.parse(program.description), {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          a: ["href", "name", "target", "rel"],
+          img: ["src", "alt", "title", "width", "height"],
+        },
+        allowedSchemes: ["http", "https", "mailto"],
+      })
     : null;
 
   const relatedPrograms = hotPrograms.filter((p) => p.slug !== slug).slice(0, 4);
 
   const ctaHref = program.entry_link ?? program.external_url ?? null;
   const ctaLabel = program.cta_label ?? "참가 신청";
-  const ctaIsExternal = ctaHref ? !ctaHref.startsWith("/") : false;
+  const ctaIsExternal = ctaHref ? isExternalUrl(ctaHref) : false;
 
   return (
     <div className="py-8 flex flex-col gap-10">
@@ -107,12 +107,12 @@ export default async function ProgramDetailPage({ params }: Props) {
         <h1 className="text-3xl font-bold text-ink leading-tight">{program.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-ink/50">
           {program.status && (
-            <span className="text-gold/80 font-medium">{statusLabel(program.status)}</span>
+            <span className="text-gold/80 font-medium">{programStatusLabel(program.status)}</span>
           )}
-          {program.member_count > 0 && <span>👥 {program.member_count}명</span>}
-          {program.location && <span>📍 {program.location}</span>}
+          {program.member_count > 0 && <span><span aria-hidden="true">👥</span> {program.member_count}명</span>}
+          {program.location && <span><span aria-hidden="true">📍</span> {program.location}</span>}
           {program.start_date && (
-            <span>📅 {program.start_date.slice(0, 10).replace(/-/g, ".")}</span>
+            <span><span aria-hidden="true">📅</span> {formatDotDate(program.start_date)}</span>
           )}
         </div>
       </section>

@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
 
@@ -19,7 +19,7 @@ function parse(fd: FormData) {
 }
 
 export async function createProgram(fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", null);
   const { error } = await supabase.from("programs").insert(values);
@@ -29,7 +29,7 @@ export async function createProgram(fd: FormData) {
 }
 
 export async function updateProgram(id: string, fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", (fd.get("cover_image_existing") as string) || null);
   const { error } = await supabase.from("programs").update(values).eq("id", id);
@@ -39,7 +39,7 @@ export async function updateProgram(id: string, fd: FormData) {
 }
 
 export async function deleteProgram(id: string) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("programs").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic(["/programs"]);

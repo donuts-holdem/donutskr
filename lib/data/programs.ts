@@ -19,6 +19,12 @@ export async function getPrograms(): Promise<Program[]> {
   const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).order("sort_order", { ascending: true });
   if (error) throw error; return (data ?? []).map(mapProgram);
 }
+// Admin-only: includes hidden (is_visible=false) programs so they remain editable.
+export async function getAllPrograms(): Promise<Program[]> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).order("sort_order", { ascending: true });
+  if (error) throw error; return (data ?? []).map(mapProgram);
+}
 export async function getHotPrograms(): Promise<Program[]> {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).eq("is_hot", true).order("sort_order", { ascending: true });

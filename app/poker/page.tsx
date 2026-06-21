@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { getProgramsByGroup } from "@/lib/data/programs";
 import { ProgramList } from "@/components/program/ProgramList";
 
-export const revalidate = 300;
-
 export const metadata: Metadata = {
   title: "포커 프로그램 | DO:NUTS",
   description: "DO:NUTS 포커 관련 프로그램 목록",

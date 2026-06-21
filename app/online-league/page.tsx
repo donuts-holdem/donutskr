@@ -3,8 +3,6 @@ import { getOnlineLeague } from "@/lib/data/onlineLeague";
 import { SeriesNav } from "@/components/series/SeriesNav";
 import { LeagueStatusBlock } from "@/components/league/LeagueStatusBlock";
 
-export const revalidate = 300;
-
 export const metadata: Metadata = {
   title: "온라인 리그 | DO:NUTS",
   description: "DO:NUTS 온라인 리그",

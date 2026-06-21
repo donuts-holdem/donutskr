@@ -4,8 +4,6 @@ import { getActiveSeason } from "@/lib/data/seasons";
 import { getSiteConfig } from "@/lib/data/siteConfig";
 import { SeriesNav } from "@/components/series/SeriesNav";
 
-export const revalidate = 300;
-
 export const metadata: Metadata = {
   title: "시리즈 | DO:NUTS",
   description: "DO:NUTS 포커 시리즈",

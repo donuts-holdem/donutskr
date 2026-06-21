@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Program } from "@/lib/types";
+import { isExternalUrl } from "@/lib/program-display";
 
 interface PartnerListProps {
   partners: Program[];
@@ -41,7 +42,7 @@ export function PartnerList({ partners }: PartnerListProps) {
           );
 
           if (href) {
-            const isExternal = href.startsWith("http");
+            const isExternal = isExternalUrl(href);
             return (
               <li key={p.id}>
                 {isExternal ? (

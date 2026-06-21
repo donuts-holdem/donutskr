@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getEvents } from "@/lib/data/events";
+import { getAllEvents } from "@/lib/data/events";
 
 export default async function AdminEventsPage() {
-  const events = await getEvents();
+  const events = await getAllEvents();
 
   return (
     <div>

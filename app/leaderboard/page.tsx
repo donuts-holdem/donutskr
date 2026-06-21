@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSiteConfig } from "@/lib/data/siteConfig";
 import { SeriesNav } from "@/components/series/SeriesNav";
-
-export const revalidate = 300;
+import { assertPublicHttpsUrl } from "@/lib/safe-url";
 
 export const metadata: Metadata = {
   title: "리더보드 | DO:NUTS",
@@ -24,6 +23,8 @@ interface LeaderboardData {
 
 async function fetchLeaderboard(url: string): Promise<LeaderboardData | null> {
   try {
+    // SSRF guard: validate scheme + resolve host, reject private/reserved targets.
+    await assertPublicHttpsUrl(url);
     const res = await fetch(url, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     return (await res.json()) as LeaderboardData;

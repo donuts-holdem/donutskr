@@ -3,8 +3,6 @@ import Link from "next/link";
 import { getHotPrograms, getPrograms } from "@/lib/data/programs";
 import { ProgramCard } from "@/components/program/ProgramCard";
 
-export const revalidate = 300;
-
 export const metadata: Metadata = {
   title: "DO:NUTS — 프로그램 디렉토리",
   description: "DO:NUTS 포커 클럽 프로그램 모음",

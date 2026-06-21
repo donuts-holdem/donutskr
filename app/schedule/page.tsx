@@ -3,8 +3,6 @@ import { getEvents } from "@/lib/data/events";
 import { CategoryFilter } from "@/components/schedule/CategoryFilter";
 import { SeriesNav } from "@/components/series/SeriesNav";
 
-export const revalidate = 300;
-
 export const metadata: Metadata = {
   title: "일정 | DO:NUTS",
   description: "DO:NUTS 포커 클럽 이벤트 일정",

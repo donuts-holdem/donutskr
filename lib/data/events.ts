@@ -25,6 +25,16 @@ export async function getEvents(opts?: { category?: EventCategory }): Promise<Ev
   return (data ?? []).map(mapEvent);
 }
 
+// Admin-only: includes hidden (is_visible=false) events so they remain editable.
+export async function getAllEvents(): Promise<Event[]> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from("events").select("*").is("deleted_at", null)
+    .order("sort_order", { ascending: true }).order("date", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(mapEvent);
+}
+
 export async function getEventById(id: string): Promise<Event | null> {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.from("events").select("*").eq("id", id).is("deleted_at", null).maybeSingle();

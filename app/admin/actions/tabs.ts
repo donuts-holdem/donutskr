@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 
 function parseTabForm(fd: FormData) {
@@ -24,7 +24,7 @@ function parseTabForm(fd: FormData) {
 }
 
 export async function createTab(fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("navigation_tabs").insert(parseTabForm(fd));
   if (error) throw error;
   revalidatePublic();
@@ -32,7 +32,7 @@ export async function createTab(fd: FormData) {
 }
 
 export async function updateTab(id: string, fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("navigation_tabs").update(parseTabForm(fd)).eq("id", id);
   if (error) throw error;
   revalidatePublic();
@@ -40,7 +40,7 @@ export async function updateTab(id: string, fd: FormData) {
 }
 
 export async function deleteTab(id: string) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("navigation_tabs").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic();

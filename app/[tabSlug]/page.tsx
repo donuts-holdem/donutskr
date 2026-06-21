@@ -5,8 +5,6 @@ import { getStructureWithRows } from "@/lib/data/blindStructures";
 import { SeriesNav } from "@/components/series/SeriesNav";
 import { SpecialPageView } from "@/components/special/SpecialPageView";
 
-export const revalidate = 300;
-
 type Props = { params: Promise<{ tabSlug: string }> };
 
 // generateStaticParams cannot call cookies()-based data functions in Next 16

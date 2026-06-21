@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
 
@@ -32,7 +32,7 @@ function parseSpecialPageForm(fd: FormData) {
 }
 
 export async function createSpecialPage(fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const poster = await uploadIfPresent(supabase, fd, "poster", null);
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", null);
   const { error } = await supabase.from("special_pages").insert({ ...parseSpecialPageForm(fd), poster, sponsor_logo });
@@ -42,7 +42,7 @@ export async function createSpecialPage(fd: FormData) {
 }
 
 export async function updateSpecialPage(id: string, fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const poster = await uploadIfPresent(supabase, fd, "poster", s("poster_existing"));
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", s("sponsor_logo_existing"));
@@ -53,7 +53,7 @@ export async function updateSpecialPage(id: string, fd: FormData) {
 }
 
 export async function deleteSpecialPage(id: string) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("special_pages").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic();

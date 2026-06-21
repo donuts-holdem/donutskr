@@ -7,8 +7,6 @@ import { BlindStructureTable } from "@/components/schedule/BlindStructureTable";
 import { StatusBadge } from "@/components/schedule/StatusBadge";
 import { SeriesNav } from "@/components/series/SeriesNav";
 
-export const revalidate = 300;
-
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

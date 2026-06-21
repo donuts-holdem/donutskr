@@ -1,10 +1,10 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 
 export async function saveStructure(id: string | null, name: string, rows: any[]) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   let structureId = id;
   if (!structureId) {
     const { data, error } = await supabase.from("blind_structures").insert({ name, is_template: true }).select("id").single();
@@ -38,8 +38,45 @@ export async function saveStructure(id: string | null, name: string, rows: any[]
   redirect("/admin/blind-structures");
 }
 
+// Create an independent copy of an existing structure (new id + copied rows),
+// then open the copy's edit page. Editing the copy never touches the source.
+export async function duplicateStructure(fd: FormData) {
+  const supabase = await requireAdmin();
+  const sourceId = String(fd.get("source_id") || "");
+  if (!sourceId) redirect("/admin/blind-structures");
+
+  const { data: src, error: srcErr } = await supabase
+    .from("blind_structures").select("name").eq("id", sourceId).is("deleted_at", null).maybeSingle();
+  if (srcErr) throw srcErr;
+  if (!src) throw new Error("복제할 스트럭처를 찾을 수 없습니다.");
+
+  const { data: rows, error: rowsErr } = await supabase
+    .from("blind_structure_rows").select("*").eq("structure_id", sourceId).order("sort_order", { ascending: true });
+  if (rowsErr) throw rowsErr;
+
+  const { data: created, error: insErr } = await supabase
+    .from("blind_structures").insert({ name: `${src.name} (복사본)`, is_template: true }).select("id").single();
+  if (insErr) throw insErr;
+  const newId = created.id;
+
+  if (rows && rows.length > 0) {
+    const copies = rows.map((r: any, i: number) => ({
+      structure_id: newId,
+      row_type: r.row_type,
+      level_no: r.level_no, sb: r.sb, bb: r.bb, ante: r.ante, duration: r.duration,
+      break_name: r.break_name, break_minutes: r.break_minutes, stage_note: r.stage_note,
+      sort_order: i,
+    }));
+    const { error: copyErr } = await supabase.from("blind_structure_rows").insert(copies);
+    if (copyErr) throw copyErr;
+  }
+
+  revalidatePublic();
+  redirect(`/admin/blind-structures/${newId}/edit`);
+}
+
 export async function deleteStructure(id: string) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("blind_structures").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic();

@@ -1,9 +1,9 @@
 "use server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 
 export async function updateOnlineLeague(fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   function parseJson(k: string, fallback: any) {
     try { return JSON.parse(String(fd.get(k) || "")); } catch { return fallback; }

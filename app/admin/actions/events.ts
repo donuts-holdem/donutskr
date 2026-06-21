@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
 
@@ -19,7 +19,7 @@ function parse(fd: FormData) {
   };
 }
 export async function createEvent(fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const poster_image = await uploadIfPresent(supabase, fd, "poster_image", null);
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", null);
   const { error } = await supabase.from("events").insert({ ...parse(fd), poster_image, sponsor_logo });
@@ -27,7 +27,7 @@ export async function createEvent(fd: FormData) {
   revalidatePublic(); redirect("/admin/events");
 }
 export async function updateEvent(id: string, fd: FormData) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const poster_image = await uploadIfPresent(supabase, fd, "poster_image", s("poster_image_existing"));
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", s("sponsor_logo_existing"));
@@ -36,7 +36,7 @@ export async function updateEvent(id: string, fd: FormData) {
   revalidatePublic([`/schedule/${id}`]); redirect("/admin/events");
 }
 export async function deleteEvent(id: string) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin();
   const { error } = await supabase.from("events").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic([`/schedule/${id}`]); redirect("/admin/events");

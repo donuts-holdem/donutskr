@@ -1,25 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Program } from "@/lib/types";
+import { programStatusLabel, formatDotDate, resolveHref } from "@/lib/program-display";
 
 function getProgramHref(program: Program): { href: string; isExternal: boolean } {
   if (program.external_url) {
-    if (program.external_url.startsWith("/")) {
-      return { href: program.external_url, isExternal: false };
-    }
-    return { href: program.external_url, isExternal: true };
+    return resolveHref(program.external_url);
   }
   return { href: `/programs/${program.slug}`, isExternal: false };
-}
-
-function statusLabel(status: string | null): string {
-  switch (status) {
-    case "recruiting": return "모집중";
-    case "ongoing": return "진행중";
-    case "closed": return "마감";
-    case "completed": return "종료";
-    default: return status ?? "";
-  }
 }
 
 interface ProgramCardProps {
@@ -55,7 +43,7 @@ export function ProgramCard({ program }: ProgramCardProps) {
           <span className="truncate">{program.category ?? program.program_group}</span>
           <div className="flex items-center gap-2 shrink-0">
             {program.status && (
-              <span className="text-gold/80">{statusLabel(program.status)}</span>
+              <span className="text-gold/80">{programStatusLabel(program.status)}</span>
             )}
             {program.member_count > 0 && (
               <span>{program.member_count}명</span>
@@ -70,7 +58,7 @@ export function ProgramCard({ program }: ProgramCardProps) {
           </span>
           <div className="text-xs text-ink/40 shrink-0 text-right leading-snug">
             {program.start_date && (
-              <div>{program.start_date.slice(0, 10).replace(/-/g, ".")}</div>
+              <div>{formatDotDate(program.start_date)}</div>
             )}
             {program.location && <div>{program.location}</div>}
           </div>

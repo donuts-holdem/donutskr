@@ -3,8 +3,6 @@ import { getPrograms, getAffiliatePartners } from "@/lib/data/programs";
 import { ProgramList } from "@/components/program/ProgramList";
 import { PartnerList } from "@/components/program/PartnerList";
 
-export const revalidate = 300;
-
 export const metadata: Metadata = {
   title: "프로그램 | DO:NUTS",
   description: "DO:NUTS 모든 프로그램 목록",

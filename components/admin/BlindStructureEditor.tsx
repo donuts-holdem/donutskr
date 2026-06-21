@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { BlindRow, BlindStructure } from "@/lib/types";
+import { duplicateStructure } from "@/app/admin/actions/blindStructures";
 
 type LocalRow = {
   key: string;
@@ -61,6 +62,7 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
   const btnCls = "bg-white/[0.08] border border-white/15 text-ink rounded px-2 py-1 text-xs cursor-pointer hover:bg-white/[0.14]";
 
   return (
+    <>
     <form action={action} style={{ display: "grid", gap: "1.25rem" }}>
       <input type="hidden" name="structure_id" value={structureId} />
       <input type="hidden" name="rows" value={JSON.stringify(rows)} />
@@ -135,23 +137,24 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
         <button type="submit" className="bg-gold text-bg" style={{ padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer", fontSize: "0.875rem" }}>
           저장
         </button>
-        {structures.length > 0 && (
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <select value={cloneTarget} onChange={e => setCloneTarget(e.target.value)}
-              className="bg-white/[0.08] border border-white/15 text-ink rounded px-2 py-1 text-sm">
-              <option value="">-- 복제할 스트럭처 선택 --</option>
-              {structures.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-            {cloneTarget && (
-              <a href={`/admin/blind-structures/${cloneTarget}/edit`}
-                className="bg-white/[0.08] border border-white/15 text-ink rounded px-3 py-1 text-sm"
-                style={{ textDecoration: "none" }}>
-                복제로 이동
-              </a>
-            )}
-          </div>
-        )}
       </div>
-    </form>
+      </form>
+
+      {/* Duplicate — separate form (creates an independent copy, never edits the source) */}
+      {structures.length > 0 && (
+        <form action={duplicateStructure} style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "1.25rem" }}>
+          <input type="hidden" name="source_id" value={cloneTarget} />
+          <select value={cloneTarget} onChange={e => setCloneTarget(e.target.value)}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded px-2 py-1 text-sm">
+            <option value="">-- 복제할 스트럭처 선택 --</option>
+            {structures.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <button type="submit" disabled={!cloneTarget}
+            className="bg-white/[0.08] border border-white/15 text-ink rounded px-3 py-1 text-sm disabled:opacity-40 cursor-pointer">
+            복사본 생성
+          </button>
+        </form>
+      )}
+    </>
   );
 }
