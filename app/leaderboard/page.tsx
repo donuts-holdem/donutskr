@@ -9,17 +9,21 @@ export const metadata: Metadata = {
   description: "DO:NUTS 포인트 순위",
 };
 
+// Shape returned by the DO:NUTS leaderboard Google Apps Script:
+// { personal: [{rank:"01", name, point:"1,674,000"}], university: [...], updatedAt }
 interface LeaderboardEntry {
-  rank: number;
+  rank: string;
   name: string;
-  score: number;
-  university?: string;
+  point: string;
 }
 
 interface LeaderboardData {
   personal?: LeaderboardEntry[];
-  university?: { rank: number; name: string; score: number }[];
+  university?: LeaderboardEntry[];
+  updatedAt?: string;
 }
+
+const isTop3 = (rank: string) => Number(rank) >= 1 && Number(rank) <= 3;
 
 async function fetchLeaderboard(url: string): Promise<LeaderboardData | null> {
   try {
@@ -72,9 +76,6 @@ export default async function LeaderboardPage() {
                     <tr className="bg-ink/5 text-ink/40 text-xs uppercase tracking-wider">
                       <th className="px-4 py-3 text-left">순위</th>
                       <th className="px-4 py-3 text-left">이름</th>
-                      {data.personal.some((e) => e.university) && (
-                        <th className="px-4 py-3 text-left">학교</th>
-                      )}
                       <th className="px-4 py-3 text-right">포인트</th>
                     </tr>
                   </thead>
@@ -85,20 +86,15 @@ export default async function LeaderboardPage() {
                         className="border-t border-border hover:bg-ink/5 transition-colors"
                       >
                         <td className="px-4 py-3 font-medium">
-                          {entry.rank <= 3 ? (
+                          {isTop3(entry.rank) ? (
                             <span className="text-gold font-bold">{entry.rank}</span>
                           ) : (
                             entry.rank
                           )}
                         </td>
                         <td className="px-4 py-3">{entry.name}</td>
-                        {data.personal!.some((e) => e.university) && (
-                          <td className="px-4 py-3 text-ink/50">
-                            {entry.university ?? "-"}
-                          </td>
-                        )}
                         <td className="px-4 py-3 text-right font-semibold text-gold">
-                          {entry.score.toLocaleString()}
+                          {entry.point}
                         </td>
                       </tr>
                     ))}
@@ -128,7 +124,7 @@ export default async function LeaderboardPage() {
                         className="border-t border-border hover:bg-ink/5 transition-colors"
                       >
                         <td className="px-4 py-3 font-medium">
-                          {entry.rank <= 3 ? (
+                          {isTop3(entry.rank) ? (
                             <span className="text-gold font-bold">{entry.rank}</span>
                           ) : (
                             entry.rank
@@ -136,7 +132,7 @@ export default async function LeaderboardPage() {
                         </td>
                         <td className="px-4 py-3">{entry.name}</td>
                         <td className="px-4 py-3 text-right font-semibold text-gold">
-                          {entry.score.toLocaleString()}
+                          {entry.point}
                         </td>
                       </tr>
                     ))}
