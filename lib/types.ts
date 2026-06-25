@@ -51,7 +51,7 @@ export interface SiteConfig {
   signup_visible: boolean; signup_link: string | null; signup_new_tab: boolean;
   signup_button_label: string | null; signup_closed: boolean; signup_closed_text: string | null;
   leaderboard_tab_visible: boolean; leaderboard_api_url: string | null; leaderboard_personal_rank_visible: boolean;
-  footer_sponsors: { name: string; logo?: string }[];
+  footer_sponsors: { name: string; logo?: string; url?: string }[];
 }
 
 export type ProgramGroup = "poker" | "social" | "others";

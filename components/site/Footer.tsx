@@ -13,26 +13,30 @@ export async function Footer() {
               Official Sponsor
             </p>
             <div className="flex items-center gap-6 flex-wrap justify-center">
-              {sponsors.map((s, i) =>
-                s.logo ? (
+              {sponsors.map((s, i) => {
+                const inner = s.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    key={i}
                     src={s.logo}
                     alt={s.name}
-                    className="h-8 object-contain opacity-70"
+                    className="h-8 object-contain opacity-70 hover:opacity-100 transition-opacity"
                   />
                 ) : (
-                  <span key={i} className="text-sm text-ink/60">
-                    {s.name}
-                  </span>
-                )
-              )}
+                  <span className="text-sm text-ink/60">{s.name}</span>
+                );
+                return s.url && s.url !== "#" ? (
+                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.name}>
+                    {inner}
+                  </a>
+                ) : (
+                  <span key={i}>{inner}</span>
+                );
+              })}
             </div>
           </div>
         )}
 
-        <p className="text-xs text-ink/40">© Donuts Poker Club</p>
+        <p className="text-xs text-ink/40">© Donuts Poker Club. All rights reserved.</p>
       </div>
     </footer>
   );
