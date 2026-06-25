@@ -7,11 +7,10 @@ import { SpecialPageView } from "@/components/special/SpecialPageView";
 
 type Props = { params: Promise<{ tabSlug: string }> };
 
-// generateStaticParams cannot call cookies()-based data functions in Next 16
-// — use on-demand ISR instead (dynamicParams=true by default).
-export async function generateStaticParams() {
-  return [];
-}
+// Fully dynamic: data is read through cookies()-based Supabase clients (also in the
+// root layout), so this route can never be statically prerendered. Marking it
+// force-dynamic avoids the SSG path that throws DYNAMIC_SERVER_USAGE at runtime.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tabSlug } = await params;

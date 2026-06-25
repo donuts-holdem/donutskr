@@ -10,12 +10,10 @@ import { programStatusLabel, formatDotDate, isExternalUrl } from "@/lib/program-
 
 type Props = { params: Promise<{ slug: string }> };
 
-// Return empty array so no slugs are pre-rendered at build time.
-// dynamicParams=true (default) means slugs are rendered on-demand at runtime (ISR).
-// When Supabase is provisioned, this can be replaced with getPrograms() slugs.
-export async function generateStaticParams() {
-  return [];
-}
+// Fully dynamic: data is read through cookies()-based Supabase clients (also in the
+// root layout), so this route can never be statically prerendered. Marking it
+// force-dynamic avoids the SSG path that throws DYNAMIC_SERVER_USAGE at runtime.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
