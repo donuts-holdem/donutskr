@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSiteConfig } from "@/lib/data/siteConfig";
-import { SeriesNav } from "@/components/series/SeriesNav";
 import { assertPublicHttpsUrl } from "@/lib/safe-url";
 
 export const metadata: Metadata = {
@@ -53,7 +52,6 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="py-8 flex flex-col gap-8">
-      <SeriesNav />
 
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-ink">리더보드</h1>

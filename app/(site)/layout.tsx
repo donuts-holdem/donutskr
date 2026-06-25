@@ -9,10 +9,10 @@ export default function SiteLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      <Suspense fallback={<div className="h-14 bg-bg border-b border-border" />}>
+      <Suspense fallback={<div className="h-20 bg-bg border-b border-border" />}>
         <Header />
       </Suspense>
-      <main className="mx-auto max-w-5xl px-4 w-full flex-1">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 w-full flex-1">{children}</main>
       <Suspense fallback={null}>
         <Footer />
       </Suspense>

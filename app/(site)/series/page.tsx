@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getActiveSeason } from "@/lib/data/seasons";
 import { getSiteConfig } from "@/lib/data/siteConfig";
-import { SeriesNav } from "@/components/series/SeriesNav";
 
 export const metadata: Metadata = {
   title: "시리즈 | DO:NUTS",
@@ -35,7 +34,6 @@ export default async function SeriesPage() {
 
   return (
     <div className="py-8 flex flex-col gap-12">
-      <SeriesNav />
 
       {/* Hero */}
       <section className="flex flex-col items-center text-center gap-6 py-12">

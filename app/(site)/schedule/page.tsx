@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getEvents } from "@/lib/data/events";
 import { CategoryFilter } from "@/components/schedule/CategoryFilter";
-import { SeriesNav } from "@/components/series/SeriesNav";
 
 export const metadata: Metadata = {
   title: "일정 | DO:NUTS",
@@ -13,7 +12,6 @@ export default async function SchedulePage() {
 
   return (
     <div className="py-8 flex flex-col gap-8">
-      <SeriesNav />
 
       <div>
         <h1 className="text-2xl font-bold text-ink mb-2">일정</h1>

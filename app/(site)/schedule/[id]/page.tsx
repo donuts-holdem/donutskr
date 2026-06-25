@@ -5,7 +5,6 @@ import { getEventById } from "@/lib/data/events";
 import { getStructureWithRows } from "@/lib/data/blindStructures";
 import { BlindStructureTable } from "@/components/schedule/BlindStructureTable";
 import { StatusBadge } from "@/components/schedule/StatusBadge";
-import { SeriesNav } from "@/components/series/SeriesNav";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -38,7 +37,6 @@ export default async function EventDetailPage({ params }: Props) {
 
   return (
     <div className={["py-8 flex flex-col gap-8", isCompleted ? "opacity-80" : ""].join(" ").trim()}>
-      <SeriesNav />
 
       {/* Archive label */}
       {isCompleted && (

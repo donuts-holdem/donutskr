@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getOnlineLeague } from "@/lib/data/onlineLeague";
-import { SeriesNav } from "@/components/series/SeriesNav";
 import { LeagueStatusBlock } from "@/components/league/LeagueStatusBlock";
 
 export const metadata: Metadata = {
@@ -13,7 +12,6 @@ export default async function OnlineLeaguePage() {
 
   return (
     <div className="py-8 flex flex-col gap-8">
-      <SeriesNav />
 
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-ink">온라인 리그</h1>

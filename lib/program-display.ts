@@ -29,3 +29,29 @@ export function resolveHref(url: string): { href: string; isExternal: boolean } 
 export function formatDotDate(dateString: string): string {
   return dateString.slice(0, 10).replace(/-/g, ".");
 }
+
+// Resolve a program's click target: external_url wins (opens new tab), else the
+// internal detail route. Single source so every card variant agrees.
+export function programHref(program: {
+  external_url: string | null;
+  slug: string;
+}): { href: string; isExternal: boolean } {
+  if (program.external_url) return resolveHref(program.external_url);
+  return { href: `/programs/${program.slug}`, isExternal: false };
+}
+
+// Category groups for the /programs directory filter. `key` matches
+// Program.program_group ("all" = no filter).
+export const PROGRAM_CATEGORIES = [
+  { key: "all", label: "전체", labelEn: "ALL" },
+  { key: "poker", label: "포커", labelEn: "POKER" },
+  { key: "social", label: "소셜", labelEn: "SOCIAL" },
+  { key: "others", label: "기타", labelEn: "OTHERS" },
+] as const;
+
+// Whether a status counts as "open" (recruiting/ongoing) vs closed/completed —
+// drives the status badge tone so open programs read as actionable.
+export function isOpenStatus(status: string | null): boolean {
+  if (!status) return false;
+  return !/(closed|completed|마감|종료|완료)/i.test(status);
+}

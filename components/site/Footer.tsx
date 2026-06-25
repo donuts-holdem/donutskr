@@ -1,12 +1,40 @@
 import { getSiteConfig } from "@/lib/data/siteConfig";
+import { getAffiliatePartners } from "@/lib/data/programs";
+
+// Ensure outbound links carry a scheme; a bare host like "do-lab.co.kr"
+// would otherwise resolve as a relative path and navigate within the site.
+function normalizeUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (!trimmed || trimmed === "#") return undefined;
+  if (/^(https?:\/\/|mailto:|tel:|\/)/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
 
 export async function Footer() {
-  const config = await getSiteConfig();
-  const sponsors = config.footer_sponsors ?? [];
+  const [config, partners] = await Promise.all([
+    getSiteConfig(),
+    getAffiliatePartners(),
+  ]);
+
+  // Official Sponsor = configured footer sponsors + affiliate partners, unified.
+  // Skip partners already present as configured sponsors (dedupe by name).
+  const configured = config.footer_sponsors ?? [];
+  const existing = new Set(configured.map((s) => s.name.trim()));
+  const sponsors = [
+    ...configured.map((s) => ({ ...s, url: normalizeUrl(s.url) })),
+    ...partners
+      .filter((p) => !existing.has(p.title.trim()))
+      .map((p) => ({
+        name: p.title,
+        logo: p.cover_image ?? undefined,
+        url: normalizeUrl(p.external_url ?? p.entry_link ?? undefined),
+      })),
+  ];
 
   return (
     <footer className="bg-bg border-t border-border mt-auto">
-      <div className="mx-auto max-w-5xl px-4 py-8 flex flex-col items-center gap-4">
+      <div className="mx-auto max-w-7xl px-4 py-8 flex flex-col items-center gap-4">
         {sponsors.length > 0 && (
           <div className="flex flex-col items-center gap-3">
             <p className="text-xs text-ink/40 tracking-widest uppercase">
