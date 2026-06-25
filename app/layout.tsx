@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
-import { Suspense } from "react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,6 +12,8 @@ export const metadata: Metadata = {
   description: "DO:NUTS Poker Club",
 };
 
+// Root shell only (html/body/font). Site chrome lives in app/(site)/layout.tsx
+// so full-bleed routes (/lab, /admin) can opt out of the header/footer.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,15 +24,7 @@ export default function RootLayout({
       lang="ko"
       className={`${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-ink">
-        <Suspense fallback={<div className="h-14 bg-bg border-b border-border" />}>
-          <Header />
-        </Suspense>
-        <main className="mx-auto max-w-5xl px-4 w-full flex-1">{children}</main>
-        <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
-      </body>
+      <body className="min-h-full flex flex-col bg-bg text-ink">{children}</body>
     </html>
   );
 }
