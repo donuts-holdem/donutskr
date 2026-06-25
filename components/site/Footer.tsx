@@ -19,7 +19,7 @@ export async function Footer() {
                   <img
                     src={s.logo}
                     alt={s.name}
-                    className="h-8 object-contain opacity-70 hover:opacity-100 transition-opacity"
+                    className="max-h-9 max-w-[84px] w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
                   />
                 ) : (
                   <span className="text-sm text-ink/60">{s.name}</span>

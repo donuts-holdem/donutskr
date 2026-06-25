@@ -9,9 +9,6 @@ const BASE = "https://do-nuts.kr";
 const staticRoutes: MetadataRoute.Sitemap = [
   { url: BASE, priority: 1 },
   { url: `${BASE}/programs`, priority: 0.8 },
-  { url: `${BASE}/poker`, priority: 0.5 },
-  { url: `${BASE}/social`, priority: 0.5 },
-  { url: `${BASE}/others`, priority: 0.4 },
   { url: `${BASE}/series`, priority: 0.9 },
   { url: `${BASE}/schedule`, priority: 0.8 },
   { url: `${BASE}/online-league`, priority: 0.6 },

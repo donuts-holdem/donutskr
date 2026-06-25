@@ -84,28 +84,6 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Category shortcuts */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-ink/40 uppercase tracking-widest">
-          카테고리별
-        </h2>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { href: "/poker", label: "♠️ 포커", desc: "포커 프로그램" },
-            { href: "/social", label: "🤝 소셜", desc: "소셜 클럽" },
-            { href: "/others", label: "✨ 기타", desc: "기타 프로그램" },
-          ].map((cat) => (
-            <Link
-              key={cat.href}
-              href={cat.href}
-              className="bg-glass border border-border rounded-card p-4 flex flex-col gap-1 hover:border-gold/30 transition-colors"
-            >
-              <span className="text-sm font-semibold text-ink">{cat.label}</span>
-              <span className="text-xs text-ink/40">{cat.desc}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
