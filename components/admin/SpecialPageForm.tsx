@@ -1,15 +1,16 @@
 "use client";
-import type { SpecialPage } from "@/lib/types";
+import type { SpecialPage, BlindStructure } from "@/lib/types";
 
 interface SpecialPageFormProps {
   page?: SpecialPage;
+  structures?: BlindStructure[];
   action: (fd: FormData) => void | Promise<void>;
 }
 
 const inputCls = "bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full";
 const labelCls = { display: "block", marginBottom: "4px", color: "var(--muted-1)", fontSize: "0.875rem" };
 
-export function SpecialPageForm({ page, action }: SpecialPageFormProps) {
+export function SpecialPageForm({ page, structures = [], action }: SpecialPageFormProps) {
   return (
     <form action={action} style={{ display: "grid", gap: "1rem", maxWidth: "640px" }}>
       <div>
@@ -83,6 +84,15 @@ export function SpecialPageForm({ page, action }: SpecialPageFormProps) {
       <div>
         <label style={labelCls}>노트 목록 (JSON 배열, 예: ["항목1","항목2"])</label>
         <textarea name="note_list" defaultValue={JSON.stringify(page?.note_list ?? [])} rows={3} className={inputCls} />
+      </div>
+      <div>
+        <label style={labelCls}>블라인드 스트럭처</label>
+        <select name="blind_structure_id" defaultValue={page?.blind_structure_id ?? ""} className={inputCls}>
+          <option value="">-- 없음 --</option>
+          {structures.map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label style={labelCls}>노출 시작일</label>

@@ -12,15 +12,16 @@ export default async function EditBlindStructurePage({ params }: { params: Promi
   async function action(fd: FormData) {
     "use server";
     const name = String(fd.get("name") || "");
+    const eventType = String(fd.get("event_type") || "").trim() || null;
     let rowData: any[] = [];
     try { rowData = JSON.parse(String(fd.get("rows") || "[]")); } catch {}
-    await saveStructure(id, name, rowData);
+    await saveStructure(id, name, eventType, rowData);
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>스트럭처 수정</h1>
-      <BlindStructureEditor structureId={id} initialRows={rows} action={action} structures={structures} initialName={structure.name} />
+      <BlindStructureEditor structureId={id} initialRows={rows} action={action} structures={structures} initialName={structure.name} initialEventType={structure.event_type} />
     </div>
   );
 }

@@ -3,15 +3,15 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 
-export async function saveStructure(id: string | null, name: string, rows: any[]) {
+export async function saveStructure(id: string | null, name: string, eventType: string | null, rows: any[]) {
   const supabase = await requireAdmin();
   let structureId = id;
   if (!structureId) {
-    const { data, error } = await supabase.from("blind_structures").insert({ name, is_template: true }).select("id").single();
+    const { data, error } = await supabase.from("blind_structures").insert({ name, event_type: eventType, is_template: true }).select("id").single();
     if (error) throw error;
     structureId = data.id;
   } else {
-    const { error } = await supabase.from("blind_structures").update({ name }).eq("id", structureId);
+    const { error } = await supabase.from("blind_structures").update({ name, event_type: eventType }).eq("id", structureId);
     if (error) throw error;
   }
   // Delete existing rows

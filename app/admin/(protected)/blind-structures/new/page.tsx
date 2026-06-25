@@ -7,9 +7,10 @@ export default async function NewBlindStructurePage() {
   async function action(fd: FormData) {
     "use server";
     const name = String(fd.get("name") || "");
+    const eventType = String(fd.get("event_type") || "").trim() || null;
     let rows: any[] = [];
     try { rows = JSON.parse(String(fd.get("rows") || "[]")); } catch {}
-    await saveStructure(null, name, rows);
+    await saveStructure(null, name, eventType, rows);
   }
   return (
     <div>

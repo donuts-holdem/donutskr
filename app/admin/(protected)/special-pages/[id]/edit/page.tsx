@@ -1,11 +1,12 @@
 import { getAllSpecialPages } from "@/lib/data/specialPages";
+import { getAllStructures } from "@/lib/data/blindStructures";
 import { updateSpecialPage } from "@/app/admin/actions/specialPages";
 import { SpecialPageForm } from "@/components/admin/SpecialPageForm";
 import { notFound } from "next/navigation";
 
 export default async function EditSpecialPagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const pages = await getAllSpecialPages();
+  const [pages, structures] = await Promise.all([getAllSpecialPages(), getAllStructures()]);
   const page = pages.find((p) => p.id === id);
   if (!page) notFound();
 
@@ -17,7 +18,7 @@ export default async function EditSpecialPagePage({ params }: { params: Promise<
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>특수 페이지 수정</h1>
-      <SpecialPageForm page={page} action={action} />
+      <SpecialPageForm page={page} structures={structures} action={action} />
     </div>
   );
 }

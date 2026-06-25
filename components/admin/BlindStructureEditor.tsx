@@ -40,9 +40,10 @@ interface Props {
   action: (fd: FormData) => void | Promise<void>;
   structures?: BlindStructure[];
   initialName?: string;
+  initialEventType?: string | null;
 }
 
-export function BlindStructureEditor({ structureId, initialRows, action, structures = [], initialName = "" }: Props) {
+export function BlindStructureEditor({ structureId, initialRows, action, structures = [], initialName = "", initialEventType = "" }: Props) {
   const [rows, setRows] = useState<LocalRow[]>(() => initialRows.map(fromBlindRow));
   const [cloneTarget, setCloneTarget] = useState("");
 
@@ -71,6 +72,13 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
       <div>
         <label style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)", fontSize: "0.875rem" }}>스트럭처 이름</label>
         <input name="name" type="text" defaultValue={initialName} required
+          className={inputCls} style={{ width: "100%", maxWidth: "400px" }} />
+      </div>
+
+      {/* Event type */}
+      <div>
+        <label style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)", fontSize: "0.875rem" }}>이벤트 타입 (예: NLH, NLH / PLO)</label>
+        <input name="event_type" type="text" defaultValue={initialEventType ?? ""}
           className={inputCls} style={{ width: "100%", maxWidth: "400px" }} />
       </div>
 
