@@ -13,6 +13,7 @@ function ev(over: Partial<Event>): Event {
     location: "챔스홀덤",
     weekday: "토",
     start_time: "14:00",
+    ...over,
   } as unknown as Event;
 }
 

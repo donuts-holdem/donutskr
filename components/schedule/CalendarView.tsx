@@ -70,7 +70,11 @@ function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; tod
 
   if (!cell.inMonth) {
     return (
-      <div className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28">
+      <div
+        role="gridcell"
+        aria-hidden="true"
+        className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28"
+      >
         <span className={`${numClass} text-white/20`}>{cell.day}</span>
       </div>
     );
