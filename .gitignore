@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code (local settings + agent worktrees; keep shared .claude/settings.json committable)
+.claude/settings.local.json
+.claude/worktrees/
