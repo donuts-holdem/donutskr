@@ -3,8 +3,8 @@ import Image from "next/image";
 
 const NAV_LINKS = [
   { label: "프로그램", href: "/programs" },
-  { label: "시리즈", href: "/series" },
   { label: "일정", href: "/schedule" },
+  { label: "시리즈", href: "/series" },
   { label: "리더보드", href: "/leaderboard" },
   { label: "온라인 리그", href: "/online-league" },
   { label: "챌린지", href: "/challenge" },
