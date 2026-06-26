@@ -17,7 +17,7 @@ export function EventCard({ event }: { event: Event }) {
     >
       {/* Poster */}
       {event.poster_image && (
-        <div className="relative w-full aspect-[16/9] overflow-hidden">
+        <div className="relative w-full aspect-video overflow-hidden">
           <Image
             src={event.poster_image}
             alt={event.title}

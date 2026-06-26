@@ -29,7 +29,7 @@ export default async function AdminSeasonsPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr className="border-b border-white/[0.12]" style={{}}>
+            <tr className="border-b border-white/12" style={{}}>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>이름</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>코드</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>연도</th>
@@ -39,7 +39,7 @@ export default async function AdminSeasonsPage() {
           </thead>
           <tbody>
             {seasons.map((season) => (
-              <tr key={season.id} className="border-b border-white/[0.06]" style={{}}>
+              <tr key={season.id} className="border-b border-white/6" style={{}}>
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{season.name}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{season.code}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{season.year}</td>

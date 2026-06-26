@@ -27,7 +27,7 @@ export default async function AdminEventsPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr className="border-b border-white/[0.12]" style={{}}>
+            <tr className="border-b border-white/12" style={{}}>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>제목</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>카테고리</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>상태</th>
@@ -37,7 +37,7 @@ export default async function AdminEventsPage() {
           </thead>
           <tbody>
             {events.map((event) => (
-              <tr key={event.id} className="border-b border-white/[0.06]" style={{}}>
+              <tr key={event.id} className="border-b border-white/6" style={{}}>
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{event.title}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{event.category}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{event.status}</td>

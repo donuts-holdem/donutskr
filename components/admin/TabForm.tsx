@@ -1,82 +1,99 @@
 "use client";
 import type { NavTab } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TabFormProps {
   tab?: NavTab;
   action: (fd: FormData) => void | Promise<void>;
 }
 
-const inputCls = "bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full";
-const labelCls = { display: "block", marginBottom: "4px", color: "var(--muted-1)", fontSize: "0.875rem" };
+const TAB_TYPES = ["internal", "external", "special"] as const;
 
 export function TabForm({ tab, action }: TabFormProps) {
   return (
-    <form action={action} style={{ display: "grid", gap: "1rem", maxWidth: "640px" }}>
-      <div>
-        <label style={labelCls}>이름</label>
-        <input name="name" type="text" defaultValue={tab?.name ?? ""} required className={inputCls} />
+    <form action={action} className="flex max-w-2xl flex-col gap-5">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="name">이름</Label>
+        <Input id="name" name="name" defaultValue={tab?.name ?? ""} required />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="key">키 (key)</Label>
+        <Input id="key" name="key" defaultValue={tab?.key ?? ""} required />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="type">타입</Label>
+        <Select name="type" defaultValue={tab?.type ?? "internal"}>
+          <SelectTrigger id="type" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TAB_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="slug">슬러그 (slug)</Label>
+        <Input id="slug" name="slug" defaultValue={tab?.slug ?? ""} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="external_url">외부 URL</Label>
+        <Input id="external_url" name="external_url" type="url" defaultValue={tab?.external_url ?? ""} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="sort_order">순서</Label>
+        <Input id="sort_order" name="sort_order" type="number" defaultValue={tab?.sort_order ?? 0} />
+      </div>
+      <div className="flex flex-wrap gap-6">
+        <div className="flex items-center gap-2">
+          <Checkbox id="is_visible" name="is_visible" defaultChecked={tab?.is_visible ?? true} />
+          <Label htmlFor="is_visible">노출</Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox id="mobile_visible" name="mobile_visible" defaultChecked={tab?.mobile_visible ?? true} />
+          <Label htmlFor="mobile_visible">모바일 노출</Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox id="home_card_visible" name="home_card_visible" defaultChecked={tab?.home_card_visible ?? false} />
+          <Label htmlFor="home_card_visible">홈카드 노출</Label>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="start_show_date">기간 노출 시작일</Label>
+        <Input id="start_show_date" name="start_show_date" type="date" defaultValue={tab?.start_show_date ?? ""} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="end_show_date">기간 노출 종료일</Label>
+        <Input id="end_show_date" name="end_show_date" type="date" defaultValue={tab?.end_show_date ?? ""} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="home_card_title">홈카드 제목</Label>
+        <Input id="home_card_title" name="home_card_title" defaultValue={tab?.home_card_title ?? ""} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="home_card_desc">홈카드 설명</Label>
+        <Input id="home_card_desc" name="home_card_desc" defaultValue={tab?.home_card_desc ?? ""} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="home_card_cta">홈카드 CTA</Label>
+        <Input id="home_card_cta" name="home_card_cta" defaultValue={tab?.home_card_cta ?? ""} />
       </div>
       <div>
-        <label style={labelCls}>키 (key)</label>
-        <input name="key" type="text" defaultValue={tab?.key ?? ""} required className={inputCls} />
+        <Button type="submit">저장</Button>
       </div>
-      <div>
-        <label style={labelCls}>타입</label>
-        <select name="type" defaultValue={tab?.type ?? "internal"} className={inputCls}>
-          <option value="internal">internal</option>
-          <option value="external">external</option>
-          <option value="special">special</option>
-        </select>
-      </div>
-      <div>
-        <label style={labelCls}>슬러그 (slug)</label>
-        <input name="slug" type="text" defaultValue={tab?.slug ?? ""} className={inputCls} />
-      </div>
-      <div>
-        <label style={labelCls}>외부 URL</label>
-        <input name="external_url" type="text" defaultValue={tab?.external_url ?? ""} className={inputCls} />
-      </div>
-      <div>
-        <label style={labelCls}>순서</label>
-        <input name="sort_order" type="number" defaultValue={tab?.sort_order ?? 0} className={inputCls} />
-      </div>
-      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-        <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--muted-1)", fontSize: "0.875rem" }}>
-          <input name="is_visible" type="checkbox" defaultChecked={tab?.is_visible ?? true} />
-          노출
-        </label>
-        <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--muted-1)", fontSize: "0.875rem" }}>
-          <input name="mobile_visible" type="checkbox" defaultChecked={tab?.mobile_visible ?? true} />
-          모바일 노출
-        </label>
-        <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--muted-1)", fontSize: "0.875rem" }}>
-          <input name="home_card_visible" type="checkbox" defaultChecked={tab?.home_card_visible ?? false} />
-          홈카드 노출
-        </label>
-      </div>
-      <div>
-        <label style={labelCls}>기간 노출 시작일</label>
-        <input name="start_show_date" type="date" defaultValue={tab?.start_show_date ?? ""} className={inputCls} />
-      </div>
-      <div>
-        <label style={labelCls}>기간 노출 종료일</label>
-        <input name="end_show_date" type="date" defaultValue={tab?.end_show_date ?? ""} className={inputCls} />
-      </div>
-      <div>
-        <label style={labelCls}>홈카드 제목</label>
-        <input name="home_card_title" type="text" defaultValue={tab?.home_card_title ?? ""} className={inputCls} />
-      </div>
-      <div>
-        <label style={labelCls}>홈카드 설명</label>
-        <input name="home_card_desc" type="text" defaultValue={tab?.home_card_desc ?? ""} className={inputCls} />
-      </div>
-      <div>
-        <label style={labelCls}>홈카드 CTA</label>
-        <input name="home_card_cta" type="text" defaultValue={tab?.home_card_cta ?? ""} className={inputCls} />
-      </div>
-      <button type="submit" style={{ background: "var(--color-gold)", padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer", fontSize: "0.875rem" }} className="text-bg">
-        저장
-      </button>
     </form>
   );
 }

@@ -16,7 +16,7 @@ export default async function TabsPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr className="border-b border-white/[0.12]">
+            <tr className="border-b border-white/12">
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>이름</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>키</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>순서</th>
@@ -27,7 +27,7 @@ export default async function TabsPage() {
           </thead>
           <tbody>
             {tabs.map((tab) => (
-              <tr key={tab.id} className="border-b border-white/[0.06]">
+              <tr key={tab.id} className="border-b border-white/6">
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{tab.name}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{tab.key}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{tab.sort_order}</td>

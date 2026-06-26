@@ -18,7 +18,7 @@ export default async function AdminPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem" }}>
         <Link
           href="/admin/seasons"
-          className="bg-white/[0.06] border border-white/[0.12]"
+          className="bg-white/6 border border-white/12"
           style={{
             display: "block",
             padding: "1.25rem",
@@ -34,7 +34,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/events"
-          className="bg-white/[0.06] border border-white/[0.12]"
+          className="bg-white/6 border border-white/12"
           style={{
             display: "block",
             padding: "1.25rem",

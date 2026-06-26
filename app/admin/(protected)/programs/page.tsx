@@ -27,7 +27,7 @@ export default async function AdminProgramsPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr className="border-b border-white/[0.12]">
+            <tr className="border-b border-white/12">
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>제목</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>그룹</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>HOT</th>
@@ -38,7 +38,7 @@ export default async function AdminProgramsPage() {
           </thead>
           <tbody>
             {programs.map((program) => (
-              <tr key={program.id} className="border-b border-white/[0.06]">
+              <tr key={program.id} className="border-b border-white/6">
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{program.title}</td>
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{program.program_group}</td>
                 <td style={{ padding: "10px 12px" }}>

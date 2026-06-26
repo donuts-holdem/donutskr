@@ -2,6 +2,16 @@
 import { useState } from "react";
 import type { BlindRow, BlindStructure } from "@/lib/types";
 import { duplicateStructure } from "@/app/admin/actions/blindStructures";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type LocalRow = {
   key: string;
@@ -59,108 +69,92 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
     setRows(rs => { if (idx >= rs.length - 1) return rs; const a = [...rs]; [a[idx], a[idx + 1]] = [a[idx + 1], a[idx]]; return a; });
   }
 
-  const inputCls = "bg-white/[0.08] border border-white/15 text-ink rounded px-2 py-1 text-sm";
-  const btnCls = "bg-white/[0.08] border border-white/15 text-ink rounded px-2 py-1 text-xs cursor-pointer hover:bg-white/[0.14]";
-
   return (
     <>
-    <form action={action} style={{ display: "grid", gap: "1.25rem" }}>
-      <input type="hidden" name="structure_id" value={structureId} />
-      <input type="hidden" name="rows" value={JSON.stringify(rows)} />
+      <form action={action} className="flex flex-col gap-5">
+        <input type="hidden" name="structure_id" value={structureId} />
+        <input type="hidden" name="rows" value={JSON.stringify(rows)} />
 
-      {/* Name */}
-      <div>
-        <label style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)", fontSize: "0.875rem" }}>스트럭처 이름</label>
-        <input name="name" type="text" defaultValue={initialName} required
-          className={inputCls} style={{ width: "100%", maxWidth: "400px" }} />
-      </div>
-
-      {/* Event type */}
-      <div>
-        <label style={{ display: "block", marginBottom: "4px", color: "var(--muted-1)", fontSize: "0.875rem" }}>이벤트 타입 (예: NLH, NLH / PLO)</label>
-        <input name="event_type" type="text" defaultValue={initialEventType ?? ""}
-          className={inputCls} style={{ width: "100%", maxWidth: "400px" }} />
-      </div>
-
-      {/* Add buttons */}
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-        <button type="button" onClick={() => setRows(rs => [...rs, makeLevel()])} className={btnCls}>레벨 추가</button>
-        <button type="button" onClick={() => setRows(rs => [...rs, makeBreak()])} className={btnCls}>브레이크 추가</button>
-        <button type="button" onClick={() => setRows(rs => [...rs, makeStage()])} className={btnCls}>스테이지 추가</button>
-      </div>
-
-      {/* Rows */}
-      {rows.length > 0 && (
-        <div style={{ display: "grid", gap: "8px" }}>
-          {rows.map((row, idx) => (
-            <div key={row.key} className="bg-white/5 border border-white/10 rounded-lg" style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              <span style={{ color: "var(--muted-2)", fontSize: "0.75rem", width: "50px", flexShrink: 0 }}>
-                {row.row_type === "level" ? "레벨" : row.row_type === "break" ? "브레이크" : "스테이지"}
-              </span>
-
-              {row.row_type === "level" && (
-                <>
-                  <input type="number" placeholder="Lv" value={row.level_no ?? ""} onChange={e => update(row.key, { level_no: e.target.value ? Number(e.target.value) : undefined })}
-                    className={inputCls} style={{ width: "48px" }} />
-                  <input type="text" placeholder="SB" value={row.sb} onChange={e => update(row.key, { sb: e.target.value })}
-                    className={inputCls} style={{ width: "70px" }} />
-                  <input type="text" placeholder="BB" value={row.bb} onChange={e => update(row.key, { bb: e.target.value })}
-                    className={inputCls} style={{ width: "70px" }} />
-                  <input type="text" placeholder="Ante" value={row.ante} onChange={e => update(row.key, { ante: e.target.value })}
-                    className={inputCls} style={{ width: "80px" }} />
-                  <input type="number" placeholder="분" value={row.duration ?? ""} onChange={e => update(row.key, { duration: e.target.value ? Number(e.target.value) : undefined })}
-                    className={inputCls} style={{ width: "60px" }} />
-                </>
-              )}
-
-              {row.row_type === "break" && (
-                <>
-                  <input type="text" placeholder="브레이크명" value={row.break_name} onChange={e => update(row.key, { break_name: e.target.value })}
-                    className={inputCls} style={{ width: "160px" }} />
-                  <input type="number" placeholder="분" value={row.break_minutes ?? ""} onChange={e => update(row.key, { break_minutes: e.target.value ? Number(e.target.value) : undefined })}
-                    className={inputCls} style={{ width: "60px" }} />
-                </>
-              )}
-
-              {row.row_type === "stage" && (
-                <input type="text" placeholder="스테이지 메모" value={row.stage_note} onChange={e => update(row.key, { stage_note: e.target.value })}
-                  className={inputCls} style={{ width: "260px" }} />
-              )}
-
-              <div style={{ marginLeft: "auto", display: "flex", gap: "4px" }}>
-                <button type="button" onClick={() => moveUp(idx)} className={btnCls} aria-label="위로">↑</button>
-                <button type="button" onClick={() => moveDown(idx)} className={btnCls} aria-label="아래로">↓</button>
-                <button type="button" onClick={() => remove(row.key)}
-                  className="bg-danger/15 border border-danger/40 text-danger rounded px-2 py-1 text-xs cursor-pointer">
-                  삭제
-                </button>
-              </div>
-            </div>
-          ))}
+        {/* Name */}
+        <div className="flex max-w-md flex-col gap-2">
+          <Label htmlFor="name">스트럭처 이름</Label>
+          <Input id="name" name="name" defaultValue={initialName} required />
         </div>
-      )}
 
-      {/* Save */}
-      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-        <button type="submit" className="bg-gold text-bg" style={{ padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer", fontSize: "0.875rem" }}>
-          저장
-        </button>
-      </div>
+        {/* Event type */}
+        <div className="flex max-w-md flex-col gap-2">
+          <Label htmlFor="event_type">이벤트 타입 (예: NLH, NLH / PLO)</Label>
+          <Input id="event_type" name="event_type" defaultValue={initialEventType ?? ""} />
+        </div>
+
+        {/* Add buttons */}
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => setRows(rs => [...rs, makeLevel()])}>레벨 추가</Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setRows(rs => [...rs, makeBreak()])}>브레이크 추가</Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setRows(rs => [...rs, makeStage()])}>스테이지 추가</Button>
+        </div>
+
+        {/* Rows */}
+        {rows.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {rows.map((row, idx) => (
+              <div key={row.key} className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card/60 px-3.5 py-2.5">
+                <span className="text-muted-foreground w-[50px] shrink-0 text-xs">
+                  {row.row_type === "level" ? "레벨" : row.row_type === "break" ? "브레이크" : "스테이지"}
+                </span>
+
+                {row.row_type === "level" && (
+                  <>
+                    <Input type="number" placeholder="Lv" value={row.level_no ?? ""} onChange={e => update(row.key, { level_no: e.target.value ? Number(e.target.value) : undefined })} className="w-14" />
+                    <Input placeholder="SB" value={row.sb} onChange={e => update(row.key, { sb: e.target.value })} className="w-20" />
+                    <Input placeholder="BB" value={row.bb} onChange={e => update(row.key, { bb: e.target.value })} className="w-20" />
+                    <Input placeholder="Ante" value={row.ante} onChange={e => update(row.key, { ante: e.target.value })} className="w-24" />
+                    <Input type="number" placeholder="분" value={row.duration ?? ""} onChange={e => update(row.key, { duration: e.target.value ? Number(e.target.value) : undefined })} className="w-16" />
+                  </>
+                )}
+
+                {row.row_type === "break" && (
+                  <>
+                    <Input placeholder="브레이크명" value={row.break_name} onChange={e => update(row.key, { break_name: e.target.value })} className="w-40" />
+                    <Input type="number" placeholder="분" value={row.break_minutes ?? ""} onChange={e => update(row.key, { break_minutes: e.target.value ? Number(e.target.value) : undefined })} className="w-16" />
+                  </>
+                )}
+
+                {row.row_type === "stage" && (
+                  <Input placeholder="스테이지 메모" value={row.stage_note} onChange={e => update(row.key, { stage_note: e.target.value })} className="w-64" />
+                )}
+
+                <div className="ml-auto flex gap-1">
+                  <Button type="button" variant="outline" size="icon" onClick={() => moveUp(idx)} aria-label="위로">↑</Button>
+                  <Button type="button" variant="outline" size="icon" onClick={() => moveDown(idx)} aria-label="아래로">↓</Button>
+                  <Button type="button" variant="destructive" size="sm" onClick={() => remove(row.key)}>삭제</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Save */}
+        <div>
+          <Button type="submit">저장</Button>
+        </div>
       </form>
 
       {/* Duplicate — separate form (creates an independent copy, never edits the source) */}
       {structures.length > 0 && (
-        <form action={duplicateStructure} style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "1.25rem" }}>
+        <form action={duplicateStructure} className="mt-5 flex items-center gap-2">
           <input type="hidden" name="source_id" value={cloneTarget} />
-          <select value={cloneTarget} onChange={e => setCloneTarget(e.target.value)}
-            className="bg-white/[0.08] border border-white/15 text-ink rounded px-2 py-1 text-sm">
-            <option value="">-- 복제할 스트럭처 선택 --</option>
-            {structures.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-          <button type="submit" disabled={!cloneTarget}
-            className="bg-white/[0.08] border border-white/15 text-ink rounded px-3 py-1 text-sm disabled:opacity-40 cursor-pointer">
-            복사본 생성
-          </button>
+          <Select value={cloneTarget || undefined} onValueChange={setCloneTarget}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="-- 복제할 스트럭처 선택 --" />
+            </SelectTrigger>
+            <SelectContent>
+              {structures.map(s => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button type="submit" variant="outline" disabled={!cloneTarget}>복사본 생성</Button>
         </form>
       )}
     </>

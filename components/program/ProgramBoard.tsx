@@ -216,12 +216,12 @@ function ProgramCardItem({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[transform,border-color,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-white/[0.16] hover:bg-[#1A1715] hover:shadow-[0_10px_30px_-8px_rgba(0,0,0,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/8 bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[transform,border-color,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-white/16 hover:bg-[#1A1715] hover:shadow-[0_10px_30px_-8px_rgba(0,0,0,0.7)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/[0.08]">
+      <div className="relative aspect-video overflow-hidden border-b border-white/8">
         <Cover program={program} sizes="(min-width:1024px) 32vw, (min-width:640px) 48vw, 100vw" />
         {program.is_hot && (
-          <span className="absolute left-3 top-3 inline-flex items-center rounded-md border border-white/10 bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white/85 backdrop-blur-sm">
+          <span className="absolute left-3 top-3 inline-flex items-center rounded-md border border-white/10 bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white/85 backdrop-blur-xs">
             추천
           </span>
         )}
@@ -321,7 +321,7 @@ export function ProgramBoard({
         </header>
 
         {/* Controls */}
-        <div className="flex flex-col gap-3 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 border-b border-white/8 pb-5 lg:flex-row lg:items-center lg:justify-between">
           <nav
             aria-label="프로그램 카테고리"
             className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 lg:mx-0 lg:px-0"
@@ -334,10 +334,10 @@ export function ProgramBoard({
                   type="button"
                   onClick={() => setCat(c.key)}
                   aria-pressed={active}
-                  className={`shrink-0 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none ${
+                  className={`shrink-0 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none ${
                     active
-                      ? "bg-white/[0.10] text-white"
-                      : "text-white/50 hover:bg-white/[0.05] hover:text-white/85"
+                      ? "bg-white/10 text-white"
+                      : "text-white/50 hover:bg-white/5 hover:text-white/85"
                   }`}
                 >
                   {c.label}
@@ -360,14 +360,14 @@ export function ProgramBoard({
               autoComplete="off"
               spellCheck={false}
               enterKeyHint="search"
-              className="w-full rounded-lg border border-white/[0.08] bg-[#141211] py-2.5 pl-9 pr-3 text-[13px] text-[#F7F6F3] transition-colors duration-150 placeholder:text-white/35 hover:border-white/[0.14] focus:border-[#E7B45A]/50 focus:outline-none focus:ring-2 focus:ring-[#E7B45A]/30 motion-reduce:transition-none"
+              className="w-full rounded-lg border border-white/8 bg-[#141211] py-2.5 pl-9 pr-3 text-[13px] text-[#F7F6F3] transition-colors duration-150 placeholder:text-white/35 hover:border-white/[0.14] focus:border-[#E7B45A]/50 focus:outline-hidden focus:ring-2 focus:ring-[#E7B45A]/30 motion-reduce:transition-none"
             />
           </div>
         </div>
 
         {/* Results */}
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-white/[0.08] bg-[#141211] py-20 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-xl border border-white/8 bg-[#141211] py-20 text-center">
             <p className="text-[14px] font-medium text-white/80">
               {query
                 ? `“${query}”에 맞는 프로그램이 없어요.`

@@ -16,7 +16,7 @@ export default async function SpecialPagesPage() {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
-            <tr className="border-b border-white/[0.12]">
+            <tr className="border-b border-white/12">
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>슬러그</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>제목</th>
               <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>노출</th>
@@ -25,7 +25,7 @@ export default async function SpecialPagesPage() {
           </thead>
           <tbody>
             {pages.map((p) => (
-              <tr key={p.id} className="border-b border-white/[0.06]">
+              <tr key={p.id} className="border-b border-white/6">
                 <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{p.slug}</td>
                 <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{p.title}</td>
                 <td style={{ padding: "10px 12px" }}>{p.is_visible ? <span style={{ color: "var(--color-gold)" }}>●</span> : <span style={{ color: "var(--muted-4)" }}>○</span>}</td>

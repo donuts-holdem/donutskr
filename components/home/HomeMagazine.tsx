@@ -162,23 +162,23 @@ function FeaturedCard({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color] duration-300 hover:border-white/[0.20] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color] duration-300 hover:border-white/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-16/10 overflow-hidden">
         <Cover program={program} sizes="(min-width:1024px) 64vw, 100vw" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" aria-hidden="true" />
-        <span className={`${display.className} absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-white/85 backdrop-blur-sm`}>
+        <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/0 to-black/0" aria-hidden="true" />
+        <span className={`${display.className} absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-white/85 backdrop-blur-xs`}>
           추천
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-3 p-6">
         <div className="flex items-center justify-between gap-3">
-          <span className={`${display.className} min-w-0 truncate text-[12px] font-medium uppercase tracking-[0.1em] text-[#FFE58A]/80`}>
+          <span className={`${display.className} min-w-0 truncate text-[12px] font-medium uppercase tracking-widest text-[#FFE58A]/80`}>
             {categoryLabel(program)}
           </span>
           <span className="shrink-0"><StatusDot status={program.status} /></span>
         </div>
-        <h3 className="text-pretty text-[26px] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-[32px]">
+        <h3 className="text-pretty text-[26px] font-bold leading-[1.12] tracking-tight text-white sm:text-[32px]">
           {program.title}
         </h3>
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
@@ -194,14 +194,14 @@ function StandardCard({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-[#1A1715] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
+      className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/8 bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:border-white/20 hover:bg-[#1A1715] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
     >
-      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/[0.08]">
+      <div className="relative aspect-video overflow-hidden border-b border-white/8">
         <Cover program={program} sizes="(min-width:1024px) 32vw, (min-width:640px) 48vw, 100vw" />
       </div>
       <div className="flex flex-1 flex-col gap-2.5 p-4">
         <div className="flex items-center justify-between gap-3">
-          <span className={`${display.className} min-w-0 truncate text-[11px] font-medium uppercase tracking-[0.1em] text-white/45`}>
+          <span className={`${display.className} min-w-0 truncate text-[11px] font-medium uppercase tracking-widest text-white/45`}>
             {categoryLabel(program)}
           </span>
           <span className="shrink-0"><StatusDot status={program.status} /></span>
@@ -222,13 +222,13 @@ function CompactCard({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group flex items-center gap-4 rounded-xl border border-white/[0.08] bg-[#141211] p-3 transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-[#1A1715] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
+      className="group flex items-center gap-4 rounded-xl border border-white/8 bg-[#141211] p-3 transition-[border-color,background-color] duration-200 hover:border-white/20 hover:bg-[#1A1715] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
     >
-      <div className="relative h-[68px] w-[88px] shrink-0 overflow-hidden rounded-lg border border-white/[0.08]">
+      <div className="relative h-[68px] w-[88px] shrink-0 overflow-hidden rounded-lg border border-white/8">
         <Cover program={program} sizes="88px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <span className={`${display.className} truncate text-[10.5px] font-medium uppercase tracking-[0.1em] text-white/40`}>
+        <span className={`${display.className} truncate text-[10.5px] font-medium uppercase tracking-widest text-white/40`}>
           {categoryLabel(program)}
         </span>
         <h3 className="line-clamp-2 text-pretty text-[14px] font-semibold leading-snug tracking-[-0.01em] text-white/95 transition-colors duration-200 group-hover:text-white motion-reduce:transition-none">
@@ -254,7 +254,7 @@ function SectionHead({
   hrefLabel?: string;
 }) {
   return (
-    <div className="flex items-end justify-between gap-4 border-b border-white/[0.08] pb-4">
+    <div className="flex items-end justify-between gap-4 border-b border-white/8 pb-4">
       <div className="flex flex-col gap-1.5">
         <span className={`${display.className} text-[11px] font-medium uppercase tracking-[0.22em] text-[#FFE58A]/80`}>
           {eyebrow}
@@ -266,7 +266,7 @@ function SectionHead({
       {href && (
         <Link
           href={href}
-          className={`${display.className} group inline-flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium uppercase tracking-[0.08em] text-white/55 transition-colors hover:text-[#FFE58A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] rounded-sm`}
+          className={`${display.className} group inline-flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium uppercase tracking-[0.08em] text-white/55 transition-colors hover:text-[#FFE58A] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] rounded-xs`}
         >
           {hrefLabel ?? "전체 보기"}
           <IconArrow size={14} className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
@@ -312,8 +312,8 @@ export function HomeMagazine({
             {/* full gray scrim over the whole photo so the copy reads clearly */}
             <div className="absolute inset-0 bg-[#0A0908]/70" />
             {/* feather top & bottom to connect with the header and next section */}
-            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#0A0908] to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0A0908] to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-b from-[#0A0908] to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-[#0A0908] to-transparent" />
           </div>
 
           <div className="relative z-10 mx-auto w-full max-w-7xl px-4">
@@ -322,7 +322,7 @@ export function HomeMagazine({
             <span className={`${display.className} text-[15px] font-semibold uppercase tracking-[0.3em] text-[#FFE58A] sm:text-[19px]`}>
               DO:NUTS Poker Club
             </span>
-            <h1 className="text-pretty text-[clamp(2.75rem,6.5vw,5.5rem)] font-extrabold leading-[1.0] tracking-[-0.04em] text-white">
+            <h1 className="text-pretty text-[clamp(2.75rem,6.5vw,5.5rem)] font-extrabold leading-none tracking-[-0.04em] text-white">
               포커, 그 이상의
               <br />
               커뮤니티.
@@ -335,7 +335,7 @@ export function HomeMagazine({
           <Reveal delay={120} className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/programs"
-              className={`${display.className} group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[14px] font-bold uppercase tracking-[0.04em] text-[#0A0908] transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-[#FFE58A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
+              className={`${display.className} group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[14px] font-bold uppercase tracking-[0.04em] text-[#0A0908] transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-[#FFE58A] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
             >
               프로그램 둘러보기
               <IconArrow size={16} className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
@@ -345,7 +345,7 @@ export function HomeMagazine({
                 href={signupLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${display.className} inline-flex items-center rounded-full border border-white/15 px-5 py-3 text-[14px] font-bold uppercase tracking-[0.04em] text-white/80 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908]`}
+                className={`${display.className} inline-flex items-center rounded-full border border-white/15 px-5 py-3 text-[14px] font-bold uppercase tracking-[0.04em] text-white/80 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908]`}
               >
                 가입 신청
               </a>
@@ -383,7 +383,7 @@ export function HomeMagazine({
         )}
 
         {/* ----------------------- BIG TYPE BREAK ----------------------- */}
-        <Reveal as="section" className="flex flex-col gap-7 border-y border-white/[0.08] py-28 sm:py-40">
+        <Reveal as="section" className="flex flex-col gap-7 border-y border-white/8 py-28 sm:py-40">
           <p className={`${display.className} text-[11px] font-medium uppercase tracking-[0.28em] text-[#FFE58A]/80 sm:text-[12px]`}>
             Poker · Social · &amp; More
           </p>
@@ -423,7 +423,7 @@ export function HomeMagazine({
             <Reveal className="flex justify-center pt-2">
               <Link
                 href="/programs"
-                className={`${display.className} group inline-flex items-center gap-2 rounded-full border border-white/12 px-6 py-3 text-[13px] font-medium uppercase tracking-[0.06em] text-white/70 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908]`}
+                className={`${display.className} group inline-flex items-center gap-2 rounded-full border border-white/12 px-6 py-3 text-[13px] font-medium uppercase tracking-[0.06em] text-white/70 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908]`}
               >
                 {programs.length - grid.length}개 프로그램 더 보기
                 <IconArrow size={15} className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
@@ -434,7 +434,7 @@ export function HomeMagazine({
 
         {/* ----------------------------- CTA ---------------------------- */}
         {signupLink && (
-          <Reveal as="section" className="mb-20 overflow-hidden rounded-3xl border border-white/[0.08] bg-[#141211] px-8 py-14 text-center sm:px-12 sm:py-20">
+          <Reveal as="section" className="mb-20 overflow-hidden rounded-3xl border border-white/8 bg-[#141211] px-8 py-14 text-center sm:px-12 sm:py-20">
             <p className={`${display.className} mb-4 text-[11px] font-medium uppercase tracking-[0.28em] text-[#FFE58A]`}>
               Join the table
             </p>
@@ -448,7 +448,7 @@ export function HomeMagazine({
               href={signupLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${display.className} group mt-8 inline-flex items-center gap-2 rounded-full bg-coral-cta px-6 py-3.5 text-[14px] font-bold uppercase tracking-[0.04em] text-white shadow-[0_12px_40px_-12px_rgba(217,75,69,0.7)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
+              className={`${display.className} group mt-8 inline-flex items-center gap-2 rounded-full bg-coral-cta px-6 py-3.5 text-[14px] font-bold uppercase tracking-[0.04em] text-white shadow-[0_12px_40px_-12px_rgba(217,75,69,0.7)] transition-transform hover:-translate-y-0.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
             >
               가입 신청하기
               <IconArrow size={16} className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
