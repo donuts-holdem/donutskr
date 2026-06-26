@@ -3,12 +3,10 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
+import { parseJsonField, coerceStringList, coerceLabelValueList } from "@/lib/admin/structured-fields";
 
 function parseSpecialPageForm(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
-  function parseJson(k: string, fallback: unknown) {
-    try { return JSON.parse(String(fd.get(k) || "")); } catch { return fallback; }
-  }
   return {
     slug: String(fd.get("slug") || ""),
     label: s("label"),
@@ -21,9 +19,9 @@ function parseSpecialPageForm(fd: FormData) {
     entry_link: s("entry_link"),
     cta_label: s("cta_label"),
     sponsor_name: s("sponsor_name"),
-    gallery: parseJson("gallery", []),
-    info_cards: parseJson("info_cards", []),
-    note_list: parseJson("note_list", []),
+    gallery: coerceStringList(parseJsonField(fd.get("gallery"), "갤러리")),
+    info_cards: coerceLabelValueList(parseJsonField(fd.get("info_cards"), "정보 카드")),
+    note_list: coerceStringList(parseJsonField(fd.get("note_list"), "노트 목록")),
     blind_structure_id: s("blind_structure_id"),
     start_show_date: s("start_show_date"),
     end_show_date: s("end_show_date"),

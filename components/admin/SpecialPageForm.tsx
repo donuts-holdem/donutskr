@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
 import {
   Select,
   SelectContent,
@@ -83,16 +84,46 @@ export function SpecialPageForm({ page, structures = [], action }: SpecialPageFo
         <Input id="poster_file" name="poster_file" type="file" accept="image/*" />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="gallery">갤러리 (JSON 배열, 예: [&quot;url1&quot;,&quot;url2&quot;])</Label>
-        <Textarea id="gallery" name="gallery" rows={3} defaultValue={JSON.stringify(page?.gallery ?? [])} />
+        <Label>갤러리 (이미지 URL)</Label>
+        <RepeatableFieldEditor<string>
+          name="gallery"
+          initial={page?.gallery ?? []}
+          makeEmpty={() => ""}
+          addLabel="이미지 추가"
+          emptyHint="추가된 이미지가 없습니다."
+          renderRow={(value, onChange) => (
+            <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder="이미지 URL" className="flex-1" />
+          )}
+        />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="info_cards">정보 카드 (JSON 배열, 예: [{`{"label":"","value":""}`}])</Label>
-        <Textarea id="info_cards" name="info_cards" rows={3} defaultValue={JSON.stringify(page?.info_cards ?? [])} />
+        <Label>정보 카드</Label>
+        <RepeatableFieldEditor<{ label: string; value: string }>
+          name="info_cards"
+          initial={page?.info_cards ?? []}
+          makeEmpty={() => ({ label: "", value: "" })}
+          addLabel="카드 추가"
+          emptyHint="추가된 카드가 없습니다."
+          renderRow={(card, onChange) => (
+            <>
+              <Input value={card.label} onChange={(e) => onChange({ ...card, label: e.target.value })} placeholder="항목 (예: 날짜)" className="w-40" />
+              <Input value={card.value} onChange={(e) => onChange({ ...card, value: e.target.value })} placeholder="내용 (예: 6/9 화요일 16:00)" className="flex-1" />
+            </>
+          )}
+        />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="note_list">노트 목록 (JSON 배열, 예: [&quot;항목1&quot;,&quot;항목2&quot;])</Label>
-        <Textarea id="note_list" name="note_list" rows={3} defaultValue={JSON.stringify(page?.note_list ?? [])} />
+        <Label>노트 목록</Label>
+        <RepeatableFieldEditor<string>
+          name="note_list"
+          initial={page?.note_list ?? []}
+          makeEmpty={() => ""}
+          addLabel="노트 추가"
+          emptyHint="추가된 노트가 없습니다."
+          renderRow={(value, onChange) => (
+            <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder="안내 문구" className="flex-1" />
+          )}
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="blind_structure_id">블라인드 스트럭처</Label>
