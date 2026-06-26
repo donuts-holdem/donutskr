@@ -3,8 +3,8 @@ import { updateSiteConfig } from "@/app/admin/actions/siteConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
 import {
   Card,
   CardContent,
@@ -81,14 +81,20 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="footer_sponsors">
-                스폰서 목록 (JSON 배열, 예: [{`{"name":"","logo":""}`}])
-              </Label>
-              <Textarea
-                id="footer_sponsors"
+              <Label>스폰서 목록</Label>
+              <RepeatableFieldEditor<{ name: string; logo?: string; url?: string }>
                 name="footer_sponsors"
-                rows={4}
-                defaultValue={JSON.stringify(config.footer_sponsors)}
+                initial={config.footer_sponsors}
+                makeEmpty={() => ({ name: "", logo: "", url: "" })}
+                addLabel="스폰서 추가"
+                emptyHint="추가된 스폰서가 없습니다."
+                renderRow={(row, onChange) => (
+                  <>
+                    <Input value={row.name} onChange={(e) => onChange({ ...row, name: e.target.value })} placeholder="스폰서명" className="w-40" />
+                    <Input value={row.logo ?? ""} onChange={(e) => onChange({ ...row, logo: e.target.value })} placeholder="로고 URL" className="flex-1" />
+                    <Input value={row.url ?? ""} onChange={(e) => onChange({ ...row, url: e.target.value })} placeholder="링크 URL (선택)" className="flex-1" />
+                  </>
+                )}
               />
             </div>
           </CardContent>
