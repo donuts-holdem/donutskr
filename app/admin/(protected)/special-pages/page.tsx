@@ -45,7 +45,7 @@ export default async function SpecialPagesPage() {
                   <Button asChild variant="link" size="sm" className="h-auto p-0">
                     <Link href={`/admin/special-pages/${p.id}/edit`}>수정</Link>
                   </Button>
-                  <DeleteButton onDelete={async () => { "use server"; await deleteSpecialPage(p.id); }} />
+                  <DeleteButton itemName={p.title} onDelete={async () => { "use server"; await deleteSpecialPage(p.id); }} />
                 </div>
               </TableCell>
             </TableRow>
