@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Popover } from "radix-ui";
 import type { Event } from "@/lib/types";
 import { isPast } from "@/lib/schedule";
 import {
   display,
   FixtureRow,
+  EventStatusTag,
+  eventTime,
   ACTIVE_STATUS,
   parseEventDate,
 } from "@/components/schedule/fixtures";
@@ -25,6 +28,11 @@ const MAX_CHIPS = 3;
 function ymParts(ym: string): [number, number] {
   const [y, m] = ym.split("-").map(Number);
   return [y, m];
+}
+
+function koWeekday(date: string): string {
+  const [yy, mm, dd] = date.split("-").map(Number);
+  return WEEKDAYS[new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()];
 }
 
 function isEventGold(event: Event, today: string): boolean {
@@ -60,6 +68,75 @@ function EventChip({ event, today }: { event: Event; today: string }) {
   );
 }
 
+function DayEventRow({ event, today }: { event: Event; today: string }) {
+  const past = isPast(event, today);
+  const time = eventTime(event);
+  const stake = formatBuyInShort(event.buy_in);
+  return (
+    <li className="border-t border-white/[0.08] first:border-t-0">
+      <Link
+        href={`/schedule/${event.id}`}
+        className="group flex items-center gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+      >
+        <span className={`${display.className} w-11 shrink-0 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
+          {time ?? "—"}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm text-white/90">{event.title}</span>
+        {stake && (
+          <span className={`${display.className} shrink-0 text-2xs font-bold tabular-nums ${past ? "text-white/45" : "text-gold"}`}>
+            {stake}
+          </span>
+        )}
+        <EventStatusTag status={event.status} muted={past} />
+      </Link>
+    </li>
+  );
+}
+
+function OverflowPopover({
+  date,
+  events,
+  today,
+  count,
+}: {
+  date: string;
+  events: Event[];
+  today: string;
+  count: number;
+}) {
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          aria-label={`${count}개 더 보기`}
+          className={`${display.className} rounded-md px-1.5 py-0.5 text-left text-2xs font-medium text-white/45 transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70`}
+        >
+          +{count}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={6}
+          className="z-50 w-80 rounded-card border border-white/[0.10] bg-surface p-2 shadow-xl focus-visible:outline-none"
+          style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
+        >
+          <p className={`${display.className} px-2 py-1.5 text-2xs font-medium uppercase tracking-[0.12em] text-white/40`}>
+            {Number(date.slice(5, 7))}월 {Number(date.slice(8, 10))}일 ({koWeekday(date)})
+          </p>
+          <ul className="flex flex-col">
+            {events.map((e) => (
+              <DayEventRow key={e.id} event={e} today={today} />
+            ))}
+          </ul>
+          <Popover.Arrow className="fill-surface" />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
 // NOTE: mobile branches (the <button> selecting a day, dot markers) are added in
 // Task 5. Here the cell renders the desktop layer only.
 function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; today: string }) {
@@ -92,7 +169,7 @@ function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; tod
           <EventChip key={e.id} event={e} today={today} />
         ))}
         {overflow > 0 && (
-          <span className={`${display.className} px-1.5 text-2xs font-medium text-white/45`}>+{overflow}</span>
+          <OverflowPopover date={cell.date} events={events} today={today} count={overflow} />
         )}
       </div>
     </div>

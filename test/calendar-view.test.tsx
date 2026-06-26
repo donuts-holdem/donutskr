@@ -45,4 +45,17 @@ describe("CalendarView", () => {
     render(<CalendarView events={[]} today={today} initialMonth="2026-07" />);
     expect(screen.getByText("이 달에는 예정된 일정이 없어요")).toBeInTheDocument();
   });
+
+  it("collapses overflow into a +N trigger button", () => {
+    const many: Event[] = Array.from({ length: 5 }, (_, i) => ({
+      id: `m${i}`,
+      title: `이벤트 ${i}`,
+      date: "2026-07-04",
+      buy_in: "10,000 Pt",
+      status: "confirmed",
+    } as unknown as Event));
+    render(<CalendarView events={many} today={"2026-07-04"} initialMonth="2026-07" />);
+    // 3 chips shown + a "+2" overflow trigger (5 total, MAX_CHIPS=3)
+    expect(screen.getByRole("button", { name: "2개 더 보기" })).toBeInTheDocument();
+  });
 });
