@@ -67,6 +67,15 @@ describe("coerceTodayLeagues", () => {
   it("drops rows without a name", () => {
     expect(coerceTodayLeagues([{ time: "20:00" }])).toEqual([]);
   });
+  it("returns [] for non-array input", () => {
+    expect(coerceTodayLeagues(null)).toEqual([]);
+  });
+  it("includes reg_close when present and omits it when empty", () => {
+    expect(coerceTodayLeagues([{ name: "리그B", reg_close: "19:00" }])).toEqual([
+      { name: "리그B", reg_close: "19:00" },
+    ]);
+    expect(coerceTodayLeagues([{ name: "리그C", reg_close: "" }])).toEqual([{ name: "리그C" }]);
+  });
 });
 
 describe("coerceSponsors", () => {
