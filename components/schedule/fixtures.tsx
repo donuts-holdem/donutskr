@@ -33,12 +33,6 @@ export const ACTIVE_STATUS: ReadonlySet<EventStatus> = new Set<EventStatus>([
   "running",
 ]);
 
-// Completed / canceled fixtures are the archive — rendered, but dimmed.
-export const ARCHIVED_STATUS: ReadonlySet<EventStatus> = new Set<EventStatus>([
-  "completed",
-  "canceled",
-]);
-
 export function parseEventDate(date: string | null) {
   if (!date) return null;
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(date);

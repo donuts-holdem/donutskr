@@ -76,7 +76,7 @@ function DayEventRow({ event, today }: { event: Event; today: string }) {
     <li className="border-t border-white/[0.08] first:border-t-0">
       <Link
         href={`/schedule/${event.id}`}
-        className="group flex items-center gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+        className="flex items-center gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
       >
         <span className={`${display.className} w-11 shrink-0 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
           {time ?? "—"}
@@ -185,6 +185,7 @@ function DayCell({
       <button
         type="button"
         aria-pressed={selected}
+        aria-label={`${Number(cell.date.slice(5, 7))}월 ${cell.day}일`}
         onClick={() => onSelect(cell.date)}
         className={`flex w-full flex-col items-start gap-1 rounded-md p-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:hidden ${
           selected ? "bg-white/[0.06]" : ""
@@ -227,7 +228,13 @@ export function CalendarView({
   today: string;
   initialMonth: string;
 }) {
-  const [month, setMonthState] = useState(initialMonth);
+  const [month, setMonthState] = useState(() => {
+    if (typeof window !== "undefined") {
+      const fromUrl = new URL(window.location.href).searchParams.get("month");
+      if (fromUrl && /^\d{4}-(0[1-9]|1[0-2])$/.test(fromUrl)) return fromUrl;
+    }
+    return initialMonth;
+  });
   const byDate = useMemo(() => groupEventsByDate(events), [events]);
   const undated = useMemo(() => events.filter((e) => !parseEventDate(e.date)), [events]);
   const [y, m] = ymParts(month);
