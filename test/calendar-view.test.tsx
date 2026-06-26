@@ -41,11 +41,6 @@ describe("CalendarView", () => {
     expect(screen.getByText(/날짜 미정/)).toBeInTheDocument();
   });
 
-  it("shows an empty-month hint when no events fall in the month", () => {
-    render(<CalendarView events={[]} today={today} initialMonth="2026-07" />);
-    expect(screen.getByText("이 달에는 예정된 일정이 없어요")).toBeInTheDocument();
-  });
-
   it("collapses overflow into a +N trigger button", () => {
     const many: Event[] = Array.from({ length: 5 }, (_, i) => ({
       id: `m${i}`,

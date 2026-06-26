@@ -240,11 +240,6 @@ export function CalendarView({
   const [y, m] = ymParts(month);
   const weeks = useMemo(() => buildMonthGrid(y, m), [y, m]);
 
-  const monthHasEvents = useMemo(
-    () => weeks.flat().some((c) => c.inMonth && (byDate.get(c.date)?.length ?? 0) > 0),
-    [weeks, byDate]
-  );
-
   const firstEventDay = (ym: string) =>
     [...byDate.keys()].filter((k) => k.startsWith(ym)).sort()[0] ?? null;
   const defaultSelected = today.startsWith(month) ? today : firstEventDay(month);
@@ -326,11 +321,6 @@ export function CalendarView({
             </div>
           ))}
         </div>
-          {!monthHasEvents && (
-            <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-sm text-white/35">
-              이 달에는 예정된 일정이 없어요
-            </p>
-          )}
         </div>
       </div>
 
