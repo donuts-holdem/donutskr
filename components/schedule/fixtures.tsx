@@ -71,8 +71,16 @@ export function IconArrow({ size = 16, className }: { size?: number; className?:
   );
 }
 
-export function EventStatusTag({ status }: { status: EventStatus }) {
-  const active = ACTIVE_STATUS.has(status);
+// `muted` forces the neutral tone regardless of status — used in the archive
+// (result) view, where a date-passed-but-still-"예정" row must not read gold.
+export function EventStatusTag({
+  status,
+  muted = false,
+}: {
+  status: EventStatus;
+  muted?: boolean;
+}) {
+  const active = !muted && ACTIVE_STATUS.has(status);
   return (
     <span
       className={`${display.className} inline-flex items-center gap-1.5 text-2xs font-medium ${
@@ -94,25 +102,43 @@ export function EventStatusTag({ status }: { status: EventStatus }) {
  * status tag with a hover arrow. Archived rows dim as a set so the live
  * season always reads first.
  * ---------------------------------------------------------------- */
-export function FixtureRow({ event }: { event: Event }) {
+// `variant` controls the two faces of a fixture: "fixture" (예정) leads with
+// full ink, a gold start time and a hover arrow — it reads as actionable.
+// "result" (지난) is the archive face: monochrome, compressed, no gold, no
+// arrow, no buy-in — a calm ledger that is unmistakably a different kind of
+// thing at a glance.
+export function FixtureRow({
+  event,
+  variant = "fixture",
+}: {
+  event: Event;
+  variant?: "fixture" | "result";
+}) {
+  const result = variant === "result";
   const pd = parseEventDate(event.date);
-  const time = eventTime(event);
-  const meta = [event.location, event.buy_in].filter(Boolean) as string[];
-  const archived = ARCHIVED_STATUS.has(event.status);
+  const time = result ? null : eventTime(event);
+  const meta = (result
+    ? [event.location]
+    : [event.location, event.buy_in]
+  ).filter(Boolean) as string[];
 
   return (
     <li className="border-t border-white/[0.08] first:border-t-0">
       <Link
         href={`/schedule/${event.id}`}
-        className={`group -mx-3 grid grid-cols-[4rem_1fr_auto] items-center gap-4 rounded-xl px-3 py-5 transition-colors hover:bg-white/[0.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:grid-cols-[5rem_1fr_auto] sm:gap-6 sm:py-6 ${
-          archived ? "opacity-60 hover:opacity-90" : ""
+        className={`group -mx-3 grid grid-cols-[4rem_1fr_auto] items-center gap-4 rounded-xl px-3 transition-colors hover:bg-white/[0.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:grid-cols-[5rem_1fr_auto] sm:gap-6 ${
+          result ? "py-3.5" : "py-5 sm:py-6"
         }`}
       >
         {/* date & time — the day is the hero; the gold start time sits tight
             beneath it so the two tabular numerals read as one "when".
             Missing time just drops the line — no reserved slot. */}
         <div className={`${display.className} flex flex-col`}>
-          <span className="text-2xl font-bold leading-none tracking-[-0.04em] text-white tabular-nums sm:text-display-sm">
+          <span
+            className={`font-bold leading-none tracking-[-0.04em] tabular-nums ${
+              result ? "text-lg text-white/70" : "text-2xl text-white sm:text-display-sm"
+            }`}
+          >
             {pd?.day ?? "—"}
           </span>
           {time && (
@@ -120,18 +146,30 @@ export function FixtureRow({ event }: { event: Event }) {
               {time}
             </span>
           )}
-          <span className="mt-1.5 text-2xs tracking-[0.02em] text-white/55">
+          <span
+            className={`mt-1.5 text-2xs tracking-[0.02em] ${
+              result ? "text-white/40" : "text-white/55"
+            }`}
+          >
             {pd ? `${pd.month}월${event.weekday ? ` · ${event.weekday}` : ""}` : event.date}
           </span>
         </div>
 
         {/* title + place / buy-in */}
         <div className="min-w-0">
-          <h3 className="truncate text-base font-semibold tracking-[-0.01em] text-white transition-colors group-hover:text-gold sm:text-lg">
+          <h3
+            className={`truncate text-base font-semibold tracking-[-0.01em] transition-colors sm:text-lg ${
+              result ? "text-white/75" : "text-white group-hover:text-gold"
+            }`}
+          >
             {event.title}
           </h3>
           {meta.length > 0 && (
-            <div className={`${display.className} mt-1.5 flex flex-wrap items-center text-xs text-white/55`}>
+            <div
+              className={`${display.className} mt-1.5 flex flex-wrap items-center text-xs ${
+                result ? "text-white/40" : "text-white/55"
+              }`}
+            >
               {meta.map((m, i) => (
                 <span key={i} className="inline-flex items-center">
                   {i > 0 && <span aria-hidden="true" className="mx-2 text-white/25">·</span>}
@@ -144,11 +182,13 @@ export function FixtureRow({ event }: { event: Event }) {
 
         {/* status + arrow */}
         <div className="flex items-center gap-3 sm:gap-5">
-          <EventStatusTag status={event.status} />
-          <IconArrow
-            size={16}
-            className="hidden shrink-0 text-white/25 transition-[transform,color] group-hover:translate-x-0.5 group-hover:text-gold motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 sm:block"
-          />
+          <EventStatusTag status={event.status} muted={result} />
+          {!result && (
+            <IconArrow
+              size={16}
+              className="hidden shrink-0 text-white/25 transition-[transform,color] group-hover:translate-x-0.5 group-hover:text-gold motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 sm:block"
+            />
+          )}
         </div>
       </Link>
     </li>
