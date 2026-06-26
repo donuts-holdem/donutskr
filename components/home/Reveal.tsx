@@ -13,22 +13,29 @@ export function Reveal({
   className,
   delay = 0,
   as: Tag = "div",
+  immediate = false,
 }: {
   children: React.ReactNode;
   className?: string;
   delay?: number;
   as?: "div" | "section" | "li";
+  /**
+   * Render visible from the first paint (SSR) instead of fading in on scroll.
+   * Use for above-the-fold content (e.g. the hero) so the LCP text is never
+   * gated behind client JS / IntersectionObserver.
+   */
+  immediate?: boolean;
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [shown, setShown] = useState(false);
+  const [shown, setShown] = useState(immediate);
 
   useEffect(() => {
+    if (immediate) return;
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setShown(true);
-      return;
-    }
+    // Reveal on first intersection. Under reduced motion the element still
+    // reveals here, but `motion-reduce:transition-none` (below) makes it snap
+    // in with no animation — so no synchronous setState special-case is needed.
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -40,7 +47,7 @@ export function Reveal({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [immediate]);
 
   return (
     <Tag
