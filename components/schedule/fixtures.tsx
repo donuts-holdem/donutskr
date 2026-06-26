@@ -71,8 +71,11 @@ export function IconArrow({ size = 16, className }: { size?: number; className?:
   );
 }
 
-// `muted` forces the neutral tone regardless of status — used in the archive
-// (result) view, where a date-passed-but-still-"예정" row must not read gold.
+// The tag is an EXCEPTION indicator, not a label on every row: "scheduled"
+// (예정) is the baseline and just repeats the board/tab context, so it is
+// suppressed. Only meaningful states speak — 확정 / 진행중 / 레지마감 / 완료 /
+// 취소. `muted` forces the neutral tone regardless of status, used in the
+// archive (result) view where a date-passed row must not read gold.
 export function EventStatusTag({
   status,
   muted = false,
@@ -80,6 +83,7 @@ export function EventStatusTag({
   status: EventStatus;
   muted?: boolean;
 }) {
+  if (status === "scheduled") return null;
   const active = !muted && ACTIVE_STATUS.has(status);
   return (
     <span
