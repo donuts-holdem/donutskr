@@ -89,35 +89,60 @@ Back-compat: legacy `?category=completed` → list + `tab=past`.
 - **Weekday header**: 일 월 화 수 목 금 토, neutral (no weekend color — editorial
   restraint).
 - **Day cell**: `border border-white/[0.06]`, min-height ~7rem (desktop), holds 2–3
-  chips. Day number = Space Grotesk tabular. Today = gold ring + gold number.
-  Adjacent-month days = `text-white/20` (events shown muted). Past in-month days =
-  slightly muted number.
-- **Event chip**: small row — start time (if any) + truncated title, status-colored
-  left marker. Upcoming/active (future + 확정/진행중) = gold accent; completed/past =
-  neutral gray (matches the list result variant). Chip is a `<Link>` to
-  `/schedule/{id}`; hover lifts surface slightly.
+  chips. Day number = Space Grotesk tabular. Today = gold ring + gold number. Past
+  in-month days = slightly muted number.
+- **Adjacent-month cells (design review)**: show a **faint day number only
+  (`text-white/20`), no event chips/dots** — events light up only within the focused
+  month, which keeps the grid calm and sharpens the month view (a Google-calendar
+  default we deliberately drop). Clicking an adjacent-month day navigates to that
+  month (`?month=`) rather than rendering its events inline.
+- **Event chip = "stakes chip" (signature)**: the one place we spend boldness. Each
+  chip leads with the **buy-in in gold Space Grotesk tabular** (e.g. `50K`), the
+  title secondary and truncated — so the calendar reads like a tournament stakes
+  board, not a generic event calendar. Start time is dropped from the chip (it lives
+  on the detail page and the mobile selected-day list); a narrow cell shows one clean
+  line `50K · 도너츠 토너먼트`. Events with no buy-in fall back to title-only. Marker /
+  buy-in color encodes state: upcoming/active (future + 확정/진행중) = gold; completed/
+  past = neutral gray (matches the list result variant). Chip is a `<Link>` to
+  `/schedule/{id}`; hover lifts the surface slightly. This is the ONLY signature —
+  everything else (today ring, grid, header) stays quiet (restraint: one bold thing).
 - **Overflow "+N"**: when a day exceeds the chip cap, the last line shows `+N` which
   opens a **radix Popover rendered via portal** listing all that day's events as
   links, themed with `bg-surface border rounded-card`.
 - **Undated ("미정") events**: cannot be placed on a date — rendered in a compact
   "날짜 미정 · N" strip below the grid, each linking to detail.
+- **Empty month (design review)**: when the focused month has no events, overlay a
+  faint centered hint — "이 달에는 예정된 일정이 없어요" — so the month reads as an
+  invitation to navigate, not a broken blank grid.
 
 ## Responsive
 
 - **Desktop (sm+)**: full 7-col grid, chips + `+N` popover.
-- **Mobile (<sm)**: 7-col grid, compact — each cell shows the day number plus up to
-  3 **gold dot markers** for event days (no text chips). Tapping a cell sets
-  `selectedDate` and renders a **selected-day list** below the grid: "7월 4일 (토)"
-  header + that day's events as detail-linking rows. Default `selectedDate` = today
-  (if in the shown month), else the month's first event day, else none (no list
-  shown when the month has no events).
+- **Mobile (<sm)**: 7-col grid, compact — each in-month cell shows the day number
+  plus up to 3 **gold dot markers** for event days (no text chips; adjacent-month
+  cells stay faint, no dots). Tapping a cell sets `selectedDate` and renders a
+  **selected-day list** below the grid: "7월 4일 (토)" header + that day's events as
+  detail-linking rows (these rows DO show start time — the chip dropped it, the list
+  restores it). Default `selectedDate` = today (if in the shown month), else the
+  month's first event day, else none (no list shown when the month has no events).
 
 ## Visual tokens
 
 - Container `bg-surface`; grid lines `border-white/[0.06]`; header hairline.
 - Numerals/labels Space Grotesk; Korean Pretendard.
-- Today = gold; upcoming/active event = gold accent; completed/past = neutral gray.
-- `rounded-card` / `rounded-pill` only; no weekend tint.
+- Today = gold ring; upcoming/active event = gold accent; completed/past = neutral
+  gray.
+- `rounded-card` / `rounded-pill` only; **no weekend tint** — the conventional
+  red-Sunday calendar look reads generic; editorial restraint keeps weekdays neutral.
+
+## Motion (design review)
+
+Deliberate and minimal — over-animation reads AI-generated.
+- Month change (prev/next/오늘): a quick **cross-fade of the grid (~150ms)**, no
+  sliding/parallax.
+- Chip hover: surface lift only. Popover: radix default.
+- All gated by `prefers-reduced-motion` (the global reduced-motion layer already
+  neutralizes transitions).
 
 ## Accessibility (WCAG AA)
 
