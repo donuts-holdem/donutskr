@@ -55,15 +55,15 @@ function EventChip({ event, today }: { event: Event; today: string }) {
     <Link
       href={`/schedule/${event.id}`}
       className={`flex items-center gap-1.5 overflow-hidden rounded-md px-1.5 py-1 transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
-        gold ? "" : "opacity-70"
+        gold ? "" : "opacity-80"
       }`}
     >
       {stake && (
-        <span className={`${display.className} shrink-0 text-2xs font-bold tabular-nums ${gold ? "text-gold" : "text-white/55"}`}>
+        <span className={`${display.className} shrink-0 text-xs font-bold tabular-nums ${gold ? "text-gold" : "text-white/65"}`}>
           {stake}
         </span>
       )}
-      <span className="truncate text-2xs text-white/85">{event.title}</span>
+      <span className="truncate text-xs text-white/90">{event.title}</span>
     </Link>
   );
 }
@@ -160,7 +160,7 @@ function DayCell({
   if (!cell.inMonth) {
     const ym = cell.date.slice(0, 7);
     return (
-      <div role="gridcell" className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28">
+      <div role="gridcell" className="min-h-20 border-b border-r border-white/[0.08] p-1.5 sm:min-h-28">
         {/* mobile: tap to jump to that month */}
         <button
           type="button"
@@ -168,9 +168,9 @@ function DayCell({
           onClick={() => onNavigateMonth(ym)}
           className="rounded-md p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:hidden"
         >
-          <span className={`${numClass} text-white/20`}>{cell.day}</span>
+          <span className={`${numClass} text-white/25`}>{cell.day}</span>
         </button>
-        <span className={`${numClass} hidden text-white/20 sm:inline-flex`}>{cell.day}</span>
+        <span className={`${numClass} hidden text-white/25 sm:inline-flex`}>{cell.day}</span>
       </div>
     );
   }
@@ -179,7 +179,7 @@ function DayCell({
     <div
       role="gridcell"
       aria-label={`${Number(cell.date.slice(5, 7))}월 ${cell.day}일, 이벤트 ${events.length}개`}
-      className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28"
+      className="min-h-20 border-b border-r border-white/[0.08] p-1.5 sm:min-h-28"
     >
       {/* mobile: whole cell selects the day */}
       <button
@@ -191,7 +191,7 @@ function DayCell({
           selected ? "bg-white/[0.06]" : ""
         }`}
       >
-        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : selected ? "text-white" : "text-white/70"}`}>
+        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : selected ? "text-white" : "text-white/80"}`}>
           {cell.day}
         </span>
         {events.length > 0 && (
@@ -205,7 +205,7 @@ function DayCell({
 
       {/* desktop: passive number + chip links */}
       <div className="hidden flex-col sm:flex">
-        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/70"}`}>{cell.day}</span>
+        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/80"}`}>{cell.day}</span>
         <div className="mt-1 flex flex-col gap-0.5">
           {visible.map((e) => (
             <EventChip key={e.id} event={e} today={today} />
@@ -288,14 +288,15 @@ export function CalendarView({
         </button>
       </div>
 
-      {/* Calendar — weekday header + day grid sit flush in one column */}
-      <div className="flex flex-col">
+      {/* Calendar — lifted onto a surface card so it reads as a distinct panel
+          against the page background, with stronger grid lines for legibility. */}
+      <div className="flex flex-col overflow-hidden rounded-card border border-border bg-surface">
         {/* Weekday header (Korean, Pretendard — no Space Grotesk/uppercase) */}
-        <div className="grid grid-cols-7 border-l border-t border-white/[0.06]">
+        <div className="grid grid-cols-7 border-b border-white/[0.08] bg-white/[0.02]">
           {WEEKDAYS.map((w) => (
             <div
               key={w}
-              className="border-b border-r border-white/[0.06] py-2 text-center text-2xs font-medium tracking-[0.08em] text-white/40"
+              className="border-r border-white/[0.08] py-2.5 text-center text-xs font-medium tracking-[0.08em] text-white/55 last:border-r-0"
             >
               {w}
             </div>
@@ -304,7 +305,7 @@ export function CalendarView({
 
         {/* Day grid */}
         <div className="relative motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150" key={month}>
-          <div role="grid" aria-label={monthLabel(month)} className="grid grid-cols-7 border-l border-white/[0.06]">
+          <div role="grid" aria-label={monthLabel(month)} className="grid grid-cols-7">
           {weeks.map((week, wi) => (
             <div role="row" key={wi} className="contents">
               {week.map((cell) => (
