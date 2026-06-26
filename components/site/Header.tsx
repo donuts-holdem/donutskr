@@ -16,16 +16,16 @@ export async function Header() {
 
   return (
     <header className="bg-bg border-b border-border sticky top-0 z-50">
-      <div className="mx-auto max-w-7xl px-4 h-20 flex items-center gap-4">
+      <div className="mx-auto max-w-7xl px-4 h-16 flex items-center gap-4">
         {/* Logo */}
         <Link href="/" aria-label="DO:NUTS 홈" className="shrink-0">
           <Image
-            src="/logo.webp"
+            src="/logo-v2.webp"
             alt="DO:NUTS"
-            width={64}
-            height={64}
+            width={40}
+            height={40}
             priority
-            className="h-16 w-auto"
+            className="h-10 w-auto"
           />
         </Link>
 
