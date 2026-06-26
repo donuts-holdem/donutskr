@@ -13,8 +13,6 @@ import { display, FixtureRow, parseEventDate } from "@/components/schedule/fixtu
  * (date vs today, status as override) and grouped by month here.
  * ------------------------------------------------------------------ */
 
-const PRETENDARD = '"Pretendard Variable", Pretendard, system-ui, sans-serif';
-
 type View = "upcoming" | "past";
 
 const VIEWS: { key: View; label: string }[] = [
@@ -80,7 +78,7 @@ function MonthBoard({
                 </span>
               </>
             ) : (
-              <h2 className="text-base font-semibold text-white/70">일정 미정</h2>
+              <h2 className="text-base font-semibold text-white/70">날짜 미정</h2>
             )}
             <span className="h-px flex-1 self-center bg-white/[0.08]" />
           </div>
@@ -125,22 +123,21 @@ function LiveBanner({ events }: { events: Event[] }) {
 export function ScheduleBoard({
   upcoming,
   past,
-  initialView = "upcoming",
+  initialTab = "upcoming",
 }: {
   upcoming: Event[];
   past: Event[];
-  initialView?: View;
+  initialTab?: View;
 }) {
-  const [view, setViewState] = useState<View>(initialView === "past" ? "past" : "upcoming");
+  const [view, setViewState] = useState<View>(initialTab === "past" ? "past" : "upcoming");
 
-  // Reflect the active view in the URL (?view=) so it is deep-linkable and
-  // survives back/forward — mirrors ProgramBoard's category sync.
+  // Reflect the active tab in the URL (?tab=) so it is deep-linkable.
   function setView(value: View) {
     setViewState(value);
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    if (value === "upcoming") url.searchParams.delete("view");
-    else url.searchParams.set("view", value);
+    if (value === "upcoming") url.searchParams.delete("tab");
+    else url.searchParams.set("tab", value);
     window.history.replaceState(null, "", url);
   }
 
@@ -150,32 +147,9 @@ export function ScheduleBoard({
   const counts: Record<View, number> = { upcoming: upcoming.length, past: past.length };
 
   return (
-    <div
-      className="flex flex-col gap-10 py-12 text-white touch-manipulation sm:gap-12 sm:py-16"
-      style={{ fontFamily: PRETENDARD }}
-    >
-      {/* Header — eyebrow + display title, matching the home / programs
-          SectionHead vocabulary. */}
-      <header className="flex flex-col gap-3 border-b border-white/[0.08] pb-7">
-        <span
-          className={`${display.className} text-2xs font-medium uppercase tracking-[0.22em] text-gold/80`}
-        >
-          Schedule
-        </span>
-        <h1 className="text-balance text-display-lg font-bold leading-[1.05] tracking-[-0.03em] text-white sm:text-display-2xl">
-          일정
-        </h1>
-        <p className="text-sm text-white/50">
-          DO:NUTS 포커 시리즈의 토너먼트와 이벤트 일정입니다.
-        </p>
-      </header>
-
+    <div className="flex flex-col gap-10 sm:gap-12">
       {/* Temporal segmented control (primary axis) */}
-      <div
-        role="tablist"
-        aria-label="일정 보기"
-        className="inline-flex self-start rounded-pill bg-surface p-1"
-      >
+      <div role="tablist" aria-label="일정 보기" className="inline-flex self-start rounded-pill bg-surface p-1">
         {VIEWS.map((v) => {
           const active = view === v.key;
           return (
