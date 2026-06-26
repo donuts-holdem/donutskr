@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Space_Grotesk } from "next/font/google";
-import type { Event, EventStatus, Program } from "@/lib/types";
+import type { Event, Program } from "@/lib/types";
 import {
   programStatusLabel,
   isOpenStatus,
@@ -9,6 +9,7 @@ import {
   programHref,
   PROGRAM_CATEGORIES,
 } from "@/lib/program-display";
+import { FixtureRow } from "@/components/schedule/fixtures";
 import { Reveal } from "./Reveal";
 import { ScrollProgress } from "./ScrollProgress";
 
@@ -28,30 +29,6 @@ const display = Space_Grotesk({
 });
 
 const PRETENDARD = '"Pretendard Variable", Pretendard, system-ui, sans-serif';
-
-const STATUS_LABEL: Record<EventStatus, string> = {
-  scheduled: "예정",
-  confirmed: "확정",
-  running: "진행중",
-  reg_closed: "레지마감",
-  completed: "완료",
-  canceled: "취소",
-  hidden: "숨김",
-};
-
-// Registration-open / live states get the gold accent on the board.
-const ACTIVE_STATUS: ReadonlySet<EventStatus> = new Set<EventStatus>([
-  "scheduled",
-  "confirmed",
-  "running",
-]);
-
-function parseEventDate(date: string | null) {
-  if (!date) return null;
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(date);
-  if (!m) return null;
-  return { day: m[3], month: Number(m[2]) };
-}
 
 /* ----------------------------- icon ------------------------------ */
 function IconArrow({ size = 16, className }: { size?: number; className?: string }) {
@@ -245,89 +222,6 @@ function CompactCard({ program }: { program: Program }) {
       </div>
       <IconArrow size={15} className="shrink-0 self-center text-white/20 transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-gold motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
     </ProgramLink>
-  );
-}
-
-/* --------------------------- fixture row ------------------------- */
-function EventStatusTag({ status }: { status: EventStatus }) {
-  const active = ACTIVE_STATUS.has(status);
-  return (
-    <span
-      className={`${display.className} inline-flex items-center gap-1.5 text-2xs font-medium ${
-        active ? "text-gold" : "text-white/40"
-      }`}
-    >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${active ? "bg-gold" : "bg-white/25"}`}
-        aria-hidden="true"
-      />
-      {STATUS_LABEL[status]}
-    </span>
-  );
-}
-
-// Time is undecided when missing or explicitly set to "미정" — hide it.
-function eventTime(event: Event) {
-  const t = event.start_time?.trim();
-  return t && t !== "미정" ? t : null;
-}
-
-function FixtureRow({ event }: { event: Event }) {
-  const pd = parseEventDate(event.date);
-  const time = eventTime(event);
-  const meta = [event.location, event.buy_in].filter(Boolean) as string[];
-
-  return (
-    <li className="border-t border-white/[0.08] first:border-t-0">
-      <Link
-        href={`/schedule/${event.id}`}
-        className="group -mx-3 grid grid-cols-[4rem_1fr_auto] items-center gap-4 rounded-xl px-3 py-5 transition-colors hover:bg-white/[0.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:grid-cols-[5rem_1fr_auto] sm:gap-6 sm:py-6"
-      >
-        {/* date & time — a left-aligned vertical stack. The day is the hero;
-            the gold start time sits tight beneath it so the two tabular
-            numerals read as one "when". Missing time just drops the line —
-            no reserved slot, no dead space. */}
-        <div className={`${display.className} flex flex-col`}>
-          <span className="text-2xl font-bold leading-none tracking-[-0.04em] text-white tabular-nums sm:text-display-sm">
-            {pd?.day ?? "—"}
-          </span>
-          {time && (
-            <span className="mt-1 text-sm font-semibold leading-none tabular-nums text-gold/90">
-              {time}
-            </span>
-          )}
-          <span className="mt-1.5 text-2xs tracking-[0.02em] text-white/55">
-            {pd ? `${pd.month}월${event.weekday ? ` · ${event.weekday}` : ""}` : event.date}
-          </span>
-        </div>
-
-        {/* title + place / buy-in */}
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-semibold tracking-[-0.01em] text-white transition-colors group-hover:text-gold sm:text-lg">
-            {event.title}
-          </h3>
-          {meta.length > 0 && (
-            <div className={`${display.className} mt-1.5 flex flex-wrap items-center text-xs text-white/55`}>
-              {meta.map((m, i) => (
-                <span key={i} className="inline-flex items-center">
-                  {i > 0 && <span aria-hidden="true" className="mx-2 text-white/25">·</span>}
-                  {m}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* status + arrow */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          <EventStatusTag status={event.status} />
-          <IconArrow
-            size={16}
-            className="hidden shrink-0 text-white/25 transition-[transform,color] group-hover:translate-x-0.5 group-hover:text-gold motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 sm:block"
-          />
-        </div>
-      </Link>
-    </li>
   );
 }
 

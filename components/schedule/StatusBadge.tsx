@@ -11,19 +11,19 @@ const LABEL: Record<EventStatus, string> = {
 };
 
 const STYLE: Record<EventStatus, string> = {
-  scheduled: "bg-gold/15 text-gold",
+  scheduled: "border border-gold/40 text-gold",
   confirmed: "bg-gold text-bg",
-  running: "bg-coral-from text-ink",
-  reg_closed: "bg-ink/20 text-ink/60",
-  completed: "bg-ink/10 text-ink/40",
-  canceled: "bg-ink/10 text-ink/30",
-  hidden: "bg-ink/10 text-ink/30",
+  running: "bg-coral-cta text-white",
+  reg_closed: "border border-white/15 text-white/55",
+  completed: "border border-white/10 text-white/40",
+  canceled: "border border-white/10 text-white/35",
+  hidden: "border border-white/10 text-white/35",
 };
 
 export function StatusBadge({ status }: { status: EventStatus }) {
   return (
     <span
-      className={`inline-block rounded-pill px-2.5 py-0.5 text-xs font-medium ${STYLE[status]}`}
+      className={`inline-flex items-center rounded-pill px-3 py-1 text-2xs font-semibold uppercase tracking-[0.06em] ${STYLE[status]}`}
     >
       {LABEL[status]}
     </span>
