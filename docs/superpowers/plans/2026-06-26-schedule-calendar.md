@@ -127,6 +127,7 @@ describe("formatBuyInShort", () => {
   it("abbreviates thousands and falls back gracefully", () => {
     expect(formatBuyInShort("50,000 Pt")).toBe("50K");
     expect(formatBuyInShort("5,000P")).toBe("5K");
+    expect(formatBuyInShort("30,000 + 3,000")).toBe("30K"); // first amount only
     expect(formatBuyInShort("500")).toBe("500");
     expect(formatBuyInShort("프리롤")).toBe("프리롤");
     expect(formatBuyInShort(null)).toBeNull();
@@ -209,9 +210,10 @@ export function formatBuyInShort(buyIn: string | null): string | null {
   if (!buyIn) return null;
   const trimmed = buyIn.trim();
   if (!trimmed) return null;
-  const digits = trimmed.replace(/[^\d]/g, "");
-  if (!digits) return trimmed; // no number → show as-is (e.g. "프리롤")
-  const n = Number(digits);
+  const match = trimmed.match(/[\d,]+/); // first amount only ("30,000 + 3,000" → "30,000")
+  if (!match) return trimmed; // no number → show as-is (e.g. "프리롤")
+  const n = Number(match[0].replace(/,/g, ""));
+  if (!n) return trimmed;
   if (n >= 1000) {
     const k = n / 1000;
     return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
@@ -306,6 +308,12 @@ Change it to drop the wrapper `<div>` and the `<header>`, keeping everything fro
 
 and the matching closing `</div>` at the very end stays (now closes this `flex flex-col` instead of the old outer wrapper). Delete the now-unused `PRETENDARD` const at the top of the file (it moves to `ScheduleView`).
 
+3. Unify the undated label with the calendar. In `MonthBoard`, change the undated month-group heading from `일정 미정` to `날짜 미정` so both views name the concept identically:
+
+```tsx
+              <h2 className="text-base font-semibold text-white/70">날짜 미정</h2>
+```
+
 - [ ] **Step 2: Create `components/schedule/ScheduleView.tsx`**
 
 ```tsx
@@ -374,37 +382,41 @@ export function ScheduleView({
       className="flex flex-col gap-8 py-12 text-white touch-manipulation sm:py-16"
       style={{ fontFamily: PRETENDARD }}
     >
-      <header className="flex flex-col gap-3 border-b border-white/[0.08] pb-7">
-        <span className={`${display.className} text-2xs font-medium uppercase tracking-[0.22em] text-gold/80`}>
-          Schedule
-        </span>
-        <h1 className="text-balance text-display-lg font-bold leading-[1.05] tracking-[-0.03em] text-white sm:text-display-2xl">
-          일정
-        </h1>
-        <p className="text-sm text-white/50">DO:NUTS 포커 시리즈의 토너먼트와 이벤트 일정입니다.</p>
-      </header>
+      {/* Header — title block left, mode switch top-right (one pill per altitude;
+          the list's own 예정/지난 control lives inside ScheduleBoard). */}
+      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-7 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3">
+          <span className={`${display.className} text-2xs font-medium uppercase tracking-[0.22em] text-gold/80`}>
+            Schedule
+          </span>
+          <h1 className="text-balance text-display-lg font-bold leading-[1.05] tracking-[-0.03em] text-white sm:text-display-2xl">
+            일정
+          </h1>
+          <p className="text-sm text-white/50">DO:NUTS 포커 시리즈의 토너먼트와 이벤트 일정입니다.</p>
+        </div>
 
-      {/* List / Calendar switcher */}
-      <div role="tablist" aria-label="일정 보기 방식" className="inline-flex self-start rounded-pill bg-surface p-1">
-        {MODES.map(({ key, label, Icon }) => {
-          const active = mode === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setMode(key)}
-              className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
-                active ? "bg-white/[0.10] text-white" : "text-white/45 hover:text-white/80"
-              }`}
-            >
-              <Icon />
-              {label}
-            </button>
-          );
-        })}
-      </div>
+        {/* List / Calendar switcher */}
+        <div role="tablist" aria-label="일정 보기 방식" className="inline-flex shrink-0 self-start rounded-pill bg-surface p-1">
+          {MODES.map(({ key, label, Icon }) => {
+            const active = mode === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setMode(key)}
+                className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
+                  active ? "bg-white/[0.10] text-white" : "text-white/45 hover:text-white/80"
+                }`}
+              >
+                <Icon />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </header>
 
       <ScheduleBoard upcoming={upcoming} past={past} initialTab={initialTab} />
     </div>
@@ -442,7 +454,10 @@ export default async function SchedulePage({
   // ?tab= is the list sub-tab; legacy ?category=completed maps to the past tab.
   const initialTab =
     sp.tab === "past" || (!sp.tab && sp.category === "completed") ? "past" : "upcoming";
-  const initialMonth = /^\d{4}-\d{2}$/.test(sp.month ?? "") ? sp.month! : today.slice(0, 7);
+  // Validate month range so a hand-edited ?month=2026-13 can't render a broken grid.
+  const initialMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(sp.month ?? "")
+    ? sp.month!
+    : today.slice(0, 7);
 
   return (
     <ScheduleView
@@ -513,7 +528,9 @@ describe("CalendarView", () => {
   it("shows the month label and a clickable stakes chip linking to detail", () => {
     render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
     expect(screen.getByText("2026년 7월")).toBeInTheDocument();
-    const link = screen.getByRole("link", { name: /도너츠 토너먼트/ });
+    // Scope to the grid: Task 5 adds a mobile selected-day list (outside role="grid")
+    // that renders the same event as another link, so a bare getByRole would collide.
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
     expect(link).toHaveAttribute("href", "/schedule/e1");
     expect(within(link).getByText("50K")).toBeInTheDocument();
   });
@@ -616,7 +633,7 @@ function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; tod
 
   if (!cell.inMonth) {
     return (
-      <div className="min-h-[5rem] border-b border-r border-white/[0.06] p-1.5 sm:min-h-[7rem]">
+      <div className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28">
         <span className={`${numClass} text-white/20`}>{cell.day}</span>
       </div>
     );
@@ -626,9 +643,9 @@ function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; tod
     <div
       role="gridcell"
       aria-label={`${Number(cell.date.slice(5, 7))}월 ${cell.day}일, 이벤트 ${events.length}개`}
-      className="min-h-[5rem] border-b border-r border-white/[0.06] p-1.5 sm:min-h-[7rem]"
+      className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28"
     >
-      <span className={`${numClass} ${isToday ? "bg-gold text-bg" : "text-white/70"}`}>{cell.day}</span>
+      <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/70"}`}>{cell.day}</span>
       <div className="mt-1 flex flex-col gap-0.5">
         {visible.map((e) => (
           <EventChip key={e.id} event={e} today={today} />
@@ -682,7 +699,7 @@ export function CalendarView({
           >
             <Chevron dir="left" />
           </button>
-          <h2 className={`${display.className} min-w-[7rem] text-center text-base font-bold tabular-nums text-white sm:text-lg`}>
+          <h2 className={`${display.className} min-w-28 text-center text-base font-bold tabular-nums text-white sm:text-lg`}>
             {monthLabel(month)}
           </h2>
           <button
@@ -703,21 +720,23 @@ export function CalendarView({
         </button>
       </div>
 
-      {/* Weekday header */}
-      <div className="grid grid-cols-7 border-l border-t border-white/[0.06]">
-        {WEEKDAYS.map((w) => (
-          <div
-            key={w}
-            className={`${display.className} border-b border-r border-white/[0.06] py-2 text-center text-2xs font-medium uppercase tracking-[0.08em] text-white/40`}
-          >
-            {w}
-          </div>
-        ))}
-      </div>
+      {/* Calendar — weekday header + day grid sit flush in one column */}
+      <div className="flex flex-col">
+        {/* Weekday header (Korean, Pretendard — no Space Grotesk/uppercase) */}
+        <div className="grid grid-cols-7 border-l border-t border-white/[0.06]">
+          {WEEKDAYS.map((w) => (
+            <div
+              key={w}
+              className="border-b border-r border-white/[0.06] py-2 text-center text-2xs font-medium tracking-[0.08em] text-white/40"
+            >
+              {w}
+            </div>
+          ))}
+        </div>
 
-      {/* Grid */}
-      <div className="relative -mt-5 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150" key={month}>
-        <div role="grid" aria-label={monthLabel(month)} className="grid grid-cols-7 border-l border-white/[0.06]">
+        {/* Day grid */}
+        <div className="relative motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150" key={month}>
+          <div role="grid" aria-label={monthLabel(month)} className="grid grid-cols-7 border-l border-white/[0.06]">
           {weeks.map((week, wi) => (
             <div role="row" key={wi} className="contents">
               {week.map((cell) => (
@@ -726,11 +745,12 @@ export function CalendarView({
             </div>
           ))}
         </div>
-        {!monthHasEvents && (
-          <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-sm text-white/35">
-            이 달에는 예정된 일정이 없어요
-          </p>
-        )}
+          {!monthHasEvents && (
+            <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-sm text-white/35">
+              이 달에는 예정된 일정이 없어요
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Undated events */}
@@ -808,13 +828,26 @@ Expected: FAIL — no button named "2개 더 보기".
 
 In `components/schedule/CalendarView.tsx`:
 
-1. Add to imports at the top:
+1. Add the Popover import at the top, and extend the existing fixtures import to add `EventStatusTag` and `eventTime`:
 
 ```tsx
 import { Popover } from "radix-ui";
 ```
 
-2. Add a Korean weekday helper (used in the popover header) near `ymParts`:
+Change the existing fixtures import line to:
+
+```tsx
+import {
+  display,
+  FixtureRow,
+  EventStatusTag,
+  eventTime,
+  ACTIVE_STATUS,
+  parseEventDate,
+} from "@/components/schedule/fixtures";
+```
+
+2. Add a Korean weekday helper (used in the popover/list header) near `ymParts`:
 
 ```tsx
 function koWeekday(date: string): string {
@@ -823,7 +856,36 @@ function koWeekday(date: string): string {
 }
 ```
 
-3. Add the `OverflowPopover` component (above `DayCell`):
+3. Add a compact `DayEventRow` (above `DayCell`) — a slim row for "events on a known day" (popover + mobile selected-day list). It drops the date numeral (redundant when the day is the context) so it fits a ~288–320px popover, unlike the full-width `FixtureRow`:
+
+```tsx
+function DayEventRow({ event, today }: { event: Event; today: string }) {
+  const past = isPast(event, today);
+  const time = eventTime(event);
+  const stake = formatBuyInShort(event.buy_in);
+  return (
+    <li className="border-t border-white/[0.08] first:border-t-0">
+      <Link
+        href={`/schedule/${event.id}`}
+        className="group flex items-center gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+      >
+        <span className={`${display.className} w-11 shrink-0 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
+          {time ?? "—"}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm text-white/90">{event.title}</span>
+        {stake && (
+          <span className={`${display.className} shrink-0 text-2xs font-bold tabular-nums ${past ? "text-white/45" : "text-gold"}`}>
+            {stake}
+          </span>
+        )}
+        <EventStatusTag status={event.status} muted={past} />
+      </Link>
+    </li>
+  );
+}
+```
+
+4. Add the `OverflowPopover` component (above `DayCell`), using `DayEventRow` in a wider `w-80` surface:
 
 ```tsx
 function OverflowPopover({
@@ -852,7 +914,7 @@ function OverflowPopover({
         <Popover.Content
           align="start"
           sideOffset={6}
-          className="z-50 w-72 rounded-card border border-white/[0.10] bg-surface p-2 shadow-xl focus-visible:outline-none"
+          className="z-50 w-80 rounded-card border border-white/[0.10] bg-surface p-2 shadow-xl focus-visible:outline-none"
           style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
         >
           <p className={`${display.className} px-2 py-1.5 text-2xs font-medium uppercase tracking-[0.12em] text-white/40`}>
@@ -860,10 +922,10 @@ function OverflowPopover({
           </p>
           <ul className="flex flex-col">
             {events.map((e) => (
-              <FixtureRow key={e.id} event={e} variant={isPast(e, today) ? "result" : "fixture"} />
+              <DayEventRow key={e.id} event={e} today={today} />
             ))}
           </ul>
-          <Popover.Arrow className="fill-[color:var(--color-surface)]" />
+          <Popover.Arrow className="fill-surface" />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
@@ -968,7 +1030,7 @@ function DayCell({
   if (!cell.inMonth) {
     const ym = cell.date.slice(0, 7);
     return (
-      <div className="min-h-[5rem] border-b border-r border-white/[0.06] p-1.5 sm:min-h-[7rem]">
+      <div role="gridcell" className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28">
         {/* mobile: tap to jump to that month */}
         <button
           type="button"
@@ -987,7 +1049,7 @@ function DayCell({
     <div
       role="gridcell"
       aria-label={`${Number(cell.date.slice(5, 7))}월 ${cell.day}일, 이벤트 ${events.length}개`}
-      className="min-h-[5rem] border-b border-r border-white/[0.06] p-1.5 sm:min-h-[7rem]"
+      className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28"
     >
       {/* mobile: whole cell selects the day */}
       <button
@@ -998,13 +1060,13 @@ function DayCell({
           selected ? "bg-white/[0.06]" : ""
         }`}
       >
-        <span className={`${numClass} ${isToday ? "bg-gold text-bg" : selected ? "text-white" : "text-white/70"}`}>
+        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : selected ? "text-white" : "text-white/70"}`}>
           {cell.day}
         </span>
         {events.length > 0 && (
           <span className="flex gap-0.5" aria-hidden="true">
             {events.slice(0, 3).map((e) => (
-              <span key={e.id} className={`h-1 w-1 rounded-full ${isEventGold(e, today) ? "bg-gold" : "bg-white/30"}`} />
+              <span key={e.id} className={`h-1.5 w-1.5 rounded-full ${isEventGold(e, today) ? "bg-gold" : "bg-white/30"}`} />
             ))}
           </span>
         )}
@@ -1012,7 +1074,7 @@ function DayCell({
 
       {/* desktop: passive number + chip links */}
       <div className="hidden flex-col sm:flex">
-        <span className={`${numClass} ${isToday ? "bg-gold text-bg" : "text-white/70"}`}>{cell.day}</span>
+        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/70"}`}>{cell.day}</span>
         <div className="mt-1 flex flex-col gap-0.5">
           {visible.map((e) => (
             <EventChip key={e.id} event={e} today={today} />
@@ -1027,27 +1089,21 @@ function DayCell({
 }
 ```
 
-2. In `CalendarView`, add selected-day state + default, after the `weeks` memo:
+2. In `CalendarView`, add a first-event-day helper + selected-day state, after the `weeks` memo. The same helper drives both the initial default and month changes so deep-linking and ‹/› navigation pick the same day (today if in-month, else the month's first event day, else none):
 
 ```tsx
-  const monthEventDays = useMemo(
-    () =>
-      weeks
-        .flat()
-        .filter((c) => c.inMonth && (byDate.get(c.date)?.length ?? 0) > 0)
-        .map((c) => c.date),
-    [weeks, byDate]
-  );
-  const defaultSelected = today.startsWith(month) ? today : monthEventDays[0] ?? null;
+  const firstEventDay = (ym: string) =>
+    [...byDate.keys()].filter((k) => k.startsWith(ym)).sort()[0] ?? null;
+  const defaultSelected = today.startsWith(month) ? today : firstEventDay(month);
   const [selected, setSelected] = useState<string | null>(defaultSelected);
 ```
 
-3. In `changeMonth`, reset the selected day for the new month:
+3. Update `changeMonth` to reset the selected day for the new month via the same helper:
 
 ```tsx
   function changeMonth(next: string) {
     setMonthState(next);
-    setSelected(next === today.slice(0, 7) ? today : null);
+    setSelected(next === today.slice(0, 7) ? today : firstEventDay(next));
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
     url.searchParams.set("month", next);
@@ -1084,7 +1140,7 @@ function DayCell({
           {(byDate.get(selected)?.length ?? 0) > 0 ? (
             <ul className="flex flex-col">
               {byDate.get(selected)!.map((e) => (
-                <FixtureRow key={e.id} event={e} variant={isPast(e, today) ? "result" : "fixture"} />
+                <DayEventRow key={e.id} event={e} today={today} />
               ))}
             </ul>
           ) : (
@@ -1194,4 +1250,18 @@ git commit -m "feat(schedule): enable list/calendar view switch"
 
 **Type consistency:** `DayCellT` (= `DayCell` from lib) used in components; `EventChip`/`DayCell`/`OverflowPopover` signatures consistent across Tasks 3–5; `ScheduleBoard` prop `initialTab` matches the call in `ScheduleView`; `formatBuyInShort` returns `string | null` and is guarded before render. ✓
 
-**Note for executors:** the `-mt-5` on the grid wrapper offsets the parent `gap-5` so the day grid sits flush under the weekday header; keep both in sync if spacing changes.
+**Note for executors:** the weekday header and day grid are wrapped in one `flex flex-col` so they sit flush (no negative-margin hack); the grid's `border-l`/`border-t` + each cell's `border-b`/`border-r` form the lines.
+
+## Revisions from expert review (designer + frontend engineer)
+
+Folded into the tasks above:
+- **Today = gold ring** (`ring-1 ring-gold/80 text-gold`), not a filled disc — restores spec fidelity and avoids a second loud gold competing with the stakes chip. (Task 3/5)
+- **Mode switch moved into the header (top-right)** so the page shows one pill per altitude (not two stacked segmented controls). (Task 2)
+- **Compact `DayEventRow`** for the overflow popover (now `w-80`) and the mobile selected-day list, instead of the full-width `FixtureRow` which overflowed a narrow popover. (Tasks 4–5)
+- **`?month=` range-validated** (`^\d{4}-(0[1-9]|1[0-2])$`) so a hand-edited `2026-13` can't render a broken grid. (Task 2)
+- **Test scoped to `role="grid"`** so the Task 3 chip query survives the Task 5 mobile list adding a second link for the same event. (Task 3)
+- **`formatBuyInShort` takes the first amount** ("30,000 + 3,000" → "30K"). (Task 1)
+- **`changeMonth` selected-day fallback** unified with the initial default (today → month's first event day → none). (Task 5)
+- Token hygiene (`min-h-20`/`min-h-28`/`min-w-28`/`fill-surface`), weekday header drops inert Space Grotesk/`uppercase` on Hangul, undated label unified to "날짜 미정" across both views, mobile dots `h-1.5`, adjacent cells get `role="gridcell"`.
+
+Known low-severity items left as-is (documented, not blocking): tapping an adjacent-month cell on mobile remounts the grid and drops focus to `<body>`; the mode `tablist` has no `aria-controls`/`tabpanel` linkage.
