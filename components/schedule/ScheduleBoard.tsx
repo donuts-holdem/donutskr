@@ -83,9 +83,6 @@ function MonthBoard({
               <h2 className="text-base font-semibold text-white/70">일정 미정</h2>
             )}
             <span className="h-px flex-1 self-center bg-white/[0.08]" />
-            <span className={`${display.className} text-2xs tabular-nums text-white/35`}>
-              {group.events.length}
-            </span>
           </div>
 
           <ul role="list" className="flex flex-col">
