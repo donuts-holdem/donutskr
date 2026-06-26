@@ -38,7 +38,7 @@ export async function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex-shrink-0 px-3 py-2 text-sm font-medium text-ink/60 hover:text-gold transition-colors rounded-pill hover:bg-gold/10"
+              className="shrink-0 px-3 py-2 text-sm font-medium text-ink/60 hover:text-gold transition-colors rounded-pill hover:bg-gold/10"
             >
               {link.label}
             </Link>

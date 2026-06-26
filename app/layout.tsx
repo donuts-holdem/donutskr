@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-ink overflow-x-clip">{children}</body>
     </html>

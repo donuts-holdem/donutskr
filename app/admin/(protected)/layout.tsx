@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/admin/SignOutButton";
+import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
   { href: "/admin/programs", label: "프로그램" },
@@ -29,27 +30,28 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-bg text-ink flex">
+    <div className="bg-background text-foreground flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-border flex flex-col">
-        <div className="px-5 py-5 border-b border-border">
-          <span className="text-lg font-bold text-gold tracking-tight">
+      <aside className="border-border flex w-56 shrink-0 flex-col border-r">
+        <div className="border-border border-b px-5 py-5">
+          <span className="text-gold text-lg font-bold tracking-tight">
             DO:NUTS Admin
           </span>
         </div>
-        <nav className="flex-1 py-4 space-y-0.5 px-2">
+        <nav className="flex-1 space-y-0.5 px-2 py-4">
           {NAV_LINKS.map(({ href, label }) => (
-            <Link
+            <Button
               key={href}
-              href={href}
-              className="block px-3 py-2 rounded-lg text-sm text-ink/70 hover:text-ink hover:bg-glass transition-colors"
+              asChild
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground w-full justify-start"
             >
-              {label}
-            </Link>
+              <Link href={href}>{label}</Link>
+            </Button>
           ))}
         </nav>
-        <div className="px-3 py-4 border-t border-border space-y-2">
-          <p className="text-xs text-ink/40 px-1 truncate">{user.email}</p>
+        <div className="border-border space-y-2 border-t px-3 py-4">
+          <p className="text-muted-foreground truncate px-1 text-xs">{user.email}</p>
           <SignOutButton />
         </div>
       </aside>

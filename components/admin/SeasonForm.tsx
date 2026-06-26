@@ -1,6 +1,17 @@
 "use client";
 
 import type { Season, SeasonCode } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SeasonFormProps {
   season?: Season;
@@ -14,184 +25,102 @@ const SEASON_CODES: { value: SeasonCode; label: string }[] = [
   { value: "winter", label: "겨울 (winter)" },
 ];
 
-const inputClassName = "bg-white/[0.08] border border-white/15 text-ink rounded-[6px] px-[10px] py-[6px] w-full";
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  marginBottom: "4px",
-  color: "var(--muted-1)",
-};
-
 export function SeasonForm({ season, action }: SeasonFormProps) {
   return (
-    <form action={action} style={{ color: "var(--color-ink)" }}>
-      <div style={{ display: "grid", gap: "1rem", maxWidth: "640px" }}>
-        {/* 시즌명 */}
-        <div>
-          <label htmlFor="name" style={labelStyle}>시즌명</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            defaultValue={season?.name ?? ""}
-            required
-            className={inputClassName}
-          />
-        </div>
+    <form action={action} className="flex max-w-2xl flex-col gap-5">
+      {/* 시즌명 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="name">시즌명</Label>
+        <Input id="name" name="name" defaultValue={season?.name ?? ""} required />
+      </div>
 
-        {/* 코드 */}
-        <div>
-          <label htmlFor="code" style={labelStyle}>코드</label>
-          <select
-            id="code"
-            name="code"
-            defaultValue={season?.code ?? "spring"}
-            className={inputClassName}
-          >
+      {/* 코드 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="code">코드</Label>
+        <Select name="code" defaultValue={season?.code ?? "spring"}>
+          <SelectTrigger id="code" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
             {SEASON_CODES.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
             ))}
-          </select>
-        </div>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* 연도 */}
-        <div>
-          <label htmlFor="year" style={labelStyle}>연도</label>
-          <input
-            id="year"
-            name="year"
-            type="number"
-            defaultValue={season?.year ?? new Date().getFullYear()}
-            required
-            className={inputClassName}
-          />
-        </div>
+      {/* 연도 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="year">연도</Label>
+        <Input id="year" name="year" type="number" defaultValue={season?.year ?? new Date().getFullYear()} required />
+      </div>
 
-        {/* 시작일 */}
-        <div>
-          <label htmlFor="start_date" style={labelStyle}>시작일</label>
-          <input
-            id="start_date"
-            name="start_date"
-            type="date"
-            defaultValue={season?.start_date ?? ""}
-            className={inputClassName}
-          />
-        </div>
+      {/* 시작일 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="start_date">시작일</Label>
+        <Input id="start_date" name="start_date" type="date" defaultValue={season?.start_date ?? ""} />
+      </div>
 
-        {/* 종료일 */}
-        <div>
-          <label htmlFor="end_date" style={labelStyle}>종료일</label>
-          <input
-            id="end_date"
-            name="end_date"
-            type="date"
-            defaultValue={season?.end_date ?? ""}
-            className={inputClassName}
-          />
-        </div>
+      {/* 종료일 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="end_date">종료일</Label>
+        <Input id="end_date" name="end_date" type="date" defaultValue={season?.end_date ?? ""} />
+      </div>
 
-        {/* 문구 (tagline / hero_text) */}
-        <div>
-          <label htmlFor="hero_text" style={labelStyle}>메인 문구</label>
-          <input
-            id="hero_text"
-            name="hero_text"
-            type="text"
-            defaultValue={season?.hero_text ?? ""}
-            className={inputClassName}
-          />
-        </div>
+      {/* 메인 문구 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="hero_text">메인 문구</Label>
+        <Input id="hero_text" name="hero_text" defaultValue={season?.hero_text ?? ""} />
+      </div>
 
-        {/* 서브 문구 */}
-        <div>
-          <label htmlFor="sub_text" style={labelStyle}>서브 문구</label>
-          <input
-            id="sub_text"
-            name="sub_text"
-            type="text"
-            defaultValue={season?.sub_text ?? ""}
-            className={inputClassName}
-          />
-        </div>
+      {/* 서브 문구 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="sub_text">서브 문구</Label>
+        <Input id="sub_text" name="sub_text" defaultValue={season?.sub_text ?? ""} />
+      </div>
 
-        {/* 배지 문구 */}
-        <div>
-          <label htmlFor="badge_text" style={labelStyle}>배지 문구</label>
-          <input
-            id="badge_text"
-            name="badge_text"
-            type="text"
-            defaultValue={season?.badge_text ?? ""}
-            className={inputClassName}
-          />
-        </div>
+      {/* 배지 문구 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="badge_text">배지 문구</Label>
+        <Input id="badge_text" name="badge_text" defaultValue={season?.badge_text ?? ""} />
+      </div>
 
-        {/* 이미지 업로드 */}
-        <div>
-          <label htmlFor="hero_image_file" style={labelStyle}>히어로 이미지</label>
-          {season?.hero_image && (
-            <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{season.hero_image}</p>
-          )}
-          {season && <input type="hidden" name="hero_image_existing" value={season.hero_image ?? ""} />}
-          <input
-            id="hero_image_file"
-            name="hero_image_file"
-            type="file"
-            accept="image/*"
-            className={inputClassName}
-          />
-        </div>
+      {/* 히어로 이미지 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="hero_image_file">히어로 이미지</Label>
+        {season?.hero_image && (
+          <p className="text-muted-foreground text-xs break-all">{season.hero_image}</p>
+        )}
+        {season && <input type="hidden" name="hero_image_existing" value={season.hero_image ?? ""} />}
+        <Input id="hero_image_file" name="hero_image_file" type="file" accept="image/*" />
+      </div>
 
-        {/* 배경 이미지 업로드 */}
-        <div>
-          <label htmlFor="bg_image_file" style={labelStyle}>배경 이미지</label>
-          {season?.bg_image && (
-            <p style={{ fontSize: "0.75rem", color: "var(--muted-1)", marginBottom: "4px", wordBreak: "break-all" }}>{season.bg_image}</p>
-          )}
-          {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
-          <input
-            id="bg_image_file"
-            name="bg_image_file"
-            type="file"
-            accept="image/*"
-            className={inputClassName}
-          />
-        </div>
+      {/* 배경 이미지 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="bg_image_file">배경 이미지</Label>
+        {season?.bg_image && (
+          <p className="text-muted-foreground text-xs break-all">{season.bg_image}</p>
+        )}
+        {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
+        <Input id="bg_image_file" name="bg_image_file" type="file" accept="image/*" />
+      </div>
 
-        {/* 테마 색상 */}
-        <div>
-          <label htmlFor="theme_color" style={labelStyle}>테마 색상</label>
-          <input
-            id="theme_color"
-            name="theme_color"
-            type="text"
-            defaultValue={season?.theme_color ?? ""}
-            placeholder="예: #FFE58A"
-            className={inputClassName}
-          />
-        </div>
+      {/* 테마 색상 */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="theme_color">테마 색상</Label>
+        <Input id="theme_color" name="theme_color" defaultValue={season?.theme_color ?? ""} placeholder="예: #FFE58A" />
+      </div>
 
-        {/* 푸터 스폰서 표시 */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <input
-            id="footer_sponsor_visible"
-            name="footer_sponsor_visible"
-            type="checkbox"
-            defaultChecked={season?.footer_sponsor_visible ?? false}
-          />
-          <label htmlFor="footer_sponsor_visible" style={{ color: "var(--muted-1)" }}>푸터 스폰서 표시</label>
-        </div>
+      {/* 푸터 스폰서 표시 */}
+      <div className="flex items-center gap-2">
+        <Checkbox id="footer_sponsor_visible" name="footer_sponsor_visible" defaultChecked={season?.footer_sponsor_visible ?? false} />
+        <Label htmlFor="footer_sponsor_visible">푸터 스폰서 표시</Label>
+      </div>
 
-        <div>
-          <button
-            type="submit"
-            className="text-bg"
-            style={{ background: "var(--color-gold)", padding: "8px 20px", borderRadius: "6px", fontWeight: "600", border: "none", cursor: "pointer" }}
-          >
-            저장
-          </button>
-        </div>
+      <div>
+        <Button type="submit">저장</Button>
       </div>
     </form>
   );

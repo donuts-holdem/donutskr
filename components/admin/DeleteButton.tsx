@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 interface DeleteButtonProps {
   onDelete: () => void | Promise<void>;
 }
@@ -7,19 +9,9 @@ interface DeleteButtonProps {
 export function DeleteButton({ onDelete }: DeleteButtonProps) {
   return (
     <form action={onDelete}>
-      <button
-        type="submit"
-        className="bg-danger/15 border border-danger/40 text-danger"
-        style={{
-          padding: "6px 14px",
-          borderRadius: "6px",
-          fontWeight: "500",
-          cursor: "pointer",
-          fontSize: "0.875rem",
-        }}
-      >
+      <Button type="submit" variant="destructive" size="sm">
         삭제
-      </button>
+      </Button>
     </form>
   );
 }

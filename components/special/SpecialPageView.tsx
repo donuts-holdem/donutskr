@@ -56,7 +56,7 @@ export function SpecialPageView({ page, structure }: Props) {
       {(page.poster || page.gallery.length > 0) && (
         <section className="flex flex-col gap-4">
           {page.poster && (
-            <div className="relative w-full max-w-sm rounded-card overflow-hidden aspect-[3/4]">
+            <div className="relative w-full max-w-sm rounded-card overflow-hidden aspect-3/4">
               <Image
                 src={page.poster}
                 alt={page.title}
