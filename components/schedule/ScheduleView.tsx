@@ -64,47 +64,53 @@ export function ScheduleView({
       className="flex flex-col gap-8 py-12 text-white touch-manipulation sm:py-16"
       style={{ fontFamily: PRETENDARD }}
     >
-      {/* Header — title block left, mode switch top-right (one pill per altitude;
-          the list's own 예정/지난 control lives inside ScheduleBoard). */}
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-7 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-3">
-          <span className={`${display.className} text-2xs font-medium uppercase tracking-[0.22em] text-gold/80`}>
-            Schedule
-          </span>
-          <h1 className="text-balance text-display-lg font-bold leading-[1.05] tracking-[-0.03em] text-white sm:text-display-2xl">
-            일정
-          </h1>
-          <p className="text-sm text-white/50">DO:NUTS 포커 시리즈의 토너먼트와 이벤트 일정입니다.</p>
-        </div>
-
-        {/* List / Calendar switcher */}
-        <div role="tablist" aria-label="일정 보기 방식" className="inline-flex shrink-0 self-start rounded-pill bg-surface p-1">
-          {MODES.map(({ key, label, Icon }) => {
-            const active = mode === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setMode(key)}
-                className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
-                  active ? "bg-white/[0.10] text-white" : "text-white/45 hover:text-white/80"
-                }`}
-              >
-                <Icon />
-                {label}
-              </button>
-            );
-          })}
-        </div>
+      {/* Header — pure editorial masthead. The view switcher lives below it,
+          leading the content, so it reads as this page's primary control. */}
+      <header className="flex flex-col gap-3 border-b border-white/[0.08] pb-7">
+        <span className={`${display.className} text-2xs font-medium uppercase tracking-[0.22em] text-gold/80`}>
+          Schedule
+        </span>
+        <h1 className="text-balance text-display-lg font-bold leading-[1.05] tracking-[-0.03em] text-white sm:text-display-2xl">
+          일정
+        </h1>
+        <p className="text-sm text-white/50">DO:NUTS 포커 시리즈의 토너먼트와 이벤트 일정입니다.</p>
       </header>
 
-      {mode === "calendar" ? (
-        <CalendarView events={events} today={today} initialMonth={initialMonth} />
-      ) : (
-        <ScheduleBoard upcoming={upcoming} past={past} initialTab={initialTab} />
-      )}
+      {/* Content group — primary view switcher leads, the active view follows. */}
+      <div className="flex flex-col gap-6">
+        {/* Primary view switcher: the one filled pill on the page. Two buttons
+            that swap the whole view (not ARIA tabs), so aria-pressed + group. */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <span className={`${display.className} text-2xs font-medium uppercase tracking-[0.22em] text-white/35`}>
+            View
+          </span>
+          <div role="group" aria-label="일정 보기 방식" className="grid grid-cols-2 rounded-pill bg-surface p-1 sm:inline-flex">
+            {MODES.map(({ key, label, Icon }) => {
+              const active = mode === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setMode(key)}
+                  className={`inline-flex items-center justify-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
+                    active ? "bg-white/[0.12] text-white" : "text-white/55 hover:text-white/80"
+                  }`}
+                >
+                  <Icon />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {mode === "calendar" ? (
+          <CalendarView events={events} today={today} initialMonth={initialMonth} />
+        ) : (
+          <ScheduleBoard upcoming={upcoming} past={past} initialTab={initialTab} />
+        )}
+      </div>
     </div>
   );
 }

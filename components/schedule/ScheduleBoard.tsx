@@ -148,29 +148,28 @@ export function ScheduleBoard({
 
   return (
     <div className="flex flex-col gap-10 sm:gap-12">
-      {/* Temporal segmented control (primary axis) */}
-      <div role="tablist" aria-label="일정 보기" className="inline-flex self-start rounded-pill bg-surface p-1">
+      {/* Temporal filter — demoted to flat underline tabs on a hairline rail so
+          it reads as subordinate to the filled view switcher above. Buttons
+          swap two always-mounted panels, so aria-pressed + group. */}
+      <div role="group" aria-label="일정 보기" className="flex gap-6 border-b border-white/[0.08]">
         {VIEWS.map((v) => {
           const active = view === v.key;
           return (
             <button
               key={v.key}
               type="button"
-              role="tab"
-              id={`schedule-tab-${v.key}`}
-              aria-selected={active}
-              aria-controls={`schedule-panel-${v.key}`}
+              aria-pressed={active}
               onClick={() => setView(v.key)}
-              className={`inline-flex items-center gap-2 rounded-pill px-5 py-2 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
+              className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-0.5 pb-3 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
                 active
-                  ? "bg-white/[0.10] text-white"
-                  : "text-white/45 hover:text-white/80"
+                  ? "border-gold text-white/90"
+                  : "border-transparent text-white/40 hover:border-white/15 hover:text-white/70"
               }`}
             >
               {v.label}
               <span
                 className={`${display.className} text-2xs tabular-nums ${
-                  active ? "text-white/55" : "text-white/30"
+                  active ? "text-gold/70" : "text-white/30"
                 }`}
               >
                 {counts[v.key]}
@@ -183,9 +182,6 @@ export function ScheduleBoard({
       {/* Upcoming panel — full ink, gold accents, LIVE banner. Both panels
           stay in the DOM (only hidden) so past events remain crawlable. */}
       <div
-        role="tabpanel"
-        id="schedule-panel-upcoming"
-        aria-labelledby="schedule-tab-upcoming"
         hidden={view !== "upcoming"}
         className="flex-col gap-8 data-[on=true]:flex"
         data-on={view === "upcoming"}
@@ -214,9 +210,6 @@ export function ScheduleBoard({
 
       {/* Past panel — monochrome, compressed result rows, most-recent-first. */}
       <div
-        role="tabpanel"
-        id="schedule-panel-past"
-        aria-labelledby="schedule-tab-past"
         hidden={view !== "past"}
         className="flex-col gap-8 data-[on=true]:flex"
         data-on={view === "past"}
