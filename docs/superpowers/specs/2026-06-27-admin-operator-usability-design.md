@@ -31,13 +31,14 @@ QA subagent가 file:line으로 모두 검증함.
 - **가짜 시즌↔이벤트 관계:** 이벤트 폼에서 `season_id`를 지정하지만(`components/admin/EventForm.tsx:41`), `lib/data/events.ts`의 `getEvents()`는 `category`/`is_visible`로만 필터링하고 `season_id`를 안 씀. 공개 소비자(`app/(site)/page.tsx`, `app/(site)/schedule/page.tsx`, `app/sitemap.ts`)도 시즌 미사용. 시즌 활성화는 `/series` 문구만 바꿈. 죽은 시즌 필드: `theme_color`, `footer_sponsor_visible`(공개 소비자 0).
 - **silent 데이터 유실 (write-path 한정):** 쓰기 액션 `app/admin/actions/specialPages.ts:9-11`, `app/admin/actions/onlineLeague.ts:8-10`, `app/admin/actions/siteConfig.ts:9-11`의 `try { JSON.parse } catch { return fallback }`가 파싱 실패 시 빈 값으로 fallback → 운영자 오타가 콘텐츠를 조용히 삭제. (읽기 매퍼 `lib/data/*`는 이미 파싱된 jsonb를 `Array.isArray ? x : []`로 받으므로 읽기 경로는 안전. 동명 파일이 `lib/data/`에도 있으니 경로 주의.)
 
-### 1.4 프로그램 설명 콘텐츠 인벤토리 (블록 에디터 타당성 — 브라우저로 표본 조사)
+### 1.4 프로그램 설명 콘텐츠 인벤토리 (블록 에디터 타당성 — 브라우저로 **전수** 조사)
 
-prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서 어드민 수정 화면의 `description` textarea 원문을 그룹별로 4개 표본 조사(donutslab/poker, DO:LAB/others, 대선포커/social, 도너츠 시리즈/poker). **결과: 전 표본이 동일한 Framer 내보내기 구조.**
+prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션(앱 UI, 동일 출처)에서 어드민 수정 화면의 `description` textarea 원문을 **23개 전수** 수집·집계.
 
-- 사용 태그(전 표본 공통): `img`(헤더 이미지) · `p`(문단, `dir="auto"`) · `strong`(이모지+굵은 글머리) · `ul > li[data-preset-tag="p"] > p`(불릿) · `br`. 표본에서 `a`(링크)·`h1/h2`(제목)는 미관측이나 sanitize 설정이 허용하므로 모델에 안전하게 포함.
+- **설명 태그(전 23개):** `img`×23(모두 헤더 이미지) · `p`×148 · `strong`×82 · `ul`×23 · `li`×99 · `br`×21 · `a`(링크)×**1**. **`ol`·`h1~h6`·`table`·중첩 리스트·기타 비표준 태그 0건.** 전부 동일한 Framer 내보내기 구조.
 - 비(非)콘텐츠 속성: `data-preset-tag`, `dir="auto"`는 표현용 → 변환 시 폐기해도 콘텐츠 무손실. 이모지는 텍스트로 보존.
-- **결론:** 구조가 규칙적이고 작아 블록 모델로 거의 무손실 변환 가능. 핵심 요건은 문단/리스트 항목이 **인라인 굵게(+링크) 마크를 보존**하는 것(평문 블록이면 안 됨). (표본 4/23 — 전수 아님. `raw` 이스케이프 블록을 안전망으로 유지.)
+- **상태(status) 실제 값 전수:** `"모집 중"`×19 · `"모집 완료"`×1 · 빈값×3. (Phase 2 정규화 맵 입력 — §2.2.)
+- **결론:** 블록 모델(`image/paragraph(inline)/list`)이 실제 콘텐츠를 **100% 커버**. `raw` 안전망은 데이터상 발동하지 않을 전망이나 유지. 핵심 요건: 문단/리스트 항목이 **인라인 굵게·링크 마크 보존**(평문 블록 금지). `ol`/제목/중첩은 현 데이터에 없어 모델 1차 범위에서 제외하되, 변환기는 **fail-closed**(미지원 노드 → `raw`, 무단 드롭 금지)로 미래 입력 방어.
 
 ## 2. 확정된 제품 결정 (사용자 승인)
 
@@ -54,6 +55,18 @@ prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서
 - **죽은 시즌 필드:** `theme_color`, `footer_sponsor_visible` → **제거**(Phase 4, 공개 소비자 없음 확인됨).
 - **명칭 통일:** 엔티티 기준 **"이벤트"로 통일**. 사이드바 "일정" → "이벤트"로 변경(대시보드 카드·페이지 H1·액션과 일치). 공개 라우트 `/schedule`는 유지.
 - **null `season_id` 규칙:** §Phase 4 참조 — null 시즌 이벤트는 **상시 노출(evergreen)**.
+
+### 2.2 프로그램 status 정규화 맵 (§1.4 전수값 기준)
+
+표준 키: `recruiting/ongoing/closed/completed`(라벨 모집중/진행중/마감/종료, `lib/program-display.ts`). 실제 데이터 → 표준 키 매핑:
+
+| 실제 값 | 건수 | → 표준 키 | 비고 |
+|---------|------|----------|------|
+| `"모집 중"` (공백 포함) | 19 | `recruiting` | 라벨 키 `"모집중"`(공백 없음)과 데이터 공백 불일치 → 매핑 시 정규화 |
+| `"모집 완료"` | 1 | `closed` | 모집 마감 의미로 해석(제품 확정) |
+| 빈값 | 3 | `null`(미설정) | Select placeholder |
+
+- 정규화는 **일회성 데이터 마이그레이션 + 표시 시점 매핑** 둘 다. Select는 표준 키만 옵션으로 가지되, **표준 외 미지(未知) 값은 비활성 "원본값 유지(<값>)" 옵션으로 보존**(다음 저장에서 덮이지 않게).
 
 ## 3. 기존 자산 (재사용 대상, 새로 만들지 말 것)
 
@@ -96,7 +109,7 @@ prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서
 - 라벨 맵을 단일 소스(`lib/labels.ts` 또는 기존 파일 확장)로 모으되 **기존 export 유지**(공개 사이트 회귀 방지). 어드민 select/목록과 공개 사이트가 같은 맵 공유.
 - 목록 한글화: 이벤트 카테고리/상태(`events/page.tsx`), 프로그램 그룹(`programs/page.tsx`), 시즌 코드(`seasons/page.tsx`).
 - 드롭다운 한글화: `EventForm`(category/status — §2.1대로 category는 유형으로 정리), `ProgramForm`(program_group), `TabForm`(type), 온라인 리그 status. `SeasonForm`("봄 (spring)" 패턴)을 표준으로.
-- 프로그램 `status`: free-text Input → 한글 Select(recruiting/ongoing/closed/completed). **레거시 데이터 정규화 선행**(기존 "모집 중" 등 한글 자유값을 표준 키로 매핑; 미매핑 시 재저장으로 값이 덮이지 않도록).
+- 프로그램 `status`: free-text Input → 한글 Select(recruiting/ongoing/closed/completed). **§2.2 정규화 맵으로 레거시 값 변환 선행**(`"모집 중"`→recruiting 등, 공백 정규화 포함). 표준 외 미지 값은 §2.2대로 비활성 "원본값 유지" 옵션으로 보존(재저장 시 미덮임).
 - **싼 입력 수정(리뷰 C4 — 같은 파일 두 번 편집 방지):** 이벤트/프로그램 시간 필드 `type="time"`, 요일은 날짜에서 자동 채움, 필수 필드 `*` 표시, 이미지 필드 썸네일 미리보기.
 
 **검증 게이트:** 생성·수정 시 모든 선택지가 한글이고 올바른 값 저장. 기존 프로그램 상태가 정규화 후 올바른 한글 라벨로 표시.
@@ -106,7 +119,7 @@ prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서
 
 - 모든 폼에 저장 성공 토스트(sonner, `role="status"`/`aria-live="polite"`). 리다이렉트조차 없는 Settings/Online League 우선.
 - 모든 엔티티(목록 + 수정)에 "사이트에서 보기" 링크: 프로그램 `/programs/{slug}`, 이벤트 `/schedule/{id}`, 특수페이지 `/{slug}`, 시즌 `/series`, 리그 `/online-league`.
-- **유효 노출 상태 배지(공유 술어):** `is_visible`은 켰지만 `status=hidden`/노출기간 종료 등으로 안 뜨는 이유를 공개 라우트와 **동일 함수**로 계산해 표시. 이 술어 함수는 Phase 4의 season 조건까지 수용하도록 설계(Phase 3↔4 결합 주의 — §8).
+- **유효 노출 상태 배지(공유 술어):** `is_visible`은 켰지만 `status=hidden`/노출기간 종료 등으로 안 뜨는 이유를 공개 라우트와 **동일 함수**로 계산해 표시. **Phase 3에서는 season-agnostic 술어로 출시**(season 분기는 Phase 4에서 활성화 — 독립 머지는 "Phase 3 술어 출시 → Phase 4가 분기 켬"으로 정정, §6 결합 항목).
 - **●/○ 가시성 점 교체(리뷰 C3 — 명시 산출물):** 색상 단독 금지. 토큰 기반 **텍스트 라벨 + `aria-label`** 배지(또는 접근명 있는 Switch).
 - 실제 대시보드: 8개 섹션 카드 + 엔티티 카운트 + 임박 이벤트 + 라이브 사이트 링크. 사이드바 **그룹화 매핑 확정**: 콘텐츠(프로그램·이벤트·특수페이지) / 구조(시즌·블라인드 스트럭처) / 사이트설정(리그·설정). 명칭 §2.1대로 "이벤트" 통일.
 
@@ -115,8 +128,9 @@ prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서
 ### Phase 4 — 시즌↔이벤트 실제 연결
 **목표:** 운영자 기대("시즌 활성화 → 그 시즌 일정이 사이트에 뜸")를 안전하게 구현.
 
-- **백필 선행(리뷰 HIGH):** 기존 이벤트에 적절한 `season_id` 채우는 멱등 마이그레이션. 사전 DB 스냅샷.
+- **백필 선행(리뷰 HIGH):** 기존 이벤트에 `season_id`를 채우는 멱등 마이그레이션. **배정 규칙 명시:** 이벤트 `date`가 어느 시즌의 기간(연도+코드 윈도)에 들면 그 시즌, **모호/범위밖이면 null로 남김(evergreen)**. 자동 오배정으로 이벤트가 사라지지 않게 보수적으로. 사전 DB 스냅샷.
 - **null 시즌 규칙:** `season_id`가 null인 이벤트는 **상시 노출(evergreen)**. 홈/일정 보드 = 활성 시즌 이벤트 ∪ null-시즌 이벤트. (필터를 그냥 켜면 미지정 이벤트가 사이트에서 사라지는 사고 방지.)
+- **순수 술어 추출:** 시즌 필터는 `lib/data`의 DB 바운드 `getEvents`가 아니라 순수 함수 `filterByActiveSeason(events, activeSeasonId)`로 추출해 단위 테스트(§8). `getEvents`는 이 술어를 호출.
 - 홈 "이번 시즌 일정"/스케줄 보드 필터링(`HomeMagazine`, `lib/data/events.ts`, 스케줄 페이지).
 - 이벤트 목록에 소속 시즌 표시 + 시즌별 필터. 시즌 목록에 "N개 이벤트" 카운트.
 - 죽은 시즌 필드 제거: `theme_color`, `footer_sponsor_visible`(§2.1).
@@ -131,11 +145,13 @@ prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서
   - `paragraph` { inline runs } — 인라인 런은 `text | bold | link`(굵게·링크 보존; 평문 금지).
   - `list` { items: inline runs[] } — `ul/li` 매핑, 항목별 굵은 글머리 보존.
   - `heading` { level, text } — 표본 미관측이나 sanitize 허용 → 안전 포함.
-  - `raw` { html } — 변환 불가 잔여를 담는 이스케이프 블록(안전망; 인벤토리상 거의 불필요할 전망).
-- 인벤토리는 §1.4에서 표본 수집 완료. 변환기 구현 시 전수(23개) 재확인.
+  - `raw` { html } — 변환 불가 잔여를 담는 이스케이프 블록(안전망). 에디터에서는 **정제 HTML 읽기전용 + "개발자 필요" 경고**로 표시(평문 운영자가 깨뜨리지 않도록). §1.4상 발동 0건 전망.
+- 인벤토리는 §1.4에서 **전수(23/23) 완료** — `ol`/제목/중첩 없음 확인, 모델이 100% 커버.
+- **변환기 fail-closed:** 미지원 노드는 무단 드롭 금지, 반드시 `raw`로 보존.
+- **컷오버는 per-program 게이트:** 일괄 플립 금지. 공개 렌더러는 **검증 완료(per-program 플래그) 전까지 레거시 `description` 우선**, 검증된 프로그램만 블록 렌더로 전환. (빈 블록 폴백만으로는 "비었지만-손실" 변환을 못 막으므로, 비어있지 않아도 미검증이면 레거시 사용.)
 - 데이터 모델: 프로그램에 **새 jsonb 컬럼 추가(additive)**, 기존 `description`(text)은 **유지**(롤백 가능).
 - 에디터: Phase 1의 `useRepeatableRows` 위에 **별도 블록 에디터 컴포넌트**(타입 선택 + 타입별 UI; 이미지 블록은 업로드 재사용). `RepeatableFieldEditor`를 늘리지 않음.
-- 공개 렌더러: `app/(site)/programs/[slug]/page.tsx`를 블록 기반 렌더로 교체하되 **빈 블록이면 레거시 `description`을 기존 `marked`/`sanitizeHtml` 경로로 폴백**(가역적 컷오버).
+- 공개 렌더러: `app/(site)/programs/[slug]/page.tsx`에 블록 렌더 경로 추가. **검증 플래그가 선 프로그램만 블록 렌더, 그 외(빈 블록 포함·미검증)는 레거시 `description`을 기존 `marked`/`sanitizeHtml` 경로로 렌더**(가역적 per-program 컷오버).
 - 마이그레이션: 순수 SQL 아님 → **멱등·additive·가역 Node 스크립트**. 스테이징 DB가 없으므로 **DB 덤프/브랜치에서 드라이런** 후 적용(prod 직접 금지). 레거시 컬럼은 렌더 검증 완료 전까지 보존.
 
 **검증 게이트:** 기존 프로그램 전수 — 마이그레이션 후 공개 페이지 비교(굵게/링크/리스트/이미지 손실 0). 신규 블록 추가/정렬/이미지 업로드. 빈 블록 → 레거시 폴백.
@@ -159,11 +175,11 @@ prod DB 직접 조회는 미승인이므로, 승인된 브라우저 세션에서
 |--------|------|
 | 공유/운영 Supabase 데이터 손상 (스테이징 없음) | Phase 4 백필·Phase 5 변환 전 `pg_dump`/Supabase 브랜치 스냅샷. 마이그레이션은 멱등·additive·가역. prod 직접 드라이런 금지 |
 | 라벨 맵 단일화 시 공개 사이트 회귀 | 기존 export 유지, 공개 컴포넌트 스냅샷/라벨 테스트 |
-| 구조화 블록 마이그레이션으로 기존 설명 손실 | 태그 인벤토리 완료(§1.4: img/p/strong/ul·li/br 규칙적), 인라인 마크 보존 + `raw` 이스케이프, 빈 블록 레거시 폴백, 변환기 전수 테스트 |
+| 구조화 블록 마이그레이션으로 기존 설명 손실 | **전수 인벤토리(§1.4: 23/23)** — ol/제목/중첩 0 확인, 인라인 마크 보존 + **fail-closed→`raw`** + **per-program 검증 게이트(미검증=레거시 렌더)**, 변환기 전수 테스트 |
 | Phase 4 필터로 null-시즌 이벤트 소실 | evergreen 규칙 + 백필 + 빈 일정 테스트 |
 | Phase 2 status Select 전환으로 레거시 값 고아 | 정규화 선행 + 매핑 테스트 |
 | 단일 행 테이블(site_config·online_league) 동시 편집 클로버 | last-write-wins 인지(현 구조 유지), 필요 시 후속 과제로 낙관적 잠금 |
-| 단계 간 결합(Phase 3 노출 술어 ↔ Phase 4 시즌 조건) | 술어 함수를 처음부터 season 수용형으로 설계, Phase 4에서 갱신 |
+| 단계 간 결합(Phase 3 노출 술어 ↔ Phase 4 시즌 조건) | Phase 3는 **season-agnostic 술어로 출시**, Phase 4가 season 분기를 활성화. "독립 머지"는 이 순서로 한정 |
 
 ## 7. 작업 순서 요약
 
@@ -185,5 +201,5 @@ Phase 6  사용성 통합 검토 & 잔여 스윕
 - **Phase 1:** form↔jsonb (de)serialization 순수 헬퍼 **왕복(round-trip)** 테스트 — `gallery/info_cards/note_list/steps/links/today_leagues/footer_sponsors`: 타입드 행 → 정확한 jsonb, 빈 에디터 → `[]`/`{}`, **레거시/부분 형태 관용적 역직렬화(필드 무손실)**. `RepeatableFieldEditor` 추가/삭제/정렬 렌더 테스트. AlertDialog: 확인 전 삭제 차단.
 - **Phase 2:** 공개 소비자(`StatusBadge`/`ProgramCard`/프로그램 목록)가 맵 단일화 후에도 올바른 한글 렌더(스냅샷/라벨 테스트). `programs.status` 레거시 한글값 → 표준 키 매핑 테스트.
 - **Phase 3:** "유효 노출" 술어 함수가 공개 라우트와 동일 함수임을 단위 테스트(is_visible off / status=hidden / 노출기간 만료 각각의 사유 반환).
-- **Phase 4:** `getEvents` 시즌 필터를 **null `season_id`·비활성 시즌 포함 픽스처**로 테스트, evergreen 규칙 단언. 백필 스크립트 멱등성.
-- **Phase 5:** HTML→블록 변환기를 **실제 Framer 픽스처**(`<ul><li data-preset-tag>`, `<strong>`, `<a>`, `<img>`)로 단위 테스트(콘텐츠 무손실). 빈 블록 → 레거시 `description` 폴백 렌더 테스트. 블록 (de)serialize 왕복.
+- **Phase 4:** DB 바운드 `getEvents`가 아니라 **추출한 순수 술어 `filterByActiveSeason(events, activeSeasonId)`**를 **null `season_id`·비활성 시즌 포함 픽스처**로 테스트, evergreen 규칙(활성 ∪ null) 단언. 백필 배정 규칙·멱등성 테스트.
+- **Phase 5:** HTML→블록 변환기를 **실제 Framer 픽스처**(`<ul><li data-preset-tag>`, `<strong>`, `<a>`, `<img>`)로 단위 테스트(콘텐츠 무손실). **fail-closed 단언**(미지원 노드 입력 → `raw` 보존, 드롭 0). per-program 검증 플래그 미설정 시 레거시 렌더 테스트. 블록 (de)serialize 왕복.
