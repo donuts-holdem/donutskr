@@ -216,7 +216,7 @@ function ProgramCardItem({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[transform,border-color,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-white/[0.16] hover:bg-[#1A1715] hover:shadow-[0_10px_30px_-8px_rgba(0,0,0,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-[#1A1715] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none"
     >
       <div className="relative aspect-[16/9] overflow-hidden border-b border-white/[0.08]">
         <Cover program={program} sizes="(min-width:1024px) 32vw, (min-width:640px) 48vw, 100vw" />

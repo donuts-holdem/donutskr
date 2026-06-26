@@ -222,12 +222,12 @@ function CompactCard({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group flex items-center gap-4 rounded-xl border border-white/[0.08] bg-[#141211] p-3 transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-[#1A1715] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
+      className="group flex min-h-[76px] flex-1 items-stretch gap-4 overflow-hidden rounded-xl border border-white/[0.08] bg-[#141211] p-3 transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-[#1A1715] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE58A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0908] motion-reduce:transition-none"
     >
-      <div className="relative h-[68px] w-[88px] shrink-0 overflow-hidden rounded-lg border border-white/[0.08]">
-        <Cover program={program} sizes="88px" />
+      <div className="relative w-[96px] shrink-0 self-stretch overflow-hidden rounded-lg border border-white/[0.08]">
+        <Cover program={program} sizes="96px" />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-1">
         <span className={`${display.className} truncate text-[10.5px] font-medium uppercase tracking-[0.1em] text-white/40`}>
           {categoryLabel(program)}
         </span>
@@ -236,7 +236,7 @@ function CompactCard({ program }: { program: Program }) {
         </h3>
         <MetaRow program={program} />
       </div>
-      <IconArrow size={15} className="shrink-0 text-white/20 transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-[#FFE58A] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
+      <IconArrow size={15} className="shrink-0 self-center text-white/20 transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-[#FFE58A] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
     </ProgramLink>
   );
 }
@@ -288,7 +288,7 @@ export function HomeMagazine({
 }) {
   const featPool = hotPrograms.length > 0 ? hotPrograms : programs;
   const featured = featPool[0];
-  const side = featPool.slice(1, 4);
+  const side = featPool.slice(1, 5);
   const grid = programs.slice(0, 6);
 
   return (
@@ -369,7 +369,7 @@ export function HomeMagazine({
               <div className="lg:col-span-2">
                 <FeaturedCard program={featured} />
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex h-full flex-col gap-4">
                 {side.length > 0 ? (
                   side.map((p) => <CompactCard key={p.id} program={p} />)
                 ) : (
