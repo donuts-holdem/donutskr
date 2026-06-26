@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Event } from "@/lib/types";
 import { ScheduleBoard } from "@/components/schedule/ScheduleBoard";
+import { CalendarView } from "@/components/schedule/CalendarView";
 import { display } from "@/components/schedule/fixtures";
 
 const PRETENDARD = '"Pretendard Variable", Pretendard, system-ui, sans-serif';
@@ -99,7 +100,11 @@ export function ScheduleView({
         </div>
       </header>
 
-      <ScheduleBoard upcoming={upcoming} past={past} initialTab={initialTab} />
+      {mode === "calendar" ? (
+        <CalendarView events={events} today={today} initialMonth={initialMonth} />
+      ) : (
+        <ScheduleBoard upcoming={upcoming} past={past} initialTab={initialTab} />
+      )}
     </div>
   );
 }
