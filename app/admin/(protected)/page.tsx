@@ -1,52 +1,41 @@
 import Link from "next/link";
 import { getActiveSeason } from "@/lib/data/seasons";
+import { Card, CardContent } from "@/components/ui/card";
+
+const CARDS = [
+  { href: "/admin/seasons", icon: "🗓", title: "시즌 관리", desc: "시즌 생성·수정·활성화" },
+  { href: "/admin/events", icon: "🎯", title: "이벤트 관리", desc: "이벤트 생성·수정·삭제" },
+];
 
 export default async function AdminPage() {
   const activeSeason = await getActiveSeason();
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--color-gold)" }}>관리자 대시보드</h1>
+      <h1 className="text-gold mb-1 text-2xl font-bold">관리자 대시보드</h1>
       {activeSeason ? (
-        <p className="text-sm mb-6" style={{ color: "var(--muted-2)" }}>
-          현재 활성 시즌: <span style={{ color: "var(--color-ink)" }}>{activeSeason.name} ({activeSeason.year})</span>
+        <p className="text-muted-foreground mb-6 text-sm">
+          현재 활성 시즌:{" "}
+          <span className="text-foreground">
+            {activeSeason.name} ({activeSeason.year})
+          </span>
         </p>
       ) : (
-        <p className="text-sm mb-6" style={{ color: "var(--muted-2)" }}>활성 시즌 없음</p>
+        <p className="text-muted-foreground mb-6 text-sm">활성 시즌 없음</p>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem" }}>
-        <Link
-          href="/admin/seasons"
-          className="bg-white/6 border border-white/12"
-          style={{
-            display: "block",
-            padding: "1.25rem",
-            borderRadius: "10px",
-            color: "var(--color-ink)",
-            textDecoration: "none",
-          }}
-        >
-          <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🗓</div>
-          <div style={{ fontWeight: "600" }}>시즌 관리</div>
-          <div style={{ fontSize: "0.75rem", color: "var(--muted-3)", marginTop: "4px" }}>시즌 생성·수정·활성화</div>
-        </Link>
-
-        <Link
-          href="/admin/events"
-          className="bg-white/6 border border-white/12"
-          style={{
-            display: "block",
-            padding: "1.25rem",
-            borderRadius: "10px",
-            color: "var(--color-ink)",
-            textDecoration: "none",
-          }}
-        >
-          <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎯</div>
-          <div style={{ fontWeight: "600" }}>이벤트 관리</div>
-          <div style={{ fontSize: "0.75rem", color: "var(--muted-3)", marginTop: "4px" }}>이벤트 생성·수정·삭제</div>
-        </Link>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+        {CARDS.map((c) => (
+          <Link key={c.href} href={c.href} className="group">
+            <Card className="transition-colors group-hover:border-gold/40">
+              <CardContent>
+                <div className="mb-2 text-2xl">{c.icon}</div>
+                <div className="font-semibold">{c.title}</div>
+                <div className="text-muted-foreground mt-1 text-xs">{c.desc}</div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );

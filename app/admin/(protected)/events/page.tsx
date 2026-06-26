@@ -1,73 +1,62 @@
 import Link from "next/link";
 import { getAllEvents } from "@/lib/data/events";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default async function AdminEventsPage() {
   const events = await getAllEvents();
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>이벤트 관리</h1>
-        <Link
-          href="/admin/events/new"
-          className="text-bg"
-          style={{
-            background: "var(--color-gold)",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            fontWeight: "600",
-            textDecoration: "none",
-            fontSize: "0.875rem",
-          }}
-        >
-          + 새 이벤트
-        </Link>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-gold text-2xl font-bold">이벤트 관리</h1>
+        <Button asChild>
+          <Link href="/admin/events/new">+ 새 이벤트</Link>
+        </Button>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
-          <thead>
-            <tr className="border-b border-white/12" style={{}}>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>제목</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>카테고리</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>상태</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>노출</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: "var(--muted-2)", fontWeight: "500" }}>작업</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map((event) => (
-              <tr key={event.id} className="border-b border-white/6" style={{}}>
-                <td style={{ padding: "10px 12px", color: "var(--color-ink)" }}>{event.title}</td>
-                <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{event.category}</td>
-                <td style={{ padding: "10px 12px", color: "var(--muted-2)" }}>{event.status}</td>
-                <td style={{ padding: "10px 12px" }}>
-                  {event.is_visible ? (
-                    <span style={{ color: "var(--color-gold)" }}>●</span>
-                  ) : (
-                    <span style={{ color: "var(--muted-4)" }}>○</span>
-                  )}
-                </td>
-                <td style={{ padding: "10px 12px" }}>
-                  <Link
-                    href={`/admin/events/${event.id}/edit`}
-                    style={{ color: "var(--color-gold)", textDecoration: "none", fontSize: "0.8rem" }}
-                  >
-                    수정
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {events.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "var(--muted-3)" }}>
-                  등록된 이벤트가 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>제목</TableHead>
+            <TableHead>카테고리</TableHead>
+            <TableHead>상태</TableHead>
+            <TableHead>노출</TableHead>
+            <TableHead>작업</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {events.map((event) => (
+            <TableRow key={event.id}>
+              <TableCell className="text-foreground">{event.title}</TableCell>
+              <TableCell className="text-muted-foreground">{event.category}</TableCell>
+              <TableCell className="text-muted-foreground">{event.status}</TableCell>
+              <TableCell className={event.is_visible ? "text-gold" : "text-muted-foreground/50"}>
+                {event.is_visible ? "●" : "○"}
+              </TableCell>
+              <TableCell>
+                <Button asChild variant="link" size="sm" className="h-auto p-0">
+                  <Link href={`/admin/events/${event.id}/edit`}>수정</Link>
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+          {events.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
+                등록된 이벤트가 없습니다.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
