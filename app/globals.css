@@ -25,6 +25,11 @@ layer(base);
   --color-border: rgba(255, 255, 255, 0.1);
   --color-danger: #ef4444;
 
+  --color-surface: #141211;
+  --color-surface-hover: #1a1715;
+  --color-gold-deep: #e7b45a;
+  --color-cream: #f7f6f3;
+
   --radius-card: 24px;
   --radius-pill: 999px;
 

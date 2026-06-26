@@ -170,7 +170,7 @@ function Cover({
   }
   // Quiet monochrome placeholder — no theme, no colour.
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#1A1715]">
+    <div className="flex h-full w-full items-center justify-center bg-surface-hover">
       <IconImage size={26} className="text-white/15" />
     </div>
   );
@@ -216,7 +216,7 @@ function ProgramCardItem({ program }: { program: Program }) {
   return (
     <ProgramLink
       program={program}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#141211] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-[#1A1715] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none"
     >
       <div className="relative aspect-[16/9] overflow-hidden border-b border-white/[0.08]">
         <Cover program={program} sizes="(min-width:1024px) 32vw, (min-width:640px) 48vw, 100vw" />
@@ -237,7 +237,7 @@ function ProgramCardItem({ program }: { program: Program }) {
           </span>
         </div>
 
-        <h3 className="line-clamp-2 text-pretty text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[#F7F6F3] transition-colors duration-200 group-hover:text-white motion-reduce:transition-none">
+        <h3 className="line-clamp-2 text-pretty text-[15px] font-semibold leading-snug tracking-[-0.01em] text-cream transition-colors duration-200 group-hover:text-white motion-reduce:transition-none">
           {program.title}
         </h3>
 
@@ -245,7 +245,7 @@ function ProgramCardItem({ program }: { program: Program }) {
           <MetaRow program={program} />
           <IconArrow
             size={15}
-            className="shrink-0 text-white/25 transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-[#E7B45A] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+            className="shrink-0 text-white/25 transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-gold-deep motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
           />
         </div>
       </div>
@@ -297,12 +297,12 @@ export function ProgramBoard({
 
   return (
     <div
-      className={`${geist.className} -mx-4 min-h-screen touch-manipulation bg-[#0B0A09] px-4 py-12 text-[#F7F6F3] sm:py-16`}
+      className={`${geist.className} -mx-4 min-h-screen touch-manipulation bg-bg px-4 py-12 text-cream sm:py-16`}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         {/* Header — title + a live mono "standings" line (the thesis) */}
         <header className="flex flex-col gap-4">
-          <h1 className="text-balance text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#F7F6F3] sm:text-[38px]">
+          <h1 className="text-balance text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] text-cream sm:text-[38px]">
             프로그램
           </h1>
           <div
@@ -334,7 +334,7 @@ export function ProgramBoard({
                   type="button"
                   onClick={() => setCat(c.key)}
                   aria-pressed={active}
-                  className={`shrink-0 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7B45A]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0A09] motion-reduce:transition-none ${
+                  className={`shrink-0 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
                     active
                       ? "bg-white/[0.10] text-white"
                       : "text-white/50 hover:bg-white/[0.05] hover:text-white/85"
@@ -360,14 +360,14 @@ export function ProgramBoard({
               autoComplete="off"
               spellCheck={false}
               enterKeyHint="search"
-              className="w-full rounded-lg border border-white/[0.08] bg-[#141211] py-2.5 pl-9 pr-3 text-[13px] text-[#F7F6F3] transition-colors duration-150 placeholder:text-white/35 hover:border-white/[0.14] focus:border-[#E7B45A]/50 focus:outline-none focus:ring-2 focus:ring-[#E7B45A]/30 motion-reduce:transition-none"
+              className="w-full rounded-lg border border-white/[0.08] bg-surface py-2.5 pl-9 pr-3 text-[13px] text-cream transition-colors duration-150 placeholder:text-white/35 hover:border-white/[0.14] focus:border-gold-deep/50 focus:outline-none focus:ring-2 focus:ring-gold-deep/30 motion-reduce:transition-none"
             />
           </div>
         </div>
 
         {/* Results */}
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-white/[0.08] bg-[#141211] py-20 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-xl border border-white/[0.08] bg-surface py-20 text-center">
             <p className="text-[14px] font-medium text-white/80">
               {query
                 ? `“${query}”에 맞는 프로그램이 없어요.`
