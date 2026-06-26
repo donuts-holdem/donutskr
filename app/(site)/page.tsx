@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getHotPrograms, getPrograms } from "@/lib/data/programs";
+import { getEvents } from "@/lib/data/events";
+import { getHotPrograms } from "@/lib/data/programs";
 import { getSiteConfig } from "@/lib/data/siteConfig";
 import { HomeMagazine } from "@/components/home/HomeMagazine";
 
@@ -10,15 +11,15 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [hotPrograms, programs, config] = await Promise.all([
+  const [events, hotPrograms, config] = await Promise.all([
+    getEvents(),
     getHotPrograms(),
-    getPrograms(),
     getSiteConfig(),
   ]);
 
   return (
     <HomeMagazine
-      programs={programs}
+      events={events}
       hotPrograms={hotPrograms}
       signupLink={config.signup_link}
     />

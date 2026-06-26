@@ -17,6 +17,7 @@ layer(base);
   --color-bg: #0a0908;
   --color-ink: #ffffff;
   --color-gold: #ffe58a;
+  --color-pink: #e78aa7; /* DO:NUTS brand pink (the logo / donut) */
 
   --color-coral-from: #d94b45;
   --color-coral-to: #f08b6f;
@@ -32,6 +33,17 @@ layer(base);
 
   --radius-card: 24px;
   --radius-pill: 999px;
+
+  /* Type scale. xs/sm/base/lg/xl/7xl reuse Tailwind defaults; these add the
+     micro label size and the editorial display ramp. */
+  --text-2xs: 0.6875rem; /* 11px — eyebrows / micro labels */
+  --text-display-sm: 1.625rem; /* 26px */
+  --text-display: 2rem; /* 32px */
+  --text-display-lg: 2.125rem; /* 34px */
+  --text-display-xl: 2.5rem; /* 40px */
+  --text-display-2xl: 3.25rem; /* 52px */
+  --text-display-3xl: 5.5rem; /* 88px */
+  --text-hero: clamp(2.75rem, 6.5vw, 5.5rem);
 
   --font-sans:
     var(--font-inter), Wanted Sans, Pretendard, system-ui, sans-serif;

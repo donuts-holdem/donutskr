@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getSiteConfig } from "@/lib/data/siteConfig";
 
 const NAV_LINKS = [
   { label: "프로그램", href: "/programs" },
@@ -11,9 +10,7 @@ const NAV_LINKS = [
   { label: "챌린지", href: "/challenge" },
 ];
 
-export async function Header() {
-  const config = await getSiteConfig();
-
+export function Header() {
   return (
     <header className="bg-bg border-b border-border sticky top-0 z-50">
       <div className="mx-auto max-w-7xl px-4 h-16 flex items-center gap-4">
@@ -44,18 +41,6 @@ export async function Header() {
             </Link>
           ))}
         </nav>
-
-        {/* Signup CTA */}
-        {config.signup_link && (
-          <a
-            href={config.signup_link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-auto shrink-0 px-3.5 py-2 text-sm font-semibold text-gold hover:text-gold/80 transition-colors rounded-pill hover:bg-gold/10"
-          >
-            가입신청
-          </a>
-        )}
       </div>
     </header>
   );
