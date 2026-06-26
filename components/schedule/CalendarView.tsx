@@ -137,22 +137,40 @@ function OverflowPopover({
   );
 }
 
-// NOTE: mobile branches (the <button> selecting a day, dot markers) are added in
-// Task 5. Here the cell renders the desktop layer only.
-function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; today: string }) {
+function DayCell({
+  cell,
+  events,
+  today,
+  selected,
+  onSelect,
+  onNavigateMonth,
+}: {
+  cell: DayCellT;
+  events: Event[];
+  today: string;
+  selected: boolean;
+  onSelect: (date: string) => void;
+  onNavigateMonth: (ym: string) => void;
+}) {
   const isToday = cell.date === today;
   const visible = events.slice(0, MAX_CHIPS);
   const overflow = events.length - visible.length;
   const numClass = `${display.className} inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums`;
 
   if (!cell.inMonth) {
+    const ym = cell.date.slice(0, 7);
     return (
-      <div
-        role="gridcell"
-        aria-hidden="true"
-        className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28"
-      >
-        <span className={`${numClass} text-white/20`}>{cell.day}</span>
+      <div role="gridcell" className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28">
+        {/* mobile: tap to jump to that month */}
+        <button
+          type="button"
+          aria-label={`${Number(ym.slice(5, 7))}월로 이동`}
+          onClick={() => onNavigateMonth(ym)}
+          className="rounded-md p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:hidden"
+        >
+          <span className={`${numClass} text-white/20`}>{cell.day}</span>
+        </button>
+        <span className={`${numClass} hidden text-white/20 sm:inline-flex`}>{cell.day}</span>
       </div>
     );
   }
@@ -163,14 +181,38 @@ function DayCell({ cell, events, today }: { cell: DayCellT; events: Event[]; tod
       aria-label={`${Number(cell.date.slice(5, 7))}월 ${cell.day}일, 이벤트 ${events.length}개`}
       className="min-h-20 border-b border-r border-white/[0.06] p-1.5 sm:min-h-28"
     >
-      <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/70"}`}>{cell.day}</span>
-      <div className="mt-1 flex flex-col gap-0.5">
-        {visible.map((e) => (
-          <EventChip key={e.id} event={e} today={today} />
-        ))}
-        {overflow > 0 && (
-          <OverflowPopover date={cell.date} events={events} today={today} count={overflow} />
+      {/* mobile: whole cell selects the day */}
+      <button
+        type="button"
+        aria-pressed={selected}
+        onClick={() => onSelect(cell.date)}
+        className={`flex w-full flex-col items-start gap-1 rounded-md p-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:hidden ${
+          selected ? "bg-white/[0.06]" : ""
+        }`}
+      >
+        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : selected ? "text-white" : "text-white/70"}`}>
+          {cell.day}
+        </span>
+        {events.length > 0 && (
+          <span className="flex gap-0.5" aria-hidden="true">
+            {events.slice(0, 3).map((e) => (
+              <span key={e.id} className={`h-1.5 w-1.5 rounded-full ${isEventGold(e, today) ? "bg-gold" : "bg-white/30"}`} />
+            ))}
+          </span>
         )}
+      </button>
+
+      {/* desktop: passive number + chip links */}
+      <div className="hidden flex-col sm:flex">
+        <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/70"}`}>{cell.day}</span>
+        <div className="mt-1 flex flex-col gap-0.5">
+          {visible.map((e) => (
+            <EventChip key={e.id} event={e} today={today} />
+          ))}
+          {overflow > 0 && (
+            <OverflowPopover date={cell.date} events={events} today={today} count={overflow} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -196,8 +238,14 @@ export function CalendarView({
     [weeks, byDate]
   );
 
+  const firstEventDay = (ym: string) =>
+    [...byDate.keys()].filter((k) => k.startsWith(ym)).sort()[0] ?? null;
+  const defaultSelected = today.startsWith(month) ? today : firstEventDay(month);
+  const [selected, setSelected] = useState<string | null>(defaultSelected);
+
   function changeMonth(next: string) {
     setMonthState(next);
+    setSelected(next === today.slice(0, 7) ? today : firstEventDay(next));
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
     url.searchParams.set("month", next);
@@ -258,7 +306,15 @@ export function CalendarView({
           {weeks.map((week, wi) => (
             <div role="row" key={wi} className="contents">
               {week.map((cell) => (
-                <DayCell key={cell.date} cell={cell} events={cell.inMonth ? byDate.get(cell.date) ?? [] : []} today={today} />
+                <DayCell
+                  key={cell.date}
+                  cell={cell}
+                  events={cell.inMonth ? byDate.get(cell.date) ?? [] : []}
+                  today={today}
+                  selected={selected === cell.date}
+                  onSelect={setSelected}
+                  onNavigateMonth={changeMonth}
+                />
               ))}
             </div>
           ))}
@@ -270,6 +326,25 @@ export function CalendarView({
           )}
         </div>
       </div>
+
+      {/* Mobile selected-day list */}
+      {selected && (
+        <div className="flex flex-col gap-2 sm:hidden">
+          <h3 className="text-sm font-semibold text-white">
+            {Number(selected.slice(5, 7))}월 {Number(selected.slice(8, 10))}일{" "}
+            <span className="text-white/45">({koWeekday(selected)})</span>
+          </h3>
+          {(byDate.get(selected)?.length ?? 0) > 0 ? (
+            <ul className="flex flex-col">
+              {byDate.get(selected)!.map((e) => (
+                <DayEventRow key={e.id} event={e} today={today} />
+              ))}
+            </ul>
+          ) : (
+            <p className="py-4 text-sm text-white/40">이 날에는 일정이 없어요.</p>
+          )}
+        </div>
+      )}
 
       {/* Undated events */}
       {undated.length > 0 && (

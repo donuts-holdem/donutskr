@@ -58,4 +58,16 @@ describe("CalendarView", () => {
     // 3 chips shown + a "+2" overflow trigger (5 total, MAX_CHIPS=3)
     expect(screen.getByRole("button", { name: "2개 더 보기" })).toBeInTheDocument();
   });
+
+  it("renders a selected-day list region for the mobile view", () => {
+    render(
+      <CalendarView
+        events={[ev({})]}
+        today={"2026-07-04"}
+        initialMonth="2026-07"
+      />
+    );
+    // default selected day = today (in month) → its heading appears (sm:hidden, still in DOM)
+    expect(screen.getByRole("heading", { name: /7월 4일/ })).toBeInTheDocument();
+  });
 });
