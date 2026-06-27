@@ -62,7 +62,7 @@ export function ProgramForm({ program, action }: ProgramFormProps) {
       {/* 상태 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="status">상태</Label>
-        <Select name="status" defaultValue={normalizeProgramStatus(program?.status) || undefined}>
+        <Select name="status" defaultValue={normalizeProgramStatus(program?.status) || program?.status || undefined}>
           <SelectTrigger id="status" className="w-full">
             <SelectValue placeholder="-- 선택 --" />
           </SelectTrigger>

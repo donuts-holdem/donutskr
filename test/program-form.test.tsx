@@ -36,4 +36,17 @@ describe("ProgramForm Phase 2 localization", () => {
     // (Radix renders it in both the visible span and the hidden <option>)
     expect(screen.getAllByText("모집중")[0]).toBeInTheDocument();
   });
+  it("preserves and preselects an unknown legacy status via the fallback item", () => {
+    const program = {
+      id: "1", slug: "x", title: "t", category: null, program_group: "poker" as const, status: "old_custom",
+      member_count: 0, location: null, start_date: null, end_date: null, description: null,
+      cover_image: null, manager_name: null, manager_role: null, manager_avatar: null,
+      cta_label: null, entry_link: null, external_url: null, is_hot: false, is_affiliate: false,
+      is_visible: true, sort_order: 0,
+    };
+    render(<ProgramForm program={program} action={async () => {}} />);
+    // unknown value normalizes to "" → falls through to itself; fallback item is rendered AND
+    // selected, so the "(원본값)" label appears in both the visible trigger and the hidden option.
+    expect(screen.getAllByText("old_custom (원본값)")[0]).toBeInTheDocument();
+  });
 });
