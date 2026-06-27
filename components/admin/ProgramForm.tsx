@@ -13,33 +13,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PROGRAM_GROUP_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus } from "@/lib/labels";
+import { ImagePreview } from "@/components/admin/ImagePreview";
 
 interface ProgramFormProps {
   program?: Program;
   action: (fd: FormData) => void | Promise<void>;
 }
 
-const GROUPS = ["poker", "social", "others"] as const;
-
 export function ProgramForm({ program, action }: ProgramFormProps) {
   return (
     <form action={action} className="flex max-w-2xl flex-col gap-5">
       {/* 프로그램명 */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="title">프로그램명</Label>
+        <Label htmlFor="title">프로그램명 *</Label>
         <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
       </div>
 
       {/* 슬러그 */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="slug">슬러그</Label>
+        <Label htmlFor="slug">슬러그 *</Label>
         <Input id="slug" name="slug" defaultValue={program?.slug ?? ""} required />
       </div>
 
       {/* 카테고리 */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="category">카테고리</Label>
-        <Input id="category" name="category" defaultValue={program?.category ?? ""} />
+        <Label htmlFor="category">카테고리 (표시용 라벨)</Label>
+        <Input id="category" name="category" defaultValue={program?.category ?? ""} placeholder="예: 커뮤니티" />
       </div>
 
       {/* 그룹 */}
@@ -50,9 +50,9 @@ export function ProgramForm({ program, action }: ProgramFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {GROUPS.map((g) => (
-              <SelectItem key={g} value={g}>
-                {g}
+            {PROGRAM_GROUP_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -62,7 +62,22 @@ export function ProgramForm({ program, action }: ProgramFormProps) {
       {/* 상태 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="status">상태</Label>
-        <Input id="status" name="status" defaultValue={program?.status ?? ""} />
+        <Select name="status" defaultValue={normalizeProgramStatus(program?.status) || program?.status || undefined}>
+          <SelectTrigger id="status" className="w-full">
+            <SelectValue placeholder="-- 선택 --" />
+          </SelectTrigger>
+          <SelectContent>
+            {PROGRAM_STATUS_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+            {/* 표준 키로 매핑되지 않는 기존값은 원본 그대로 보존(다음 저장에서 덮이지 않게) */}
+            {program?.status && normalizeProgramStatus(program.status) === "" && (
+              <SelectItem value={program.status}>{program.status} (원본값)</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* 인원 */}
@@ -98,9 +113,7 @@ export function ProgramForm({ program, action }: ProgramFormProps) {
       {/* 커버 이미지 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="cover_image_file">커버 이미지</Label>
-        {program?.cover_image && (
-          <p className="text-muted-foreground text-xs break-all">{program.cover_image}</p>
-        )}
+        <ImagePreview src={program?.cover_image} />
         {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
         <Input id="cover_image_file" name="cover_image_file" type="file" accept="image/*" />
       </div>

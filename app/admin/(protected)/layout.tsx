@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 const NAV_LINKS = [
   { href: "/admin/programs", label: "프로그램" },
   { href: "/admin/seasons", label: "시즌" },
-  { href: "/admin/events", label: "일정" },
+  { href: "/admin/events", label: "이벤트" },
   { href: "/admin/blind-structures", label: "스트럭처" },
   { href: "/admin/online-league", label: "리그" },
   { href: "/admin/special-pages", label: "특수페이지" },

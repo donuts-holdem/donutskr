@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EVENT_STATUS_OPTIONS } from "@/lib/labels";
+import { ImagePreview } from "@/components/admin/ImagePreview";
 
 interface EventFormProps {
   event?: Event;
@@ -20,17 +22,6 @@ interface EventFormProps {
   seasons?: Season[];
   action: (fd: FormData) => void | Promise<void>;
 }
-
-const CATEGORIES = ["festival", "confirmed", "upcoming", "completed"] as const;
-const STATUSES = [
-  "scheduled",
-  "confirmed",
-  "running",
-  "reg_closed",
-  "completed",
-  "canceled",
-  "hidden",
-] as const;
 
 export function EventForm({ event, structures, seasons = [], action }: EventFormProps) {
   return (
@@ -54,7 +45,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
 
       {/* 이벤트명 */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="title">이벤트명</Label>
+        <Label htmlFor="title">이벤트명 *</Label>
         <Input id="title" name="title" defaultValue={event?.title ?? ""} required />
       </div>
 
@@ -70,22 +61,8 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
         <Input id="event_type" name="event_type" defaultValue={event?.event_type ?? ""} />
       </div>
 
-      {/* 카테고리 */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="category">카테고리</Label>
-        <Select name="category" defaultValue={event?.category ?? "upcoming"}>
-          <SelectTrigger id="category" className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* 카테고리: 운영자에겐 무의미해 숨김. 기존값 보존(신규는 upcoming). */}
+      <input type="hidden" name="category" value={event?.category ?? "upcoming"} />
 
       {/* 상태 */}
       <div className="flex flex-col gap-2">
@@ -95,9 +72,9 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s}
+            {EVENT_STATUS_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -173,9 +150,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
       {/* 포스터 이미지 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="poster_image_file">포스터 이미지</Label>
-        {event?.poster_image && (
-          <p className="text-muted-foreground text-xs break-all">{event.poster_image}</p>
-        )}
+        <ImagePreview src={event?.poster_image} />
         {event && <input type="hidden" name="poster_image_existing" value={event.poster_image ?? ""} />}
         <Input id="poster_image_file" name="poster_image_file" type="file" accept="image/*" />
       </div>
@@ -183,9 +158,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
       {/* 스폰서 로고 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="sponsor_logo_file">스폰서 로고</Label>
-        {event?.sponsor_logo && (
-          <p className="text-muted-foreground text-xs break-all">{event.sponsor_logo}</p>
-        )}
+        <ImagePreview src={event?.sponsor_logo} />
         {event && <input type="hidden" name="sponsor_logo_existing" value={event.sponsor_logo ?? ""} />}
         <Input id="sponsor_logo_file" name="sponsor_logo_file" type="file" accept="image/*" />
       </div>

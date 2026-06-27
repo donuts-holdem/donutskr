@@ -11,13 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TAB_TYPE_OPTIONS } from "@/lib/labels";
 
 interface TabFormProps {
   tab?: NavTab;
   action: (fd: FormData) => void | Promise<void>;
 }
-
-const TAB_TYPES = ["internal", "external", "special"] as const;
 
 export function TabForm({ tab, action }: TabFormProps) {
   return (
@@ -37,9 +36,9 @@ export function TabForm({ tab, action }: TabFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {TAB_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
+            {TAB_TYPE_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
               </SelectItem>
             ))}
           </SelectContent>

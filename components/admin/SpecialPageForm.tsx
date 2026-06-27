@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
+import { ImagePreview } from "@/components/admin/ImagePreview";
 import {
   Select,
   SelectContent,
@@ -69,17 +70,13 @@ export function SpecialPageForm({ page, structures = [], action }: SpecialPageFo
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="sponsor_logo_file">스폰서 로고</Label>
-        {page?.sponsor_logo && (
-          <p className="text-muted-foreground text-xs break-all">{page.sponsor_logo}</p>
-        )}
+        <ImagePreview src={page?.sponsor_logo} />
         {page && <input type="hidden" name="sponsor_logo_existing" value={page.sponsor_logo ?? ""} />}
         <Input id="sponsor_logo_file" name="sponsor_logo_file" type="file" accept="image/*" />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="poster_file">포스터</Label>
-        {page?.poster && (
-          <p className="text-muted-foreground text-xs break-all">{page.poster}</p>
-        )}
+        <ImagePreview src={page?.poster} />
         {page && <input type="hidden" name="poster_existing" value={page.poster ?? ""} />}
         <Input id="poster_file" name="poster_file" type="file" accept="image/*" />
       </div>
