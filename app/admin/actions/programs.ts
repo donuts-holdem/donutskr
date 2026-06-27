@@ -73,12 +73,3 @@ export async function deleteProgram(id: string) {
   revalidatePublic(["/programs"]);
   redirect("/admin/programs?deleted=1");
 }
-
-export async function setProgramVerified(id: string, verified: boolean) {
-  const supabase = await requireAdmin();
-  const { data } = await supabase.from("programs").select("slug").eq("id", id).single();
-  const { error } = await supabase.from("programs").update({ description_verified: verified }).eq("id", id);
-  if (error) throw error;
-  revalidatePublic(data?.slug ? [`/programs/${data.slug}`] : []);
-  redirect(`/admin/programs/${id}/edit?saved=1`);
-}
