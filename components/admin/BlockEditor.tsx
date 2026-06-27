@@ -11,12 +11,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImagePreview } from "@/components/admin/ImagePreview";
 
-// ── Key generator for nested list state (module-level, client-only) ──────────
-let listSeq = 0;
-function makeListKey(): string {
-  listSeq += 1;
-  return `be-${listSeq}`;
-}
 
 // ── RunEditor ─────────────────────────────────────────────────────────────────
 function RunEditor({
@@ -75,6 +69,8 @@ function RunEditor({
 }
 
 // ── ParagraphEditor ───────────────────────────────────────────────────────────
+type KeyedRun = { key: string; value: Run };
+
 function ParagraphEditor({
   paragraph,
   onChange,
@@ -83,41 +79,42 @@ function ParagraphEditor({
   onChange: (p: Paragraph) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const runs = paragraph.runs;
+  const [keyedRuns, setKeyedRuns] = useState<KeyedRun[]>(() =>
+    paragraph.runs.map((r) => ({ key: crypto.randomUUID(), value: r })),
+  );
 
-  function updateRun(i: number, r: Run) {
-    const next = [...runs];
-    next[i] = r;
-    onChange({ runs: next });
+  function syncRuns(next: KeyedRun[]) {
+    setKeyedRuns(next);
+    onChange({ runs: next.map((k) => k.value) });
   }
 
   return (
     <div className="flex flex-col gap-2 flex-1">
       {!expanded ? (
         <Input
-          value={runs[0]?.text ?? ""}
+          value={keyedRuns[0]?.value.text ?? ""}
           onChange={(e) => {
-            const next = [...runs];
-            next[0] = { ...(runs[0] ?? { text: "" }), text: e.target.value };
-            onChange({ runs: next });
+            const next = [...keyedRuns];
+            next[0] = { ...keyedRuns[0], value: { ...(keyedRuns[0]?.value ?? { text: "" }), text: e.target.value } };
+            syncRuns(next);
           }}
           placeholder="문단 내용"
         />
       ) : (
         <div className="flex flex-col gap-1">
-          {runs.map((run, i) => (
+          {keyedRuns.map((kr) => (
             <RunEditor
-              key={i}
-              run={run}
-              onChange={(r) => updateRun(i, r)}
-              onRemove={() => onChange({ runs: runs.filter((_, idx) => idx !== i) })}
+              key={kr.key}
+              run={kr.value}
+              onChange={(r) => syncRuns(keyedRuns.map((k) => (k.key === kr.key ? { ...k, value: r } : k)))}
+              onRemove={() => syncRuns(keyedRuns.filter((k) => k.key !== kr.key))}
             />
           ))}
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => onChange({ runs: [...runs, { text: "" }] })}
+            onClick={() => syncRuns([...keyedRuns, { key: crypto.randomUUID(), value: { text: "" } }])}
           >
             + 조각
           </Button>
@@ -147,7 +144,7 @@ function ParagraphListEditor({
   onChange: (ps: Paragraph[]) => void;
 }) {
   const [keyedPs, setKeyedPs] = useState<KeyedP[]>(() =>
-    paragraphs.map((p) => ({ key: makeListKey(), value: p })),
+    paragraphs.map((p) => ({ key: crypto.randomUUID(), value: p })),
   );
 
   function syncPs(next: KeyedP[]) {
@@ -169,7 +166,7 @@ function ParagraphListEditor({
         variant="outline"
         size="sm"
         onClick={() =>
-          syncPs([...keyedPs, { key: makeListKey(), value: { runs: [{ text: "" }] } }])
+          syncPs([...keyedPs, { key: crypto.randomUUID(), value: { runs: [{ text: "" }] } }])
         }
       >
         + 문단
@@ -189,7 +186,7 @@ function ListEditor({
   onChange: (items: Paragraph[][]) => void;
 }) {
   const [keyedItems, setKeyedItems] = useState<KeyedItem[]>(() =>
-    items.map((v) => ({ key: makeListKey(), value: v })),
+    items.map((v) => ({ key: crypto.randomUUID(), value: v })),
   );
 
   function sync(next: KeyedItem[]) {
@@ -198,7 +195,7 @@ function ListEditor({
   }
 
   function addItem() {
-    sync([...keyedItems, { key: makeListKey(), value: [{ runs: [{ text: "" }] }] }]);
+    sync([...keyedItems, { key: crypto.randomUUID(), value: [{ runs: [{ text: "" }] }] }]);
   }
   function removeItem(key: string) {
     sync(keyedItems.filter((i) => i.key !== key));
@@ -395,16 +392,20 @@ export function BlockEditor({ name, initial }: { name: string; initial: Block[] 
                   </Label>
                   <Input
                     id={`block_image_${imgIdx}_alt`}
-                    value={block.alt}
+                    value={block.decorative ? "" : block.alt}
                     onChange={(e) => update(row.key, { ...block, alt: e.target.value })}
                     placeholder="이미지 설명"
+                    disabled={!!block.decorative}
                   />
+                  {!block.decorative && !block.alt && (
+                    <p className="text-xs text-muted-foreground">대체 텍스트를 입력하면 접근성에 좋습니다</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id={`block_image_${imgIdx}_decorative`}
                     checked={!!block.decorative}
-                    onCheckedChange={(v) => update(row.key, { ...block, decorative: !!v })}
+                    onCheckedChange={(v) => update(row.key, { ...block, decorative: !!v, alt: v ? "" : block.alt })}
                   />
                   <Label htmlFor={`block_image_${imgIdx}_decorative`} className="text-sm">
                     장식용 이미지
