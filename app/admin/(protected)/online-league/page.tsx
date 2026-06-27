@@ -13,8 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
-
-const STATUSES = ["operating", "revamping", "preparing", "suspended", "hidden"] as const;
+import { LEAGUE_STATUS_OPTIONS } from "@/lib/labels";
 
 export default async function OnlineLeaguePage() {
   const league = await getOnlineLeague();
@@ -30,9 +29,9 @@ export default async function OnlineLeaguePage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
+              {LEAGUE_STATUS_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
                 </SelectItem>
               ))}
             </SelectContent>
