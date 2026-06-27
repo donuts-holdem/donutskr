@@ -23,7 +23,6 @@ interface EventFormProps {
   action: (fd: FormData) => void | Promise<void>;
 }
 
-
 export function EventForm({ event, structures, seasons = [], action }: EventFormProps) {
   return (
     <form action={action} className="flex max-w-2xl flex-col gap-5">
