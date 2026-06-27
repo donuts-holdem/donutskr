@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 
 const NAV_LINKS = [
   { href: "/admin/programs", label: "프로그램" },
@@ -57,6 +58,7 @@ export default async function AdminLayout({
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <Toaster />
     </div>
   );
 }
