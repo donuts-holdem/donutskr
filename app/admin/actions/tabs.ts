@@ -28,7 +28,7 @@ export async function createTab(fd: FormData) {
   const { error } = await supabase.from("navigation_tabs").insert(parseTabForm(fd));
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/tabs");
+  redirect("/admin/tabs?saved=1");
 }
 
 export async function updateTab(id: string, fd: FormData) {
@@ -36,7 +36,7 @@ export async function updateTab(id: string, fd: FormData) {
   const { error } = await supabase.from("navigation_tabs").update(parseTabForm(fd)).eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/tabs");
+  redirect("/admin/tabs?saved=1");
 }
 
 export async function deleteTab(id: string) {
@@ -44,5 +44,5 @@ export async function deleteTab(id: string) {
   const { error } = await supabase.from("navigation_tabs").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/tabs");
+  redirect("/admin/tabs?deleted=1");
 }

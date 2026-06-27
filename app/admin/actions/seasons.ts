@@ -27,7 +27,7 @@ export async function createSeason(fd: FormData) {
   const { error } = await supabase.from("seasons").insert({ ...parse(fd), hero_image, bg_image });
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/seasons");
+  redirect("/admin/seasons?saved=1");
 }
 
 export async function updateSeason(id: string, fd: FormData) {
@@ -38,7 +38,7 @@ export async function updateSeason(id: string, fd: FormData) {
   const { error } = await supabase.from("seasons").update({ ...parse(fd), hero_image, bg_image }).eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/seasons");
+  redirect("/admin/seasons?saved=1");
 }
 
 export async function deleteSeason(id: string) {
@@ -49,7 +49,7 @@ export async function deleteSeason(id: string) {
     .eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/seasons");
+  redirect("/admin/seasons?deleted=1");
 }
 
 export async function activateSeason(id: string) {
@@ -60,5 +60,5 @@ export async function activateSeason(id: string) {
   const { error } = await supabase.rpc("activate_season", { target: id });
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/seasons");
+  redirect("/admin/seasons?saved=1");
 }

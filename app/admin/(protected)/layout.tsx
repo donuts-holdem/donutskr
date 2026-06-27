@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Toaster } from "@/components/ui/sonner";
+import { SaveToast } from "@/components/admin/SaveToast";
 
 export default async function AdminLayout({
   children,
@@ -37,6 +39,7 @@ export default async function AdminLayout({
       {/* Main content */}
       <main className="flex-1 overflow-y-auto p-8">{children}</main>
       <Toaster />
+      <Suspense fallback={null}><SaveToast /></Suspense>
     </div>
   );
 }

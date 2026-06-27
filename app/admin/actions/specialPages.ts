@@ -36,7 +36,7 @@ export async function createSpecialPage(fd: FormData) {
   const { error } = await supabase.from("special_pages").insert({ ...parseSpecialPageForm(fd), poster, sponsor_logo });
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/special-pages");
+  redirect("/admin/special-pages?saved=1");
 }
 
 export async function updateSpecialPage(id: string, fd: FormData) {
@@ -47,7 +47,7 @@ export async function updateSpecialPage(id: string, fd: FormData) {
   const { error } = await supabase.from("special_pages").update({ ...parseSpecialPageForm(fd), poster, sponsor_logo }).eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/special-pages");
+  redirect("/admin/special-pages?saved=1");
 }
 
 export async function deleteSpecialPage(id: string) {
@@ -55,5 +55,5 @@ export async function deleteSpecialPage(id: string) {
   const { error } = await supabase.from("special_pages").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/special-pages");
+  redirect("/admin/special-pages?deleted=1");
 }
