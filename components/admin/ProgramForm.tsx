@@ -27,37 +27,69 @@ interface ProgramFormProps {
 export function ProgramForm({ program, descriptionInitialHtml, action }: ProgramFormProps) {
   return (
     <form action={action} className="flex max-w-4xl flex-col gap-6">
-      {/* 기본 정보 + 커버 이미지 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>기본 정보</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
-            {/* 좌: 프로그램명 · 슬러그 (각각 다른 줄) */}
-            <div className="flex flex-1 flex-col gap-5">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="title">프로그램명 *</Label>
-                <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
+      {/* 기본 정보 + 담당자 (같은 줄, 각 절반 폭) */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle asChild>
+              <h2>기본 정보</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-5">
+              {/* 좌: 프로그램명 · 슬러그 (각각 다른 줄) */}
+              <div className="flex flex-1 flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="title">프로그램명 *</Label>
+                  <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="slug">슬러그 *</Label>
+                  <Input id="slug" name="slug" defaultValue={program?.slug ?? ""} required />
+                  <p className="text-muted-foreground text-xs">URL 경로로 쓰이는 고유값입니다. (영문/숫자/하이픈)</p>
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="slug">슬러그 *</Label>
-                <Input id="slug" name="slug" defaultValue={program?.slug ?? ""} required />
-                <p className="text-muted-foreground text-xs">URL 경로로 쓰이는 고유값입니다. (영문/숫자/하이픈)</p>
+              {/* 우: 커버 이미지 */}
+              <div className="flex flex-col gap-2 sm:w-32">
+                <Label htmlFor="cover_image_file">커버 이미지</Label>
+                <ImagePreview src={program?.cover_image} className="h-32 w-32 sm:w-full" />
+                {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
+                <FileInput id="cover_image_file" name="cover_image_file" />
               </div>
             </div>
-            {/* 우: 커버 이미지 */}
-            <div className="flex flex-col gap-2 md:w-44">
-              <Label htmlFor="cover_image_file">커버 이미지</Label>
-              <ImagePreview src={program?.cover_image} className="h-44 w-44 md:w-full" />
-              {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
-              <FileInput id="cover_image_file" name="cover_image_file" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle asChild>
+              <h2>담당자</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-5">
+              {/* 좌: 담당자명 · 역할 (각각 다른 줄) */}
+              <div className="flex flex-1 flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="manager_name">담당자명</Label>
+                  <Input id="manager_name" name="manager_name" defaultValue={program?.manager_name ?? ""} />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="manager_role">담당자 역할</Label>
+                  <Input id="manager_role" name="manager_role" defaultValue={program?.manager_role ?? ""} />
+                </div>
+              </div>
+              {/* 우: 담당자 아바타 */}
+              <div className="flex flex-col gap-2 sm:w-32">
+                <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
+                <ImagePreview src={program?.manager_avatar} className="h-32 w-32 sm:w-full" />
+                {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
+                <FileInput id="manager_avatar_file" name="manager_avatar_file" />
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* 분류 */}
       <Card>
@@ -146,37 +178,6 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
           <ProgramRichEditor name="description_blocks" initialHtml={descriptionInitialHtml ?? ""} />
           {/* Preserve the legacy description column so the public fallback is never lost on save */}
           <input type="hidden" name="description" value={program?.description ?? ""} />
-        </CardContent>
-      </Card>
-
-      {/* 담당자 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>담당자</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
-            {/* 좌: 담당자명 · 역할 (각각 다른 줄) */}
-            <div className="flex flex-1 flex-col gap-5">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="manager_name">담당자명</Label>
-                <Input id="manager_name" name="manager_name" defaultValue={program?.manager_name ?? ""} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="manager_role">담당자 역할</Label>
-                <Input id="manager_role" name="manager_role" defaultValue={program?.manager_role ?? ""} />
-              </div>
-            </div>
-            {/* 우: 담당자 아바타 */}
-            <div className="flex flex-col gap-2 md:w-44">
-              <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
-              <ImagePreview src={program?.manager_avatar} className="h-44 w-44 md:w-full" />
-              {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
-              <FileInput id="manager_avatar_file" name="manager_avatar_file" />
-            </div>
-          </div>
         </CardContent>
       </Card>
 
