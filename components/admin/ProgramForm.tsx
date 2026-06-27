@@ -27,39 +27,34 @@ interface ProgramFormProps {
 export function ProgramForm({ program, descriptionInitialHtml, action }: ProgramFormProps) {
   return (
     <form action={action} className="flex max-w-4xl flex-col gap-6">
-      {/* 기본 정보 */}
+      {/* 기본 정보 + 커버 이미지 */}
       <Card>
         <CardHeader>
           <CardTitle asChild>
             <h2>기본 정보</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="title">프로그램명 *</Label>
-            <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="slug">슬러그 *</Label>
-            <Input id="slug" name="slug" defaultValue={program?.slug ?? ""} required />
-            <p className="text-muted-foreground text-xs">URL 경로로 쓰이는 고유값입니다. (영문/숫자/하이픈)</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 미디어 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>미디어</h2>
-          </CardTitle>
-        </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="cover_image_file">커버 이미지</Label>
-            <ImagePreview src={program?.cover_image} />
-            {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
-            <FileInput id="cover_image_file" name="cover_image_file" />
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
+            {/* 좌: 프로그램명 · 슬러그 */}
+            <div className="grid flex-1 grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="title">프로그램명 *</Label>
+                <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="slug">슬러그 *</Label>
+                <Input id="slug" name="slug" defaultValue={program?.slug ?? ""} required />
+                <p className="text-muted-foreground text-xs">URL 경로로 쓰이는 고유값입니다. (영문/숫자/하이픈)</p>
+              </div>
+            </div>
+            {/* 우: 커버 이미지 */}
+            <div className="flex flex-col gap-2 md:w-44">
+              <Label htmlFor="cover_image_file">커버 이미지</Label>
+              <ImagePreview src={program?.cover_image} className="h-44 w-44 md:w-full" />
+              {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
+              <FileInput id="cover_image_file" name="cover_image_file" />
+            </div>
           </div>
         </CardContent>
       </Card>
