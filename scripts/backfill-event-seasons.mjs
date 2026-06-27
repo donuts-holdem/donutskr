@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 
 const env = {};
 for (const line of readFileSync(".env.local", "utf8").split("\n")) {
-  const m = line.match(/^([A-Z_]+)=(.*)$/);
+  const m = line.match(/^([A-Za-z0-9_]+)=(.*)$/);
   if (m) env[m[1]] = m[2].replace(/^["']|["']$/g, "");
 }
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -26,9 +26,12 @@ function assignSeasonByDate(date, seasons) {
 }
 
 const apply = process.argv.includes("--apply");
-const { data: seasons } = await sb.from("seasons").select("id,name,start_date,end_date").is("deleted_at", null);
-const { data: events } = await sb
+const { data: seasons, error: seasonsError } = await sb
+  .from("seasons").select("id,name,start_date,end_date").is("deleted_at", null);
+if (seasonsError) { console.error("failed to read seasons:", seasonsError); process.exit(1); }
+const { data: events, error: eventsError } = await sb
   .from("events").select("id,title,date,season_id").is("deleted_at", null).is("season_id", null);
+if (eventsError) { console.error("failed to read events:", eventsError); process.exit(1); }
 
 console.log(`seasons: ${seasons.length}, null-season events: ${events.length}`);
 const plan = [];
