@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
+import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
 import { ProgramForm } from "@/components/admin/ProgramForm";
 import { updateProgram, deleteProgram } from "@/app/admin/actions/programs";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -9,17 +10,6 @@ import { VerifyCutover } from "@/components/admin/VerifyCutover";
 import { ProgramBlocks } from "@/components/program/ProgramBlocks";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { mapProgram } from "@/lib/data/programs";
-
-// Sanitize config mirrors the public page pipeline in app/(site)/programs/[slug]/page.tsx
-const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
-  allowedAttributes: {
-    ...sanitizeHtml.defaults.allowedAttributes,
-    a: ["href", "name", "target", "rel"],
-    img: ["src", "alt", "title", "width", "height"],
-  },
-  allowedSchemes: ["http", "https", "mailto"],
-};
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,7 +29,7 @@ export default async function EditProgramPage({ params }: Props) {
   // Compute legacy HTML preview only when blocks exist (side-by-side comparison)
   const legacyHtml =
     blocks !== null && program.description
-      ? sanitizeHtml(await marked.parse(program.description), SANITIZE_CONFIG)
+      ? sanitizeHtml(await marked.parse(program.description), PROGRAM_SANITIZE_CONFIG)
       : null;
 
   return (

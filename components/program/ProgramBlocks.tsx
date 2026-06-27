@@ -1,16 +1,6 @@
 import sanitizeHtml from "sanitize-html";
 import type { Block, Paragraph, Run } from "@/lib/program-blocks";
-
-// Sanitize config mirroring the legacy marked renderer in app/(site)/programs/[slug]/page.tsx
-const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
-  allowedAttributes: {
-    ...sanitizeHtml.defaults.allowedAttributes,
-    a: ["href", "name", "target", "rel"],
-    img: ["src", "alt", "title", "width", "height"],
-  },
-  allowedSchemes: ["http", "https", "mailto"],
-};
+import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
 
 function renderRun(run: Run, key: number): React.ReactNode {
   const { text, bold, href } = run;
@@ -58,7 +48,7 @@ export function ProgramBlocks({ blocks }: { blocks: Block[] }) {
             return (
               <div
                 key={i}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.html, SANITIZE_CONFIG) }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.html, PROGRAM_SANITIZE_CONFIG) }}
               />
             );
         }

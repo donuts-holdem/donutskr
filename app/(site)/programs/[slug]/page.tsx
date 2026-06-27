@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
+import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
 import { getProgramBySlug, getHotPrograms } from "@/lib/data/programs";
 import { ProgramCard } from "@/components/program/ProgramCard";
 import { ProgramBlocks } from "@/components/program/ProgramBlocks";
@@ -75,15 +76,7 @@ export default async function ProgramDetailPage({ params }: Props) {
   // Sanitize rendered markdown before injecting — admin content today, but a
   // dangerouslySetInnerHTML sink fed by stored data must not pass raw HTML/JS.
   const descHtml = program.description
-    ? sanitizeHtml(await marked.parse(program.description), {
-        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
-        allowedAttributes: {
-          ...sanitizeHtml.defaults.allowedAttributes,
-          a: ["href", "name", "target", "rel"],
-          img: ["src", "alt", "title", "width", "height"],
-        },
-        allowedSchemes: ["http", "https", "mailto"],
-      })
+    ? sanitizeHtml(await marked.parse(program.description), PROGRAM_SANITIZE_CONFIG)
     : null;
 
   const useBlocks =
