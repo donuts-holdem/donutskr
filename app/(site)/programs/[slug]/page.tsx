@@ -6,6 +6,8 @@ import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
 import { getProgramBySlug, getHotPrograms } from "@/lib/data/programs";
 import { ProgramCard } from "@/components/program/ProgramCard";
+import { ProgramBlocks } from "@/components/program/ProgramBlocks";
+import { hasVisibleContent } from "@/lib/program-blocks";
 import { programStatusLabel, formatDotDate, isExternalUrl } from "@/lib/program-display";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -84,6 +86,12 @@ export default async function ProgramDetailPage({ params }: Props) {
       })
     : null;
 
+  const useBlocks =
+    program.description_verified &&
+    Array.isArray(program.description_blocks) &&
+    program.description_blocks.length > 0 &&
+    hasVisibleContent(program.description_blocks);
+
   const relatedPrograms = hotPrograms.filter((p) => p.slug !== slug).slice(0, 4);
 
   const ctaHref = program.entry_link ?? program.external_url ?? null;
@@ -132,11 +140,15 @@ export default async function ProgramDetailPage({ params }: Props) {
             </div>
           )}
 
-          {descHtml && (
-            <div
-              className="prose-dark text-ink/80 text-sm leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: descHtml }}
-            />
+          {useBlocks ? (
+            <ProgramBlocks blocks={program.description_blocks!} />
+          ) : (
+            descHtml && (
+              <div
+                className="prose-dark text-ink/80 text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: descHtml }}
+              />
+            )
           )}
         </div>
 

@@ -53,6 +53,8 @@ export interface SiteConfig {
   footer_sponsors: { name: string; logo?: string; url?: string }[];
 }
 
+import type { Block } from "@/lib/program-blocks";
+
 export type ProgramGroup = "poker" | "social" | "others";
 export interface Program {
   id: string; slug: string; title: string; category: string | null; program_group: ProgramGroup;
@@ -61,4 +63,5 @@ export interface Program {
   cover_image: string | null; manager_name: string | null; manager_role: string | null; manager_avatar: string | null;
   cta_label: string | null; entry_link: string | null; external_url: string | null;
   is_hot: boolean; is_affiliate: boolean; is_visible: boolean; sort_order: number;
+  description_blocks: Block[] | null; description_verified: boolean;
 }
