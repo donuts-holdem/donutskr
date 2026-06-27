@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllPrograms } from "@/lib/data/programs";
+import { programGroupLabel } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -37,7 +38,7 @@ export default async function AdminProgramsPage() {
           {programs.map((program) => (
             <TableRow key={program.id}>
               <TableCell className="text-foreground">{program.title}</TableCell>
-              <TableCell className="text-muted-foreground">{program.program_group}</TableCell>
+              <TableCell className="text-muted-foreground">{programGroupLabel(program.program_group)}</TableCell>
               <TableCell className={program.is_hot ? "text-gold" : "text-muted-foreground/50"}>
                 {program.is_hot ? "●" : "○"}
               </TableCell>

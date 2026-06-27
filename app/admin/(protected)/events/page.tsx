@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllEvents } from "@/lib/data/events";
+import { eventStatusLabel } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -26,7 +27,6 @@ export default async function AdminEventsPage() {
         <TableHeader>
           <TableRow>
             <TableHead>제목</TableHead>
-            <TableHead>카테고리</TableHead>
             <TableHead>상태</TableHead>
             <TableHead>노출</TableHead>
             <TableHead>작업</TableHead>
@@ -36,8 +36,7 @@ export default async function AdminEventsPage() {
           {events.map((event) => (
             <TableRow key={event.id}>
               <TableCell className="text-foreground">{event.title}</TableCell>
-              <TableCell className="text-muted-foreground">{event.category}</TableCell>
-              <TableCell className="text-muted-foreground">{event.status}</TableCell>
+              <TableCell className="text-muted-foreground">{eventStatusLabel(event.status)}</TableCell>
               <TableCell className={event.is_visible ? "text-gold" : "text-muted-foreground/50"}>
                 {event.is_visible ? "●" : "○"}
               </TableCell>
@@ -50,7 +49,7 @@ export default async function AdminEventsPage() {
           ))}
           {events.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
+              <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
                 등록된 이벤트가 없습니다.
               </TableCell>
             </TableRow>

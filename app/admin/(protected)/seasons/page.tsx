@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllSeasons } from "@/lib/data/seasons";
+import { seasonCodeLabel } from "@/lib/labels";
 import { activateSeason, deleteSeason } from "@/app/admin/actions/seasons";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ export default async function AdminSeasonsPage() {
           {seasons.map((season) => (
             <TableRow key={season.id}>
               <TableCell className="text-foreground">{season.name}</TableCell>
-              <TableCell className="text-muted-foreground">{season.code}</TableCell>
+              <TableCell className="text-muted-foreground">{seasonCodeLabel(season.code)}</TableCell>
               <TableCell className="text-muted-foreground">{season.year}</TableCell>
               <TableCell>
                 {season.is_active ? (
