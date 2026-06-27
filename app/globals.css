@@ -172,6 +172,14 @@ body {
   color: rgba(255,255,255,0.55);
   margin: 0.75em 0;
 }
+.prose-dark hr {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  margin: 1.25em 0;
+}
+.prose-dark em { font-style: italic; }
+.prose-dark u { text-decoration-color: currentColor; }
+.prose-dark s { text-decoration-color: currentColor; color: rgba(255,255,255,0.55); }
 /*
   ---break---
 */
