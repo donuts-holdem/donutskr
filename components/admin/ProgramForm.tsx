@@ -36,8 +36,8 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
-            {/* 좌: 프로그램명 · 슬러그 */}
-            <div className="grid flex-1 grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+            {/* 좌: 프로그램명 · 슬러그 (각각 다른 줄) */}
+            <div className="flex flex-1 flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="title">프로그램명 *</Label>
                 <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
@@ -156,20 +156,26 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
             <h2>담당자</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="manager_name">담당자명</Label>
-            <Input id="manager_name" name="manager_name" defaultValue={program?.manager_name ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="manager_role">담당자 역할</Label>
-            <Input id="manager_role" name="manager_role" defaultValue={program?.manager_role ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
-            <ImagePreview src={program?.manager_avatar} />
-            {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
-            <FileInput id="manager_avatar_file" name="manager_avatar_file" />
+        <CardContent>
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
+            {/* 좌: 담당자명 · 역할 (각각 다른 줄) */}
+            <div className="flex flex-1 flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="manager_name">담당자명</Label>
+                <Input id="manager_name" name="manager_name" defaultValue={program?.manager_name ?? ""} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="manager_role">담당자 역할</Label>
+                <Input id="manager_role" name="manager_role" defaultValue={program?.manager_role ?? ""} />
+              </div>
+            </div>
+            {/* 우: 담당자 아바타 */}
+            <div className="flex flex-col gap-2 md:w-44">
+              <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
+              <ImagePreview src={program?.manager_avatar} className="h-44 w-44 md:w-full" />
+              {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
+              <FileInput id="manager_avatar_file" name="manager_avatar_file" />
+            </div>
           </div>
         </CardContent>
       </Card>
