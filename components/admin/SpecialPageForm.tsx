@@ -124,11 +124,12 @@ export function SpecialPageForm({ page, structures = [], action }: SpecialPageFo
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="blind_structure_id">블라인드 스트럭처</Label>
-        <Select name="blind_structure_id" defaultValue={page?.blind_structure_id ?? undefined}>
+        <Select name="blind_structure_id" defaultValue={page?.blind_structure_id ?? "none"}>
           <SelectTrigger id="blind_structure_id" className="w-full">
             <SelectValue placeholder="-- 없음 --" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="none">없음</SelectItem>
             {structures.map((s) => (
               <SelectItem key={s.id} value={s.id}>
                 {s.name}
