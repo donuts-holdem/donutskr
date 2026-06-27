@@ -85,6 +85,11 @@ export default async function ProgramDetailPage({ params }: Props) {
     program.description_blocks.length > 0 &&
     hasVisibleContent(program.description_blocks);
 
+  // A verified (WYSIWYG-managed) program must never fall back to legacy markdown —
+  // even when description_blocks is empty (operator cleared and saved). Only
+  // non-verified programs with rendered markdown should show the legacy body.
+  const showLegacy = !program.description_verified && descHtml;
+
   const relatedPrograms = hotPrograms.filter((p) => p.slug !== slug).slice(0, 4);
 
   const ctaHref = program.entry_link ?? program.external_url ?? null;
@@ -135,14 +140,12 @@ export default async function ProgramDetailPage({ params }: Props) {
 
           {useBlocks ? (
             <ProgramBlocks blocks={program.description_blocks!} />
-          ) : (
-            descHtml && (
-              <div
-                className="prose-dark text-ink/80 text-sm leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: descHtml }}
-              />
-            )
-          )}
+          ) : showLegacy ? (
+            <div
+              className="prose-dark text-ink/80 text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: showLegacy }}
+            />
+          ) : null}
         </div>
 
         {/* Right: manager card + CTA */}

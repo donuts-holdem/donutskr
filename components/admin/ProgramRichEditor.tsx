@@ -82,7 +82,22 @@ export function ProgramRichEditor({ name, initialHtml }: { name: string; initial
   const editor = useEditor({
     immediatelyRender: false, // required under Next SSR
     extensions: [
-      StarterKit.configure({ heading: { levels: [2] } }),
+      StarterKit.configure({
+        heading: { levels: [2] },
+        // Disable StarterKit's bundled link so the standalone Link below (with
+        // openOnClick + HTMLAttributes) is the sole link extension — avoids
+        // "Duplicate extension names" warning and ensures target/rel are applied.
+        link: false,
+        // Restrict to spec's 6 formats: paragraph / bold / link / bulletList / h2 / image.
+        italic: false,
+        strike: false,
+        code: false,
+        codeBlock: false,
+        blockquote: false,
+        horizontalRule: false,
+        orderedList: false,
+        underline: false,
+      }),
       Link.configure({ openOnClick: false, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
       Image,
     ],
@@ -102,7 +117,8 @@ export function ProgramRichEditor({ name, initialHtml }: { name: string; initial
       return;
     }
     const { url } = (await res.json()) as { url: string };
-    editor?.chain().focus().setImage({ src: url }).run();
+    const alt = window.prompt("이미지 대체 텍스트 (접근성용 · 장식 이미지는 비워두세요)", "") ?? "";
+    editor?.chain().focus().setImage({ src: url, alt }).run();
   }
 
   return (
