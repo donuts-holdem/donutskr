@@ -10,6 +10,7 @@ export function ViewOnSiteLink({ href, label = "사이트에서 보기" }: { hre
     >
       <ExternalLink className="size-3" aria-hidden />
       {label}
+      <span className="sr-only">(새 창)</span>
     </a>
   );
 }

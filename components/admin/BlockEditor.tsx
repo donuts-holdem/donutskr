@@ -44,6 +44,7 @@ function RunEditor({
         type="button"
         variant={showHref ? "default" : "outline"}
         size="sm"
+        aria-label="링크"
         aria-pressed={showHref}
         onClick={() => {
           const next = !showHref;
