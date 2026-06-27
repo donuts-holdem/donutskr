@@ -3,19 +3,8 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 
-interface BlindRow {
-  row_type: string;
-  level_no?: number | null;
-  sb?: number | null;
-  bb?: number | null;
-  ante?: string | number | null;
-  duration?: number | null;
-  break_name?: string | null;
-  break_minutes?: number | null;
-  stage_note?: string | null;
-}
-
-export async function saveStructure(id: string | null, name: string, eventType: string | null, rows: BlindRow[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function saveStructure(id: string | null, name: string, eventType: string | null, rows: any[]) {
   const supabase = await requireAdmin();
   let structureId = id;
   if (!structureId) {
@@ -72,7 +61,8 @@ export async function duplicateStructure(fd: FormData) {
   const newId = created.id;
 
   if (rows && rows.length > 0) {
-    const copies = rows.map((r: BlindRow, i: number) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const copies = rows.map((r: any, i: number) => ({
       structure_id: newId,
       row_type: r.row_type,
       level_no: r.level_no, sb: r.sb, bb: r.bb, ante: r.ante, duration: r.duration,
