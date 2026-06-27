@@ -3,6 +3,7 @@ import { getAllSeasons } from "@/lib/data/seasons";
 import { seasonCodeLabel } from "@/lib/labels";
 import { activateSeason, deleteSeason } from "@/app/admin/actions/seasons";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -53,10 +54,11 @@ export default async function AdminSeasonsPage() {
                 )}
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Button asChild variant="link" size="sm" className="h-auto p-0">
                     <Link href={`/admin/seasons/${season.id}/edit`}>수정</Link>
                   </Button>
+                  <ViewOnSiteLink href="/series" label="시리즈에서 보기" />
                   <DeleteButton onDelete={deleteSeason.bind(null, season.id)} />
                 </div>
               </TableCell>

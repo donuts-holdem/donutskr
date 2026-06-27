@@ -24,7 +24,7 @@ export async function createEvent(fd: FormData) {
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", null);
   const { error } = await supabase.from("events").insert({ ...parse(fd), poster_image, sponsor_logo });
   if (error) throw error;
-  revalidatePublic(); redirect("/admin/events");
+  revalidatePublic(); redirect("/admin/events?saved=1");
 }
 export async function updateEvent(id: string, fd: FormData) {
   const supabase = await requireAdmin();
@@ -33,11 +33,11 @@ export async function updateEvent(id: string, fd: FormData) {
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", s("sponsor_logo_existing"));
   const { error } = await supabase.from("events").update({ ...parse(fd), poster_image, sponsor_logo }).eq("id", id);
   if (error) throw error;
-  revalidatePublic([`/schedule/${id}`]); redirect("/admin/events");
+  revalidatePublic([`/schedule/${id}`]); redirect("/admin/events?saved=1");
 }
 export async function deleteEvent(id: string) {
   const supabase = await requireAdmin();
   const { error } = await supabase.from("events").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
-  revalidatePublic([`/schedule/${id}`]); redirect("/admin/events");
+  revalidatePublic([`/schedule/${id}`]); redirect("/admin/events?deleted=1");
 }

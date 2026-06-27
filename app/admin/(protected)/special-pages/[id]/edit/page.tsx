@@ -2,6 +2,7 @@ import { getAllSpecialPages } from "@/lib/data/specialPages";
 import { getAllStructures } from "@/lib/data/blindStructures";
 import { updateSpecialPage } from "@/app/admin/actions/specialPages";
 import { SpecialPageForm } from "@/components/admin/SpecialPageForm";
+import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 import { notFound } from "next/navigation";
 
 export default async function EditSpecialPagePage({ params }: { params: Promise<{ id: string }> }) {
@@ -17,7 +18,10 @@ export default async function EditSpecialPagePage({ params }: { params: Promise<
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>특수 페이지 수정</h1>
+      <div className="mb-6 flex items-center gap-3">
+        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>특수 페이지 수정</h1>
+        <ViewOnSiteLink href={`/${page.slug}`} />
+      </div>
       <SpecialPageForm page={page} structures={structures} action={action} />
     </div>
   );

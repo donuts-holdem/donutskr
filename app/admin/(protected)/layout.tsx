@@ -1,18 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/admin/SignOutButton";
-import { Button } from "@/components/ui/button";
-
-const NAV_LINKS = [
-  { href: "/admin/programs", label: "프로그램" },
-  { href: "/admin/seasons", label: "시즌" },
-  { href: "/admin/events", label: "이벤트" },
-  { href: "/admin/blind-structures", label: "스트럭처" },
-  { href: "/admin/online-league", label: "리그" },
-  { href: "/admin/special-pages", label: "특수페이지" },
-  { href: "/admin/settings", label: "설정" },
-] as const;
+import { AdminNav } from "@/components/admin/AdminNav";
+import { Toaster } from "@/components/ui/sonner";
+import { SaveToast } from "@/components/admin/SaveToast";
 
 export default async function AdminLayout({
   children,
@@ -37,18 +29,7 @@ export default async function AdminLayout({
             DO:NUTS Admin
           </span>
         </div>
-        <nav className="flex-1 space-y-0.5 px-2 py-4">
-          {NAV_LINKS.map(({ href, label }) => (
-            <Button
-              key={href}
-              asChild
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground w-full justify-start"
-            >
-              <Link href={href}>{label}</Link>
-            </Button>
-          ))}
-        </nav>
+        <AdminNav />
         <div className="border-border space-y-2 border-t px-3 py-4">
           <p className="text-muted-foreground truncate px-1 text-xs">{user.email}</p>
           <SignOutButton />
@@ -57,6 +38,8 @@ export default async function AdminLayout({
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <Toaster />
+      <Suspense fallback={null}><SaveToast /></Suspense>
     </div>
   );
 }

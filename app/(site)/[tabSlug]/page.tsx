@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getSpecialPageBySlug } from "@/lib/data/specialPages";
 import { getStructureWithRows } from "@/lib/data/blindStructures";
 import { SpecialPageView } from "@/components/special/SpecialPageView";
+import { todayKST } from "@/lib/schedule";
+import { isSpecialPagePublic } from "@/lib/visibility";
 
 type Props = { params: Promise<{ tabSlug: string }> };
 
@@ -23,10 +25,8 @@ export default async function SpecialPage({ params }: Props) {
   const page = await getSpecialPageBySlug(tabSlug).catch(() => null);
   if (!page) notFound();
 
-  // Date-window check
-  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-  if (page.start_show_date && today < page.start_show_date) notFound();
-  if (page.end_show_date && today > page.end_show_date) notFound();
+  // Date-window + visibility check
+  if (!isSpecialPagePublic(page, todayKST())) notFound();
 
   // Fetch blind structure if linked
   const structure = page.blind_structure_id

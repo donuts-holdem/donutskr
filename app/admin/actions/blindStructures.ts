@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveStructure(id: string | null, name: string, eventType: string | null, rows: any[]) {
   const supabase = await requireAdmin();
   let structureId = id;
@@ -35,7 +36,7 @@ export async function saveStructure(id: string | null, name: string, eventType: 
     if (error) throw error;
   }
   revalidatePublic();
-  redirect("/admin/blind-structures");
+  redirect("/admin/blind-structures?saved=1");
 }
 
 // Create an independent copy of an existing structure (new id + copied rows),
@@ -60,6 +61,7 @@ export async function duplicateStructure(fd: FormData) {
   const newId = created.id;
 
   if (rows && rows.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const copies = rows.map((r: any, i: number) => ({
       structure_id: newId,
       row_type: r.row_type,
@@ -72,7 +74,7 @@ export async function duplicateStructure(fd: FormData) {
   }
 
   revalidatePublic();
-  redirect(`/admin/blind-structures/${newId}/edit`);
+  redirect(`/admin/blind-structures/${newId}/edit?saved=1`);
 }
 
 export async function deleteStructure(id: string) {
@@ -80,5 +82,5 @@ export async function deleteStructure(id: string) {
   const { error } = await supabase.from("blind_structures").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/blind-structures");
+  redirect("/admin/blind-structures?deleted=1");
 }

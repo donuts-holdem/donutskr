@@ -1,4 +1,5 @@
 "use server";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { parseJsonField, coerceStringList, coerceStringRecord, coerceTodayLeagues } from "@/lib/admin/structured-fields";
@@ -23,4 +24,5 @@ export async function updateOnlineLeague(fd: FormData) {
   const { error } = await supabase.from("online_league_settings").update(payload).eq("id", 1);
   if (error) throw error;
   revalidatePublic(["/online-league"]);
+  redirect("/admin/online-league?saved=1");
 }

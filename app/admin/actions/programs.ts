@@ -25,7 +25,7 @@ export async function createProgram(fd: FormData) {
   const { error } = await supabase.from("programs").insert(values);
   if (error) throw error;
   revalidatePublic(["/programs"]);
-  redirect("/admin/programs");
+  redirect("/admin/programs?saved=1");
 }
 
 export async function updateProgram(id: string, fd: FormData) {
@@ -35,7 +35,7 @@ export async function updateProgram(id: string, fd: FormData) {
   const { error } = await supabase.from("programs").update(values).eq("id", id);
   if (error) throw error;
   revalidatePublic([`/programs/${values.slug}`]);
-  redirect("/admin/programs");
+  redirect("/admin/programs?saved=1");
 }
 
 export async function deleteProgram(id: string) {
@@ -43,5 +43,5 @@ export async function deleteProgram(id: string) {
   const { error } = await supabase.from("programs").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
   revalidatePublic(["/programs"]);
-  redirect("/admin/programs");
+  redirect("/admin/programs?deleted=1");
 }

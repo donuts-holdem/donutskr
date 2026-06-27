@@ -1,4 +1,5 @@
 "use server";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { validateHttpsUrlFormat } from "@/lib/safe-url";
@@ -25,4 +26,5 @@ export async function updateSiteConfig(fd: FormData) {
   const { error } = await supabase.from("site_config").update(payload).eq("id", 1);
   if (error) throw error;
   revalidatePublic(["/leaderboard"]);
+  redirect("/admin/settings?saved=1");
 }
