@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
+import { FileInput } from "@/components/admin/FileInput";
 
 type Sponsor = { name: string; logo?: string; url?: string };
 
@@ -41,16 +42,10 @@ function LogoField({ value, onChange }: { value?: string; onChange: (url: string
           로고
         </div>
       )}
-      <Input
-        type="file"
-        accept="image/*"
-        aria-label="스폰서 로고 업로드"
-        className="flex-1"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) void upload(file);
-          e.target.value = "";
-        }}
+      <FileInput
+        label="로고 선택"
+        showFileName={false}
+        onFileSelected={(file) => void upload(file)}
       />
       {uploading && <span className="text-muted-foreground shrink-0 text-xs">업로드중…</span>}
       {error && <span className="text-destructive shrink-0 text-xs">{error}</span>}

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { SEASON_CODE_OPTIONS } from "@/lib/labels";
 import { ImagePreview } from "@/components/admin/ImagePreview";
+import { FileInput } from "@/components/admin/FileInput";
 
 interface SeasonFormProps {
   season?: Season;
@@ -111,13 +112,13 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             <Label htmlFor="hero_image_file">히어로 이미지</Label>
             <ImagePreview src={season?.hero_image} />
             {season && <input type="hidden" name="hero_image_existing" value={season.hero_image ?? ""} />}
-            <Input id="hero_image_file" name="hero_image_file" type="file" accept="image/*" />
+            <FileInput id="hero_image_file" name="hero_image_file" />
           </div>
           <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="bg_image_file">배경 이미지</Label>
             <ImagePreview src={season?.bg_image} />
             {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
-            <Input id="bg_image_file" name="bg_image_file" type="file" accept="image/*" />
+            <FileInput id="bg_image_file" name="bg_image_file" />
           </div>
         </CardContent>
       </Card>

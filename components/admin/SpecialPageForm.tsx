@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
 import { ImagePreview } from "@/components/admin/ImagePreview";
+import { FileInput } from "@/components/admin/FileInput";
 import {
   Select,
   SelectContent,
@@ -130,13 +131,13 @@ export function SpecialPageForm({ page, structures = [], action }: SpecialPageFo
             <Label htmlFor="sponsor_logo_file">스폰서 로고</Label>
             <ImagePreview src={page?.sponsor_logo} />
             {page && <input type="hidden" name="sponsor_logo_existing" value={page.sponsor_logo ?? ""} />}
-            <Input id="sponsor_logo_file" name="sponsor_logo_file" type="file" accept="image/*" />
+            <FileInput id="sponsor_logo_file" name="sponsor_logo_file" label="로고 선택" />
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="poster_file">포스터</Label>
             <ImagePreview src={page?.poster} />
             {page && <input type="hidden" name="poster_existing" value={page.poster ?? ""} />}
-            <Input id="poster_file" name="poster_file" type="file" accept="image/*" />
+            <FileInput id="poster_file" name="poster_file" />
           </div>
         </CardContent>
       </Card>

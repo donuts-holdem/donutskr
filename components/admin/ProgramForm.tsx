@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { PROGRAM_GROUP_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus } from "@/lib/labels";
 import { ImagePreview } from "@/components/admin/ImagePreview";
+import { FileInput } from "@/components/admin/FileInput";
 import { ProgramRichEditor } from "@/components/admin/ProgramRichEditor";
 
 interface ProgramFormProps {
@@ -58,7 +59,7 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
             <Label htmlFor="cover_image_file">커버 이미지</Label>
             <ImagePreview src={program?.cover_image} />
             {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
-            <Input id="cover_image_file" name="cover_image_file" type="file" accept="image/*" />
+            <FileInput id="cover_image_file" name="cover_image_file" />
           </div>
         </CardContent>
       </Card>
@@ -173,7 +174,7 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
             <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
             <ImagePreview src={program?.manager_avatar} />
             {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
-            <Input id="manager_avatar_file" name="manager_avatar_file" type="file" accept="image/*" />
+            <FileInput id="manager_avatar_file" name="manager_avatar_file" />
           </div>
         </CardContent>
       </Card>

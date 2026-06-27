@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { EVENT_STATUS_OPTIONS } from "@/lib/labels";
 import { ImagePreview } from "@/components/admin/ImagePreview";
+import { FileInput } from "@/components/admin/FileInput";
 
 interface EventFormProps {
   event?: Event;
@@ -162,13 +163,13 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             <Label htmlFor="poster_image_file">포스터 이미지</Label>
             <ImagePreview src={event?.poster_image} />
             {event && <input type="hidden" name="poster_image_existing" value={event.poster_image ?? ""} />}
-            <Input id="poster_image_file" name="poster_image_file" type="file" accept="image/*" />
+            <FileInput id="poster_image_file" name="poster_image_file" />
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="sponsor_logo_file">스폰서 로고</Label>
             <ImagePreview src={event?.sponsor_logo} />
             {event && <input type="hidden" name="sponsor_logo_existing" value={event.sponsor_logo ?? ""} />}
-            <Input id="sponsor_logo_file" name="sponsor_logo_file" type="file" accept="image/*" />
+            <FileInput id="sponsor_logo_file" name="sponsor_logo_file" label="로고 선택" />
           </div>
         </CardContent>
       </Card>
