@@ -382,7 +382,6 @@ export function BlockEditor({ name, initial }: { name: string; initial: Block[] 
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <ImagePreview src={block.src} />
-                <input type="hidden" name={`block_image_${imgIdx}_src`} value={block.src} />
                 <div>
                   <Label className="mb-1 block text-xs">이미지 파일</Label>
                   <Input type="file" name={`block_image_${imgIdx}_file`} accept="image/*" />
