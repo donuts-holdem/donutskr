@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StateBadge } from "@/components/admin/StateBadge";
 
 export default async function AdminProgramsPage() {
   const programs = await getAllPrograms();
@@ -39,15 +40,9 @@ export default async function AdminProgramsPage() {
             <TableRow key={program.id}>
               <TableCell className="text-foreground">{program.title}</TableCell>
               <TableCell className="text-muted-foreground">{programGroupLabel(program.program_group)}</TableCell>
-              <TableCell className={program.is_hot ? "text-gold" : "text-muted-foreground/50"}>
-                {program.is_hot ? "●" : "○"}
-              </TableCell>
-              <TableCell className={program.is_affiliate ? "text-gold" : "text-muted-foreground/50"}>
-                {program.is_affiliate ? "●" : "○"}
-              </TableCell>
-              <TableCell className={program.is_visible ? "text-gold" : "text-muted-foreground/50"}>
-                {program.is_visible ? "●" : "○"}
-              </TableCell>
+              <TableCell><StateBadge on={program.is_hot} kind="hot" /></TableCell>
+              <TableCell><StateBadge on={program.is_affiliate} kind="affiliate" /></TableCell>
+              <TableCell><StateBadge on={program.is_visible} kind="visible" /></TableCell>
               <TableCell>
                 <Button asChild variant="link" size="sm" className="h-auto p-0">
                   <Link href={`/admin/programs/${program.id}/edit`}>수정</Link>

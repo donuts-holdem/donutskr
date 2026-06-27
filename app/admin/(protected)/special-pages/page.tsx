@@ -11,6 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EffectiveVisibilityBadge } from "@/components/admin/EffectiveVisibilityBadge";
+import { effectiveSpecialPageVisibility } from "@/lib/visibility";
+import { todayKST } from "@/lib/schedule";
 
 export default async function SpecialPagesPage() {
   const pages = await getAllSpecialPages();
@@ -37,8 +40,8 @@ export default async function SpecialPagesPage() {
             <TableRow key={p.id}>
               <TableCell className="text-muted-foreground">{p.slug}</TableCell>
               <TableCell className="text-foreground">{p.title}</TableCell>
-              <TableCell className={p.is_visible ? "text-gold" : "text-muted-foreground/50"}>
-                {p.is_visible ? "●" : "○"}
+              <TableCell>
+                <EffectiveVisibilityBadge state={effectiveSpecialPageVisibility(p, todayKST())} />
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
