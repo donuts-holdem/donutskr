@@ -1,5 +1,4 @@
 import { getSiteConfig } from "@/lib/data/siteConfig";
-import { getAffiliatePartners } from "@/lib/data/programs";
 
 // Ensure outbound links carry a scheme; a bare host like "do-lab.co.kr"
 // would otherwise resolve as a relative path and navigate within the site.
@@ -12,25 +11,11 @@ function normalizeUrl(url?: string): string | undefined {
 }
 
 export async function Footer() {
-  const [config, partners] = await Promise.all([
-    getSiteConfig(),
-    getAffiliatePartners(),
-  ]);
+  const config = await getSiteConfig();
 
-  // Official Sponsor = configured footer sponsors + affiliate partners, unified.
-  // Skip partners already present as configured sponsors (dedupe by name).
-  const configured = config.footer_sponsors ?? [];
-  const existing = new Set(configured.map((s) => s.name.trim()));
-  const sponsors = [
-    ...configured.map((s) => ({ ...s, url: normalizeUrl(s.url) })),
-    ...partners
-      .filter((p) => !existing.has(p.title.trim()))
-      .map((p) => ({
-        name: p.title,
-        logo: p.cover_image ?? undefined,
-        url: normalizeUrl(p.external_url ?? p.entry_link ?? undefined),
-      })),
-  ];
+  // Official Sponsor = the configured footer sponsors only. Each carries its own
+  // uploaded logo (managed in 설정 > 푸터 스폰서), kept separate from program covers.
+  const sponsors = (config.footer_sponsors ?? []).map((s) => ({ ...s, url: normalizeUrl(s.url) }));
 
   return (
     <footer className="bg-bg border-t border-border mt-auto">
