@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
+import { parseJsonField, coerceDescriptionBlocks } from "@/lib/admin/structured-fields";
+import type { Block } from "@/lib/program-blocks";
 
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -18,11 +20,27 @@ function parse(fd: FormData) {
   };
 }
 
+async function reconcileBlockImages(supabase: Awaited<ReturnType<typeof requireAdmin>>, fd: FormData, blocks: Block[]): Promise<Block[]> {
+  let imgIdx = 0;
+  for (const block of blocks) {
+    if (block.type === "image") {
+      block.src = (await uploadIfPresent(supabase, fd, `block_image_${imgIdx}`, block.src)) ?? block.src;
+      imgIdx++;
+    }
+  }
+  return blocks;
+}
+
 export async function createProgram(fd: FormData) {
   const supabase = await requireAdmin();
   const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", null);
-  const { error } = await supabase.from("programs").insert(values);
+  const blocks = await reconcileBlockImages(
+    supabase,
+    fd,
+    coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
+  );
+  const { error } = await supabase.from("programs").insert({ ...values, description_blocks: blocks });
   if (error) throw error;
   revalidatePublic(["/programs"]);
   redirect("/admin/programs?saved=1");
@@ -32,7 +50,12 @@ export async function updateProgram(id: string, fd: FormData) {
   const supabase = await requireAdmin();
   const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", (fd.get("cover_image_existing") as string) || null);
-  const { error } = await supabase.from("programs").update(values).eq("id", id);
+  const blocks = await reconcileBlockImages(
+    supabase,
+    fd,
+    coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
+  );
+  const { error } = await supabase.from("programs").update({ ...values, description_blocks: blocks }).eq("id", id);
   if (error) throw error;
   revalidatePublic([`/programs/${values.slug}`]);
   redirect("/admin/programs?saved=1");
@@ -44,4 +67,13 @@ export async function deleteProgram(id: string) {
   if (error) throw error;
   revalidatePublic(["/programs"]);
   redirect("/admin/programs?deleted=1");
+}
+
+export async function setProgramVerified(id: string, verified: boolean) {
+  const supabase = await requireAdmin();
+  const { data } = await supabase.from("programs").select("slug").eq("id", id).single();
+  const { error } = await supabase.from("programs").update({ description_verified: verified }).eq("id", id);
+  if (error) throw error;
+  revalidatePublic(data?.slug ? [`/programs/${data.slug}`] : []);
+  redirect(`/admin/programs/${id}/edit?saved=1`);
 }

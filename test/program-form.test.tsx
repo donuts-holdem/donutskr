@@ -29,7 +29,7 @@ describe("ProgramForm Phase 2 localization", () => {
       member_count: 0, location: null, start_date: null, end_date: null, description: null,
       cover_image: null, manager_name: null, manager_role: null, manager_avatar: null,
       cta_label: null, entry_link: null, external_url: null, is_hot: false, is_affiliate: false,
-      is_visible: true, sort_order: 0,
+      is_visible: true, sort_order: 0, description_blocks: null, description_verified: false,
     };
     render(<ProgramForm program={program} action={async () => {}} />);
     // "모집 중" normalizes to recruiting → its Korean label 모집중 shows in the trigger
@@ -42,7 +42,7 @@ describe("ProgramForm Phase 2 localization", () => {
       member_count: 0, location: null, start_date: null, end_date: null, description: null,
       cover_image: null, manager_name: null, manager_role: null, manager_avatar: null,
       cta_label: null, entry_link: null, external_url: null, is_hot: false, is_affiliate: false,
-      is_visible: true, sort_order: 0,
+      is_visible: true, sort_order: 0, description_blocks: null, description_verified: false,
     };
     render(<ProgramForm program={program} action={async () => {}} />);
     // unknown value normalizes to "" → falls through to itself; fallback item is rendered AND

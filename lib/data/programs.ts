@@ -1,6 +1,14 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Program, ProgramGroup } from "@/lib/types";
+import type { Block } from "@/lib/program-blocks";
+import { coerceDescriptionBlocks } from "@/lib/admin/structured-fields";
 
+function coerceNullableBlocks(v: unknown): Block[] | null {
+  if (v === null || v === undefined) return null;
+  return coerceDescriptionBlocks(v);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapProgram(r: any): Program {
   return {
     id: String(r.id ?? ""), slug: String(r.slug ?? ""), title: String(r.title ?? ""),
@@ -12,6 +20,8 @@ export function mapProgram(r: any): Program {
     cta_label: r.cta_label ?? null, entry_link: r.entry_link ?? null, external_url: r.external_url ?? null,
     is_hot: Boolean(r.is_hot), is_affiliate: Boolean(r.is_affiliate),
     is_visible: r.is_visible ?? true, sort_order: Number(r.sort_order ?? 0),
+    description_blocks: coerceNullableBlocks(r.description_blocks),
+    description_verified: Boolean(r.description_verified),
   };
 }
 export async function getPrograms(): Promise<Program[]> {
