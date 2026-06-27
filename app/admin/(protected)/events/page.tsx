@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { EffectiveVisibilityBadge } from "@/components/admin/EffectiveVisibilityBadge";
 import { effectiveEventVisibility } from "@/lib/visibility";
+import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 
 export default async function AdminEventsPage() {
   const events = await getAllEvents();
@@ -43,9 +44,12 @@ export default async function AdminEventsPage() {
                 <EffectiveVisibilityBadge state={effectiveEventVisibility(event)} />
               </TableCell>
               <TableCell>
-                <Button asChild variant="link" size="sm" className="h-auto p-0">
-                  <Link href={`/admin/events/${event.id}/edit`}>수정</Link>
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button asChild variant="link" size="sm" className="h-auto p-0">
+                    <Link href={`/admin/events/${event.id}/edit`}>수정</Link>
+                  </Button>
+                  <ViewOnSiteLink href={`/schedule/${event.id}`} />
+                </div>
               </TableCell>
             </TableRow>
           ))}

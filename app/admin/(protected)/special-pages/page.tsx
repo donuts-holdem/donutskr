@@ -14,6 +14,7 @@ import {
 import { EffectiveVisibilityBadge } from "@/components/admin/EffectiveVisibilityBadge";
 import { effectiveSpecialPageVisibility } from "@/lib/visibility";
 import { todayKST } from "@/lib/schedule";
+import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 
 export default async function SpecialPagesPage() {
   const pages = await getAllSpecialPages();
@@ -44,10 +45,11 @@ export default async function SpecialPagesPage() {
                 <EffectiveVisibilityBadge state={effectiveSpecialPageVisibility(p, todayKST())} />
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Button asChild variant="link" size="sm" className="h-auto p-0">
                     <Link href={`/admin/special-pages/${p.id}/edit`}>수정</Link>
                   </Button>
+                  <ViewOnSiteLink href={`/${p.slug}`} />
                   <DeleteButton itemName={p.title} onDelete={async () => { "use server"; await deleteSpecialPage(p.id); }} />
                 </div>
               </TableCell>

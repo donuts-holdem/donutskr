@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { ProgramForm } from "@/components/admin/ProgramForm";
 import { updateProgram, deleteProgram } from "@/app/admin/actions/programs";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { mapProgram } from "@/lib/data/programs";
 
@@ -21,9 +22,12 @@ export default async function EditProgramPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>
-        프로그램 수정: {program.title}
-      </h1>
+      <div className="mb-6 flex items-center gap-3">
+        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>
+          프로그램 수정: {program.title}
+        </h1>
+        <ViewOnSiteLink href={`/programs/${program.slug}`} />
+      </div>
       <ProgramForm program={program} action={updateProgram.bind(null, id)} />
       <div className="border-t border-white/10" style={{ marginTop: "2rem", paddingTop: "1.5rem" }}>
         <p style={{ color: "var(--muted-3)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>위험 구역</p>
