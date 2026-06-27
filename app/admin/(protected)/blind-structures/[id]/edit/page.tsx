@@ -20,7 +20,7 @@ export default async function EditBlindStructurePage({ params }: { params: Promi
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>스트럭처 수정</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gold">스트럭처 수정</h1>
       <BlindStructureEditor structureId={id} initialRows={rows} action={action} structures={structures} initialName={structure.name} initialEventType={structure.event_type} />
     </div>
   );

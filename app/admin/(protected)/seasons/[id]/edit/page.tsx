@@ -18,14 +18,14 @@ export default async function EditSeasonPage({ params }: Props) {
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>
+        <h1 className="text-2xl font-bold text-gold">
           시즌 수정: {season.name}
         </h1>
         <ViewOnSiteLink href="/series" label="시리즈에서 보기" />
       </div>
       <SeasonForm season={season} action={updateSeason.bind(null, id)} />
-      <div className="border-t border-white/10" style={{ marginTop: "2rem", paddingTop: "1.5rem" }}>
-        <p style={{ color: "var(--muted-3)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>위험 구역</p>
+      <div className="mt-8 pt-6 border-t border-border">
+        <p className="text-muted-foreground text-xs mb-3">위험 구역</p>
         <DeleteButton onDelete={deleteSeason.bind(null, id)} />
       </div>
     </div>

@@ -45,7 +45,7 @@ export default async function EditProgramPage({ params }: Props) {
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>
+        <h1 className="text-2xl font-bold text-gold">
           프로그램 수정: {program.title}
         </h1>
         <ViewOnSiteLink href={`/programs/${program.slug}`} />
@@ -88,8 +88,8 @@ export default async function EditProgramPage({ params }: Props) {
       )}
 
       <ProgramForm program={program} action={updateProgram.bind(null, id)} />
-      <div className="border-t border-white/10" style={{ marginTop: "2rem", paddingTop: "1.5rem" }}>
-        <p style={{ color: "var(--muted-3)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>위험 구역</p>
+      <div className="mt-8 pt-6 border-t border-border">
+        <p className="text-muted-foreground text-xs mb-3">위험 구역</p>
         <DeleteButton onDelete={deleteProgram.bind(null, id)} />
       </div>
     </div>

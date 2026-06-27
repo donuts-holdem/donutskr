@@ -14,7 +14,7 @@ export default async function NewBlindStructurePage() {
   }
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>새 스트럭처</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gold">새 스트럭처</h1>
       <BlindStructureEditor structureId="" initialRows={[]} action={action} structures={structures} />
     </div>
   );

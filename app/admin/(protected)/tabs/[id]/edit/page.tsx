@@ -16,7 +16,7 @@ export default async function EditTabPage({ params }: { params: Promise<{ id: st
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>탭 수정</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gold">탭 수정</h1>
       <TabForm tab={tab} action={action} />
     </div>
   );
