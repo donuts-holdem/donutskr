@@ -1,6 +1,6 @@
 "use client";
 
-import type { Season, SeasonCode } from "@/lib/types";
+import type { Season } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,25 +12,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SEASON_CODE_OPTIONS } from "@/lib/labels";
+import { ImagePreview } from "@/components/admin/ImagePreview";
 
 interface SeasonFormProps {
   season?: Season;
   action: (fd: FormData) => void | Promise<void>;
 }
 
-const SEASON_CODES: { value: SeasonCode; label: string }[] = [
-  { value: "spring", label: "봄 (spring)" },
-  { value: "summer", label: "여름 (summer)" },
-  { value: "autumn", label: "가을 (autumn)" },
-  { value: "winter", label: "겨울 (winter)" },
-];
-
 export function SeasonForm({ season, action }: SeasonFormProps) {
   return (
     <form action={action} className="flex max-w-2xl flex-col gap-5">
       {/* 시즌명 */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="name">시즌명</Label>
+        <Label htmlFor="name">시즌명 *</Label>
         <Input id="name" name="name" defaultValue={season?.name ?? ""} required />
       </div>
 
@@ -42,7 +37,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {SEASON_CODES.map(({ value, label }) => (
+            {SEASON_CODE_OPTIONS.map(({ value, label }) => (
               <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
@@ -53,7 +48,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
 
       {/* 연도 */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="year">연도</Label>
+        <Label htmlFor="year">연도 *</Label>
         <Input id="year" name="year" type="number" defaultValue={season?.year ?? new Date().getFullYear()} required />
       </div>
 
@@ -90,9 +85,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
       {/* 히어로 이미지 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="hero_image_file">히어로 이미지</Label>
-        {season?.hero_image && (
-          <p className="text-muted-foreground text-xs break-all">{season.hero_image}</p>
-        )}
+        <ImagePreview src={season?.hero_image} />
         {season && <input type="hidden" name="hero_image_existing" value={season.hero_image ?? ""} />}
         <Input id="hero_image_file" name="hero_image_file" type="file" accept="image/*" />
       </div>
@@ -100,9 +93,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
       {/* 배경 이미지 */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="bg_image_file">배경 이미지</Label>
-        {season?.bg_image && (
-          <p className="text-muted-foreground text-xs break-all">{season.bg_image}</p>
-        )}
+        <ImagePreview src={season?.bg_image} />
         {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
         <Input id="bg_image_file" name="bg_image_file" type="file" accept="image/*" />
       </div>
