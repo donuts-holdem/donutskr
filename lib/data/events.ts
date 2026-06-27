@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Event, EventCategory } from "@/lib/types";
 import { isEventPublic } from "@/lib/visibility";
+import { filterByActiveSeason } from "@/lib/season-rules";
+import { getActiveSeason } from "@/lib/data/seasons";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapEvent(r: any): Event {
@@ -24,7 +26,9 @@ export async function getEvents(opts?: { category?: EventCategory }): Promise<Ev
   if (opts?.category) q = q.eq("category", opts.category);
   const { data, error } = await q.order("sort_order", { ascending: true }).order("date", { ascending: true });
   if (error) throw error;
-  return (data ?? []).map(mapEvent).filter(isEventPublic);
+  const active = await getActiveSeason();
+  const events = (data ?? []).map(mapEvent).filter(isEventPublic);
+  return filterByActiveSeason(events, active?.id ?? null);
 }
 
 // Admin-only: includes hidden (is_visible=false) events so they remain editable.

@@ -15,8 +15,6 @@ function parse(fd: FormData) {
     hero_text: s("hero_text"),
     sub_text: s("sub_text"),
     badge_text: s("badge_text"),
-    theme_color: s("theme_color"),
-    footer_sponsor_visible: fd.get("footer_sponsor_visible") === "on",
   };
 }
 

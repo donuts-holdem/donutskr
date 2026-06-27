@@ -1,6 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Season, SeasonCode } from "@/lib/types";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapSeason(r: any): Season {
   return {
     id: String(r.id ?? ""),
@@ -15,8 +16,6 @@ export function mapSeason(r: any): Season {
     badge_text: r.badge_text ?? null,
     hero_image: r.hero_image ?? null,
     bg_image: r.bg_image ?? null,
-    theme_color: r.theme_color ?? null,
-    footer_sponsor_visible: Boolean(r.footer_sponsor_visible),
   };
 }
 

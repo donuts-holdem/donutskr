@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllSeasons } from "@/lib/data/seasons";
+import { getAllEvents } from "@/lib/data/events";
 import { seasonCodeLabel } from "@/lib/labels";
 import { activateSeason, deleteSeason } from "@/app/admin/actions/seasons";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -15,7 +16,9 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminSeasonsPage() {
-  const seasons = await getAllSeasons();
+  const [seasons, events] = await Promise.all([getAllSeasons(), getAllEvents()]);
+  const countBySeason = new Map<string, number>();
+  for (const e of events) if (e.season_id) countBySeason.set(e.season_id, (countBySeason.get(e.season_id) ?? 0) + 1);
 
   return (
     <div>
@@ -32,6 +35,7 @@ export default async function AdminSeasonsPage() {
             <TableHead>이름</TableHead>
             <TableHead>코드</TableHead>
             <TableHead>연도</TableHead>
+            <TableHead>이벤트</TableHead>
             <TableHead>활성</TableHead>
             <TableHead>작업</TableHead>
           </TableRow>
@@ -42,6 +46,7 @@ export default async function AdminSeasonsPage() {
               <TableCell className="text-foreground">{season.name}</TableCell>
               <TableCell className="text-muted-foreground">{seasonCodeLabel(season.code)}</TableCell>
               <TableCell className="text-muted-foreground">{season.year}</TableCell>
+              <TableCell className="text-muted-foreground">{countBySeason.get(season.id) ?? 0}개</TableCell>
               <TableCell>
                 {season.is_active ? (
                   <span className="text-gold font-semibold">● 활성</span>
@@ -66,7 +71,7 @@ export default async function AdminSeasonsPage() {
           ))}
           {seasons.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
+              <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
                 등록된 시즌이 없습니다.
               </TableCell>
             </TableRow>
