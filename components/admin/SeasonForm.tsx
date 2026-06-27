@@ -4,7 +4,6 @@ import type { Season } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -96,18 +95,6 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
         <ImagePreview src={season?.bg_image} />
         {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
         <Input id="bg_image_file" name="bg_image_file" type="file" accept="image/*" />
-      </div>
-
-      {/* 테마 색상 */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="theme_color">테마 색상</Label>
-        <Input id="theme_color" name="theme_color" defaultValue={season?.theme_color ?? ""} placeholder="예: #FFE58A" />
-      </div>
-
-      {/* 푸터 스폰서 표시 */}
-      <div className="flex items-center gap-2">
-        <Checkbox id="footer_sponsor_visible" name="footer_sponsor_visible" defaultChecked={season?.footer_sponsor_visible ?? false} />
-        <Label htmlFor="footer_sponsor_visible">푸터 스폰서 표시</Label>
       </div>
 
       <div>

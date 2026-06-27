@@ -9,8 +9,7 @@ export interface Season {
   id: string; name: string; code: SeasonCode; year: number;
   start_date: string | null; end_date: string | null; is_active: boolean;
   hero_text: string | null; sub_text: string | null; badge_text: string | null;
-  hero_image: string | null; bg_image: string | null; theme_color: string | null;
-  footer_sponsor_visible: boolean;
+  hero_image: string | null; bg_image: string | null;
 }
 export interface Event {
   id: string; season_id: string | null; round: string | null; title: string;
