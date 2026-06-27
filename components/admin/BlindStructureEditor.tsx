@@ -1,6 +1,6 @@
 "use client";
-import { Fragment, useState } from "react";
-import { GripVertical } from "lucide-react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { GripVertical, Plus } from "lucide-react";
 import type { BlindRow, BlindStructure } from "@/lib/types";
 import { duplicateStructure } from "@/app/admin/actions/blindStructures";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+// useLayoutEffect on the server warns; fall back to useEffect there (SSR pass
+// only — the FLIP animation it drives is client-only anyway).
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 type LocalRow = {
   key: string;
@@ -58,9 +62,12 @@ interface Props {
 export function BlindStructureEditor({ structureId, initialRows, action, structures = [], initialName = "", initialEventType = "" }: Props) {
   const [rows, setRows] = useState<LocalRow[]>(() => initialRows.map(fromBlindRow));
   const [cloneTarget, setCloneTarget] = useState("");
-  // Drag-and-drop reordering state.
+  // Drag-and-drop reordering state. The dragged row is moved through `rows` live
+  // (so other rows shift to open a slot); no separate drop-line needed.
   const [dragKey, setDragKey] = useState<string | null>(null);
-  const [overGap, setOverGap] = useState<number | null>(null);
+  const rowsRef = useRef<HTMLDivElement>(null);
+  // Previous on-screen tops per row key, for FLIP animation of the shift.
+  const prevTops = useRef<Map<string, number>>(new Map());
 
   function update(key: string, patch: Partial<LocalRow>) {
     setRows(rs => rs.map(r => r.key === key ? { ...r, ...patch } : r));
@@ -72,21 +79,89 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
     setRows(rs => { const a = [...rs]; a.splice(index, 0, makeLevel()); return a; });
   }
 
-  // Move the dragged row into the gap at gapIndex.
-  function moveToGap(gapIndex: number) {
-    setRows(rs => {
-      if (!dragKey) return rs;
-      const from = rs.findIndex(r => r.key === dragKey);
-      if (from === -1) return rs;
-      const a = [...rs];
-      const [item] = a.splice(from, 1);
-      const insertIndex = from < gapIndex ? gapIndex - 1 : gapIndex;
-      a.splice(insertIndex, 0, item);
-      return a;
-    });
-    setDragKey(null);
-    setOverGap(null);
+  // Pointer-based drag reordering with live "make space" feedback. Native HTML5
+  // drag wouldn't even start from the icon handle here, so we drive the gesture
+  // ourselves: press the handle → as the pointer moves we splice the dragged row
+  // into its new slot in real time, so the surrounding rows shift apart to reveal
+  // where it will land → release just keeps the order. Mouse, pen, and touch.
+  function beginDrag(e: ReactPointerEvent, key: string) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    setDragKey(key);
+
+    const onMove = (ev: PointerEvent) => {
+      const container = rowsRef.current;
+      if (!container) return;
+      // Insertion index = how many OTHER rows sit above the pointer. Measuring
+      // only the non-dragged rows keeps the result monotonic in cursor-Y, so the
+      // slot never oscillates as the dragged row is spliced around.
+      // Use offset geometry (immune to the in-flight FLIP transforms below) so a
+      // fast drag never reads interpolated mid-animation positions and thrashes.
+      // pointerY and each row midpoint are expressed relative to the container top.
+      const cRect = container.getBoundingClientRect();
+      const pointerY = ev.clientY - cRect.top;
+      const els = Array.from(container.querySelectorAll<HTMLElement>("[data-row-key]"));
+      let count = 0;
+      for (const el of els) {
+        if (el.dataset.rowKey === key) continue;
+        const mid = el.offsetTop - container.offsetTop + el.offsetHeight / 2;
+        if (pointerY > mid) count++;
+      }
+      setRows((rs) => {
+        const item = rs.find((r) => r.key === key);
+        if (!item) return rs;
+        const others = rs.filter((r) => r.key !== key);
+        const next = [...others.slice(0, count), item, ...others.slice(count)];
+        if (next.every((r, i) => r.key === rs[i].key)) return rs; // no change
+        return next;
+      });
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      setDragKey(null);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
   }
+
+  // FLIP: smoothly slide rows from their previous position to the new one when the
+  // order changes mid-drag, so the "space opening up" reads as motion, not a snap.
+  useIsoLayoutEffect(() => {
+    const container = rowsRef.current;
+    if (!container) return;
+    const els = Array.from(container.querySelectorAll<HTMLElement>("[data-row-key]"));
+    // offsetTop is layout-only (unaffected by the transforms we set below), so
+    // measuring it mid-animation never compounds — this is the fast-drag fix.
+    const tops = new Map<string, number>();
+    for (const el of els) tops.set(el.dataset.rowKey ?? "", el.offsetTop);
+
+    if (dragKey) {
+      const moved: HTMLElement[] = [];
+      for (const el of els) {
+        const k = el.dataset.rowKey ?? "";
+        if (k === dragKey) continue;
+        const prev = prevTops.current.get(k);
+        const next = tops.get(k);
+        if (prev !== undefined && next !== undefined && prev !== next) {
+          el.style.transition = "none";
+          el.style.transform = `translateY(${prev - next}px)`;
+          moved.push(el);
+        }
+      }
+      if (moved.length) {
+        void container.offsetHeight; // one reflow, then release to animate home
+        for (const el of moved) {
+          el.style.transition = "transform 160ms ease";
+          el.style.transform = "";
+        }
+      }
+    } else {
+      // Clear any leftover inline transforms once the gesture ends.
+      for (const el of els) { el.style.transform = ""; el.style.transition = ""; }
+    }
+    prevTops.current = tops;
+  });
 
   // Level numbers follow row order: the Nth level row is level N (breaks/stages skipped).
   const levelNoByKey = new Map<string, number>();
@@ -96,32 +171,26 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
     r.row_type === "level" ? { ...r, level_no: levelNoByKey.get(r.key) ?? null } : r,
   );
 
-  // A drop / insert zone between rows. Shows a white line + '+' on hover or while a
-  // row is dragged over it; clicking '+' inserts a new level at that position.
+  // The insert affordance between rows: on hover a line + '+' appears, and
+  // clicking '+' inserts a new level there. Hidden during a drag — there the
+  // shifting rows themselves show where the dragged row will land. The resting
+  // zone is intentionally tall (h-5) so the hover line is easy to catch.
   const renderGap = (index: number) => (
-    <div
-      className={cn("group relative", dragKey ? "h-7" : "h-3")}
-      onDragOver={(e) => { if (dragKey) { e.preventDefault(); setOverGap(index); } }}
-      onDragLeave={() => setOverGap((g) => (g === index ? null : g))}
-      onDrop={(e) => { e.preventDefault(); moveToGap(index); }}
-    >
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center gap-2 px-1 transition-opacity",
-          overGap === index ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-        )}
-      >
-        <span className="h-px flex-1 bg-white/70" />
-        <button
-          type="button"
-          aria-label="여기에 레벨 추가"
-          onClick={() => insertAt(index)}
-          className="pointer-events-auto flex size-5 items-center justify-center rounded-full border border-white/50 bg-card text-sm leading-none text-white transition-colors hover:bg-white hover:text-bg"
-        >
-          +
-        </button>
-        <span className="h-px flex-1 bg-white/70" />
-      </div>
+    <div className="group relative h-5">
+      {!dragKey && (
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center gap-2 px-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="h-0.5 flex-1 rounded-full bg-white/30" />
+          <button
+            type="button"
+            aria-label="여기에 레벨 추가"
+            onClick={() => insertAt(index)}
+            className="pointer-events-auto flex size-5 items-center justify-center rounded-full border border-white/40 bg-card text-white transition-colors hover:bg-white hover:text-bg"
+          >
+            <Plus className="size-3" />
+          </button>
+          <span className="h-0.5 flex-1 rounded-full bg-white/30" />
+        </div>
+      )}
     </div>
   );
 
@@ -152,23 +221,22 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
 
         {/* Rows */}
         {rows.length > 0 && (
-          <div className="flex flex-col">
+          <div ref={rowsRef} className="flex flex-col">
             {rows.map((row, idx) => (
               <Fragment key={row.key}>
                 {renderGap(idx)}
                 <div
+                  data-row-key={row.key}
                   className={cn(
                     "flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card/60 px-3.5 py-2.5",
-                    dragKey === row.key && "opacity-50",
+                    dragKey === row.key && "relative z-10 border-white/25 opacity-90 shadow-lg ring-1 ring-white/20",
                   )}
                 >
                   <span
-                    draggable
-                    onDragStart={(e) => { setDragKey(row.key); e.dataTransfer.effectAllowed = "move"; }}
-                    onDragEnd={() => { setDragKey(null); setOverGap(null); }}
+                    onPointerDown={(e) => beginDrag(e, row.key)}
                     title="드래그하여 순서 변경"
                     aria-label="드래그하여 순서 변경"
-                    className="text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing"
+                    className="text-muted-foreground shrink-0 cursor-grab touch-none select-none active:cursor-grabbing"
                   >
                     <GripVertical className="size-4" />
                   </span>
@@ -190,7 +258,7 @@ export function BlindStructureEditor({ structureId, initialRows, action, structu
 
                   {row.row_type === "break" && (
                     <>
-                      <Input placeholder="브레이크명" value={row.break_name} onChange={e => update(row.key, { break_name: e.target.value })} className="w-40" />
+                      <Input placeholder="브레이크명" value={row.break_name} onChange={e => update(row.key, { break_name: e.target.value })} className="w-96" />
                       <Input type="number" placeholder="분" value={row.break_minutes ?? ""} onChange={e => update(row.key, { break_minutes: e.target.value ? Number(e.target.value) : undefined })} className="w-16" />
                     </>
                   )}
