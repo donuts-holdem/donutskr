@@ -6,13 +6,23 @@ import { ProgramForm } from "@/components/admin/ProgramForm";
 import { updateProgram, deleteProgram } from "@/app/admin/actions/programs";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
-import { VerifyCutover } from "@/components/admin/VerifyCutover";
-import { ProgramBlocks } from "@/components/program/ProgramBlocks";
+import { blocksToHtml } from "@/lib/program-blocks-to-html";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { mapProgram } from "@/lib/data/programs";
+import type { Block } from "@/lib/program-blocks";
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+async function computeInitialHtml(blocks: Block[] | null, description: string | null): Promise<string> {
+  // Already-WYSIWYG: a single raw block holds the document verbatim.
+  if (blocks && blocks.length === 1 && blocks[0].type === "raw") return blocks[0].html;
+  // Structured blocks: convert to HTML for editing.
+  if (blocks && blocks.length > 0) return blocksToHtml(blocks);
+  // Legacy markdown fallback.
+  if (description) return sanitizeHtml(await marked.parse(description), PROGRAM_SANITIZE_CONFIG);
+  return "";
 }
 
 export default async function EditProgramPage({ params }: Props) {
@@ -24,60 +34,20 @@ export default async function EditProgramPage({ params }: Props) {
   if (!data) notFound();
 
   const program = mapProgram(data);
-  const blocks = program.description_blocks;
-
-  // Compute legacy HTML preview only when blocks exist (side-by-side comparison)
-  const legacyHtml =
-    blocks !== null && program.description
-      ? sanitizeHtml(await marked.parse(program.description), PROGRAM_SANITIZE_CONFIG)
-      : null;
+  const initialHtml = await computeInitialHtml(program.description_blocks, program.description);
 
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-gold">
-          프로그램 수정: {program.title}
-        </h1>
+        <h1 className="text-2xl font-bold text-gold">프로그램 수정: {program.title}</h1>
         <ViewOnSiteLink href={`/programs/${program.slug}`} />
       </div>
 
-      {/* Side-by-side preview — only when description_blocks is present */}
-      {blocks !== null && (
-        <div className="mb-8 rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            렌더러 비교 미리보기
-          </h2>
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Left: legacy markdown render */}
-            <div className="flex-1 min-w-0 flex flex-col gap-2">
-              <p className="text-xs font-medium text-muted-foreground">기존 (마크다운)</p>
-              <div className="rounded-lg border border-border bg-background p-4 overflow-y-auto max-h-96">
-                {legacyHtml ? (
-                  <div
-                    className="prose-dark text-ink/80 text-sm leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: legacyHtml }}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">설명 없음</p>
-                )}
-              </div>
-            </div>
-            {/* Right: block renderer */}
-            <div className="flex-1 min-w-0 flex flex-col gap-2">
-              <p className="text-xs font-medium text-muted-foreground">블록</p>
-              <div className="rounded-lg border border-border bg-background p-4 overflow-y-auto max-h-96">
-                <ProgramBlocks blocks={blocks} />
-              </div>
-            </div>
-          </div>
-          {/* Verify controls — separate from the ProgramForm 저장 button */}
-          <div className="pt-3 border-t border-border">
-            <VerifyCutover id={program.id} verified={program.description_verified} />
-          </div>
-        </div>
-      )}
-
-      <ProgramForm program={program} action={updateProgram.bind(null, id)} />
+      <ProgramForm
+        program={program}
+        descriptionInitialHtml={initialHtml}
+        action={updateProgram.bind(null, id)}
+      />
       <div className="mt-8 pt-6 border-t border-border">
         <p className="text-muted-foreground text-xs mb-3">위험 구역</p>
         <DeleteButton onDelete={deleteProgram.bind(null, id)} />

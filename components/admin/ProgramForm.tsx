@@ -15,14 +15,15 @@ import {
 } from "@/components/ui/select";
 import { PROGRAM_GROUP_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus } from "@/lib/labels";
 import { ImagePreview } from "@/components/admin/ImagePreview";
-import { BlockEditor } from "@/components/admin/BlockEditor";
+import { ProgramRichEditor } from "@/components/admin/ProgramRichEditor";
 
 interface ProgramFormProps {
   program?: Program;
+  descriptionInitialHtml?: string;
   action: (fd: FormData) => void | Promise<void>;
 }
 
-export function ProgramForm({ program, action }: ProgramFormProps) {
+export function ProgramForm({ program, descriptionInitialHtml, action }: ProgramFormProps) {
   return (
     <form action={action} className="flex max-w-4xl flex-col gap-6">
       {/* 기본 정보 */}
@@ -129,7 +130,7 @@ export function ProgramForm({ program, action }: ProgramFormProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <BlockEditor name="description_blocks" initial={program?.description_blocks ?? []} />
+          <ProgramRichEditor name="description_blocks" initialHtml={descriptionInitialHtml ?? ""} />
           {/* Preserve the legacy description column so the public fallback is never lost on save */}
           <input type="hidden" name="description" value={program?.description ?? ""} />
         </CardContent>

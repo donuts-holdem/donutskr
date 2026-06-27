@@ -5,6 +5,8 @@ import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
 import { parseJsonField, coerceDescriptionBlocks } from "@/lib/admin/structured-fields";
 import type { Block } from "@/lib/program-blocks";
+import sanitizeHtml from "sanitize-html";
+import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
 
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -18,6 +20,14 @@ function parse(fd: FormData) {
     is_hot: fd.get("is_hot") === "on", is_affiliate: fd.get("is_affiliate") === "on",
     is_visible: fd.get("is_visible") === "on", sort_order: Number(fd.get("sort_order") || 0),
   };
+}
+
+// WYSIWYG stores the whole document as one raw block. Sanitize it on save so a
+// dangerouslySetInnerHTML sink is never fed unsanitized stored HTML.
+export function sanitizeRawBlocks(blocks: Block[]): Block[] {
+  return blocks.map((b) =>
+    b.type === "raw" ? { type: "raw" as const, html: sanitizeHtml(b.html, PROGRAM_SANITIZE_CONFIG) } : b,
+  );
 }
 
 async function reconcileBlockImages(supabase: Awaited<ReturnType<typeof requireAdmin>>, fd: FormData, blocks: Block[]): Promise<Block[]> {
@@ -35,12 +45,14 @@ export async function createProgram(fd: FormData) {
   const supabase = await requireAdmin();
   const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", null);
-  const blocks = await reconcileBlockImages(
-    supabase,
-    fd,
-    coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
+  const blocks = sanitizeRawBlocks(
+    await reconcileBlockImages(
+      supabase,
+      fd,
+      coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
+    ),
   );
-  const { error } = await supabase.from("programs").insert({ ...values, description_blocks: blocks });
+  const { error } = await supabase.from("programs").insert({ ...values, description_blocks: blocks, description_verified: true });
   if (error) throw error;
   revalidatePublic(["/programs"]);
   redirect("/admin/programs?saved=1");
@@ -50,12 +62,14 @@ export async function updateProgram(id: string, fd: FormData) {
   const supabase = await requireAdmin();
   const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", (fd.get("cover_image_existing") as string) || null);
-  const blocks = await reconcileBlockImages(
-    supabase,
-    fd,
-    coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
+  const blocks = sanitizeRawBlocks(
+    await reconcileBlockImages(
+      supabase,
+      fd,
+      coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
+    ),
   );
-  const { error } = await supabase.from("programs").update({ ...values, description_blocks: blocks }).eq("id", id);
+  const { error } = await supabase.from("programs").update({ ...values, description_blocks: blocks, description_verified: true }).eq("id", id);
   if (error) throw error;
   revalidatePublic([`/programs/${values.slug}`]);
   redirect("/admin/programs?saved=1");
