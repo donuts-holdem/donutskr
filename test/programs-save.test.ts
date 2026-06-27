@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeRawBlocks } from "@/app/admin/actions/programs";
+import { sanitizeRawBlocks } from "@/lib/admin/sanitize-blocks";
 import type { Block } from "@/lib/program-blocks";
 
 describe("sanitizeRawBlocks", () => {
