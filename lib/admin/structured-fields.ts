@@ -4,6 +4,8 @@
 // wipe a jsonb field, and the coerce* helpers normalize the parsed value into
 // the exact stored shape, tolerating partial/legacy element shapes.
 
+import type { Block, Run, Paragraph } from "@/lib/program-blocks";
+
 export class StructuredFieldError extends Error {}
 
 export function parseJsonField(raw: FormDataEntryValue | null, field: string): unknown {
@@ -75,4 +77,36 @@ export function coerceSponsors(value: unknown): { name: string; logo?: string; u
       return row;
     })
     .filter((r) => r.name.trim() !== "");
+}
+
+function coerceRun(el: unknown): Run {
+  const o = asObject(el);
+  const run: Run = { text: str(o.text) };
+  if (o.bold === true || o.bold === "true") run.bold = true;
+  if (typeof o.href === "string" && o.href.trim() !== "") run.href = o.href;
+  return run;
+}
+
+function coerceParagraph(el: unknown): Paragraph {
+  const o = asObject(el);
+  return { runs: Array.isArray(o.runs) ? o.runs.map(coerceRun) : [] };
+}
+
+export function coerceDescriptionBlocks(value: unknown): Block[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((el): Block => {
+    const o = asObject(el);
+    switch (o.type) {
+      case "image":
+        return { type: "image", src: str(o.src), alt: str(o.alt), ...(o.decorative === true ? { decorative: true } : {}) };
+      case "paragraph":
+        return { type: "paragraph", runs: Array.isArray(o.runs) ? o.runs.map(coerceRun) : [] };
+      case "list":
+        return { type: "list", items: Array.isArray(o.items) ? o.items.map((it) => (Array.isArray(it) ? it.map(coerceParagraph) : [])) : [] };
+      case "raw":
+        return { type: "raw", html: str(o.html) };
+      default:
+        return { type: "raw", html: str(o.html) };
+    }
+  });
 }
