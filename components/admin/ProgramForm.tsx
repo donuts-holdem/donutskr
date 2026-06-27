@@ -4,7 +4,6 @@ import type { Program } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { PROGRAM_GROUP_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus } from "@/lib/labels";
 import { ImagePreview } from "@/components/admin/ImagePreview";
+import { BlockEditor } from "@/components/admin/BlockEditor";
 
 interface ProgramFormProps {
   program?: Program;
@@ -104,10 +104,12 @@ export function ProgramForm({ program, action }: ProgramFormProps) {
         <Input id="end_date" name="end_date" type="date" defaultValue={program?.end_date ?? ""} />
       </div>
 
-      {/* 설명 */}
+      {/* 설명 (블록) */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="description">설명</Label>
-        <Textarea id="description" name="description" rows={4} defaultValue={program?.description ?? ""} />
+        <Label>설명 (블록)</Label>
+        <BlockEditor name="description_blocks" initial={program?.description_blocks ?? []} />
+        {/* Preserve the legacy description column so the public fallback is never lost on save */}
+        <input type="hidden" name="description" value={program?.description ?? ""} />
       </div>
 
       {/* 커버 이미지 */}
