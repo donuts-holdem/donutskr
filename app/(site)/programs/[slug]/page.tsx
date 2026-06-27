@@ -123,21 +123,9 @@ export default async function ProgramDetailPage({ params }: Props) {
 
       {/* 2-col body */}
       <section className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Left: poster + description */}
+        {/* Left: description (cover is omitted here — the body carries its own
+            lead image; rendering the cover too would duplicate it) */}
         <div className="flex-1 min-w-0 flex flex-col gap-6">
-          {program.cover_image && (
-            <div className="relative w-full max-w-sm rounded-card overflow-hidden aspect-square">
-              <Image
-                src={program.cover_image}
-                alt={program.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 384px"
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
-
           {useBlocks ? (
             <ProgramBlocks blocks={program.description_blocks!} />
           ) : showLegacy ? (
