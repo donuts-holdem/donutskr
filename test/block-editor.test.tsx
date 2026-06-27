@@ -28,23 +28,25 @@ describe("BlockEditor", () => {
     expect(parsed).toEqual(initial);
   });
 
-  it("add + type: clicking 문단 then typing updates hidden input JSON", () => {
+  it("typing in the text area serializes each line to a paragraph block", () => {
     const { container } = render(<BlockEditor name="blocks" initial={[]} />);
-    fireEvent.click(screen.getByText("문단"));
-    const input = screen.getByPlaceholderText(/문단/i);
-    fireEvent.change(input, { target: { value: "새 텍스트" } });
+    const textarea = screen.getByPlaceholderText(/설명을 입력/);
+    fireEvent.change(textarea, { target: { value: "첫 줄\n둘째 줄" } });
     const parsed = coerceDescriptionBlocks(JSON.parse(getHidden(container).value));
-    expect(parsed).toHaveLength(1);
-    expect(parsed[0]).toEqual({ type: "paragraph", runs: [{ text: "새 텍스트" }] });
+    expect(parsed).toEqual([
+      { type: "paragraph", runs: [{ text: "첫 줄" }] },
+      { type: "paragraph", runs: [{ text: "둘째 줄" }] },
+    ]);
   });
 
-  it("bold toggle: expanding 서식 then clicking 굵게 sets bold: true", () => {
-    const initial: Block[] = [{ type: "paragraph", runs: [{ text: "hello", bold: false }] }];
-    const { container } = render(<BlockEditor name="blocks" initial={initial} />);
-    fireEvent.click(screen.getByText("서식"));
+  it("formatted paragraph: adding 서식 문단 then 굵게 sets bold: true", () => {
+    const { container } = render(<BlockEditor name="blocks" initial={[]} />);
+    fireEvent.click(screen.getByText("서식 문단"));
+    fireEvent.change(screen.getByPlaceholderText("텍스트"), { target: { value: "hello" } });
     fireEvent.click(screen.getByText("굵게"));
     const parsed = coerceDescriptionBlocks(JSON.parse(getHidden(container).value));
-    expect(parsed[0]).toMatchObject({ type: "paragraph", runs: [{ text: "hello", bold: true }] });
+    const para = parsed.find((b) => b.type === "paragraph");
+    expect(para).toMatchObject({ type: "paragraph", runs: [{ text: "hello", bold: true }] });
   });
 
   it("raw no-delete: the raw block card has no 삭제 button", () => {

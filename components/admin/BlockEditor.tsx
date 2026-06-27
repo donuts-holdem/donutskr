@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useRef } from "react";
-import type { Block, Paragraph, Run } from "@/lib/program-blocks";
-import { useRepeatableRows } from "@/lib/admin/useRepeatableRows";
+import { useState } from "react";
+import type { Paragraph, Run } from "@/lib/program-blocks";
+import {
+  blocksToSegments,
+  segmentsToBlocks,
+  newSegmentKey,
+  type Segment,
+} from "@/lib/admin/block-editor-segments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,9 +75,49 @@ function RunEditor({
   );
 }
 
-// ── ParagraphEditor ───────────────────────────────────────────────────────────
+// ── RunListEditor (runs of one formatted paragraph) ───────────────────────────
 type KeyedRun = { key: string; value: Run };
 
+function RunListEditor({
+  runs,
+  onChange,
+}: {
+  runs: Run[];
+  onChange: (runs: Run[]) => void;
+}) {
+  const [keyedRuns, setKeyedRuns] = useState<KeyedRun[]>(() =>
+    runs.map((r) => ({ key: crypto.randomUUID(), value: r })),
+  );
+
+  function sync(next: KeyedRun[]) {
+    setKeyedRuns(next);
+    onChange(next.map((k) => k.value));
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      {keyedRuns.map((kr) => (
+        <RunEditor
+          key={kr.key}
+          run={kr.value}
+          onChange={(r) => sync(keyedRuns.map((k) => (k.key === kr.key ? { ...k, value: r } : k)))}
+          onRemove={() => sync(keyedRuns.filter((k) => k.key !== kr.key))}
+        />
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="self-start"
+        onClick={() => sync([...keyedRuns, { key: crypto.randomUUID(), value: { text: "" } }])}
+      >
+        + 조각
+      </Button>
+    </div>
+  );
+}
+
+// ── ParagraphEditor (used inside list items) ──────────────────────────────────
 function ParagraphEditor({
   paragraph,
   onChange,
@@ -257,129 +303,198 @@ function ListEditor({
   );
 }
 
-// ── BlockEditor (main export) ─────────────────────────────────────────────────
-export function BlockEditor({ name, initial }: { name: string; initial: Block[] }) {
-  // Use a ref so addBlock can vary the empty block type before calling add()
-  const nextBlockRef = useRef<Block>({ type: "paragraph", runs: [{ text: "" }] });
-  const { rows, values, add, remove, update, moveUp, moveDown } = useRepeatableRows<Block>(
-    initial,
-    () => nextBlockRef.current,
+// ── Reusable card header with reorder (+ optional delete) controls ─────────────
+function SegmentHeader({
+  label,
+  idx,
+  total,
+  onUp,
+  onDown,
+  onRemove,
+}: {
+  label: React.ReactNode;
+  idx: number;
+  total: number;
+  onUp: () => void;
+  onDown: () => void;
+  onRemove?: () => void;
+}) {
+  return (
+    <CardHeader className="flex-row items-center justify-between gap-2">
+      {typeof label === "string" ? (
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      ) : (
+        label
+      )}
+      <div className="flex gap-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={onUp}
+          disabled={idx === 0}
+          aria-label="위로 이동"
+        >
+          ↑
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={onDown}
+          disabled={idx === total - 1}
+          aria-label="아래로 이동"
+        >
+          ↓
+        </Button>
+        {onRemove && (
+          <Button type="button" variant="destructive" size="sm" onClick={onRemove}>
+            삭제
+          </Button>
+        )}
+      </div>
+    </CardHeader>
   );
+}
 
-  function addBlock(type: "paragraph" | "list" | "image") {
-    if (type === "paragraph") {
-      nextBlockRef.current = { type: "paragraph", runs: [{ text: "" }] };
-    } else if (type === "list") {
-      nextBlockRef.current = { type: "list", items: [[{ runs: [{ text: "" }] }]] };
-    } else {
-      nextBlockRef.current = { type: "image", src: "", alt: "" };
+// ── BlockEditor (main export) ─────────────────────────────────────────────────
+export function BlockEditor({ name, initial }: { name: string; initial: import("@/lib/program-blocks").Block[] }) {
+  const [segments, setSegments] = useState<Segment[]>(() => {
+    const segs = blocksToSegments(initial);
+    // Guarantee a text area at both ends so the operator can write before the
+    // first card (e.g. a leading image) and keep writing after the last one.
+    if (segs[0].kind !== "text") {
+      segs.unshift({ kind: "text", key: newSegmentKey(), text: "" });
     }
-    add();
+    const last = segs[segs.length - 1];
+    if (last.kind !== "text") {
+      segs.push({ kind: "text", key: newSegmentKey(), text: "" });
+    }
+    return segs;
+  });
+
+  const blocks = segmentsToBlocks(segments);
+
+  function update(key: string, patch: Partial<Segment>) {
+    setSegments((s) => s.map((seg) => (seg.key === key ? ({ ...seg, ...patch } as Segment) : seg)));
+  }
+  function remove(key: string) {
+    setSegments((s) => s.filter((seg) => seg.key !== key));
+  }
+  function moveUp(idx: number) {
+    setSegments((s) => {
+      if (idx <= 0) return s;
+      const a = [...s];
+      [a[idx - 1], a[idx]] = [a[idx], a[idx - 1]];
+      return a;
+    });
+  }
+  function moveDown(idx: number) {
+    setSegments((s) => {
+      if (idx >= s.length - 1) return s;
+      const a = [...s];
+      [a[idx], a[idx + 1]] = [a[idx + 1], a[idx]];
+      return a;
+    });
+  }
+  // Insert a non-text segment before any trailing empty text area, so the
+  // editor always ends in a text area for continued writing.
+  function addBlock(make: () => Segment) {
+    setSegments((s) => {
+      const seg = make();
+      const last = s[s.length - 1];
+      if (last && last.kind === "text" && last.text === "") {
+        return [...s.slice(0, -1), seg, last];
+      }
+      return [...s, seg, { kind: "text", key: newSegmentKey(), text: "" }];
+    });
   }
 
-  // Compute image-block index for file input naming
+  // Image-block index for file input naming, in stored-block order.
   let imgCount = 0;
   const imageIndexMap = new Map<string, number>();
-  for (const row of rows) {
-    if (row.value.type === "image") {
-      imageIndexMap.set(row.key, imgCount++);
-    }
+  for (const seg of segments) {
+    if (seg.kind === "image") imageIndexMap.set(seg.key, imgCount++);
   }
+
+  const total = segments.length;
 
   return (
     <div className="flex flex-col gap-3">
       {/* Serialization hidden input */}
-      <input type="hidden" name={name} value={JSON.stringify(values)} />
+      <input type="hidden" name={name} value={JSON.stringify(blocks)} />
 
-      {rows.map((row, idx) => {
-        const block = row.value;
-        const isFirst = idx === 0;
-        const isLast = idx === rows.length - 1;
-
-        // ── Raw block (read-only, reorder-only) ──────────────────────────────
-        if (block.type === "raw") {
+      {segments.map((seg, idx) => {
+        // ── Text segment (merged plain paragraphs) ───────────────────────────
+        if (seg.kind === "text") {
           return (
-            <Card key={row.key} className="border-destructive/40">
-              <CardHeader className="flex-row items-center justify-between gap-2">
-                <Badge variant="destructive">개발자 확인 필요</Badge>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moveUp(idx)}
-                    disabled={isFirst}
-                    aria-label="위로 이동"
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moveDown(idx)}
-                    disabled={isLast}
-                    aria-label="아래로 이동"
-                  >
-                    ↓
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigator.clipboard.writeText(block.html)}
-                >
-                  복사
-                </Button>
-                <pre className="bg-muted overflow-x-auto rounded-md p-2 text-xs font-mono whitespace-pre-wrap break-all">
-                  {block.html}
-                </pre>
+            <div key={seg.key} className="flex flex-col gap-1">
+              <Textarea
+                className="min-h-40"
+                value={seg.text}
+                onChange={(e) => update(seg.key, { text: e.target.value })}
+                placeholder="설명을 입력하세요. 줄바꿈(엔터)으로 문단이 나뉩니다."
+                aria-label="설명 본문"
+              />
+            </div>
+          );
+        }
+
+        // ── Formatted paragraph segment (bold / link) ────────────────────────
+        if (seg.kind === "paragraph") {
+          return (
+            <Card key={seg.key}>
+              <SegmentHeader
+                label="서식 문단"
+                idx={idx}
+                total={total}
+                onUp={() => moveUp(idx)}
+                onDown={() => moveDown(idx)}
+                onRemove={() => remove(seg.key)}
+              />
+              <CardContent>
+                <RunListEditor runs={seg.runs} onChange={(runs) => update(seg.key, { runs })} />
               </CardContent>
             </Card>
           );
         }
 
-        // ── Image block ───────────────────────────────────────────────────────
-        if (block.type === "image") {
-          const imgIdx = imageIndexMap.get(row.key) ?? 0;
+        // ── List segment ─────────────────────────────────────────────────────
+        if (seg.kind === "list") {
           return (
-            <Card key={row.key}>
-              <CardHeader className="flex-row items-center justify-between gap-2">
-                <span className="text-sm font-medium text-muted-foreground">이미지</span>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moveUp(idx)}
-                    disabled={isFirst}
-                    aria-label="위로 이동"
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moveDown(idx)}
-                    disabled={isLast}
-                    aria-label="아래로 이동"
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => remove(row.key)}
-                  >
-                    삭제
-                  </Button>
-                </div>
-              </CardHeader>
+            <Card key={seg.key}>
+              <SegmentHeader
+                label="목록"
+                idx={idx}
+                total={total}
+                onUp={() => moveUp(idx)}
+                onDown={() => moveDown(idx)}
+                onRemove={() => remove(seg.key)}
+              />
+              <CardContent>
+                <ListEditor
+                  items={seg.block.items}
+                  onChange={(items) => update(seg.key, { block: { type: "list", items } })}
+                />
+              </CardContent>
+            </Card>
+          );
+        }
+
+        // ── Image segment ────────────────────────────────────────────────────
+        if (seg.kind === "image") {
+          const imgIdx = imageIndexMap.get(seg.key) ?? 0;
+          const block = seg.block;
+          return (
+            <Card key={seg.key}>
+              <SegmentHeader
+                label="이미지"
+                idx={idx}
+                total={total}
+                onUp={() => moveUp(idx)}
+                onDown={() => moveDown(idx)}
+                onRemove={() => remove(seg.key)}
+              />
               <CardContent className="flex flex-col gap-3">
                 <ImagePreview src={block.src} />
                 <div>
@@ -393,7 +508,7 @@ export function BlockEditor({ name, initial }: { name: string; initial: Block[] 
                   <Input
                     id={`block_image_${imgIdx}_alt`}
                     value={block.decorative ? "" : block.alt}
-                    onChange={(e) => update(row.key, { ...block, alt: e.target.value })}
+                    onChange={(e) => update(seg.key, { block: { ...block, alt: e.target.value } })}
                     placeholder="이미지 설명"
                     disabled={!!block.decorative}
                   />
@@ -405,7 +520,9 @@ export function BlockEditor({ name, initial }: { name: string; initial: Block[] 
                   <Checkbox
                     id={`block_image_${imgIdx}_decorative`}
                     checked={!!block.decorative}
-                    onCheckedChange={(v) => update(row.key, { ...block, decorative: !!v, alt: v ? "" : block.alt })}
+                    onCheckedChange={(v) =>
+                      update(seg.key, { block: { ...block, decorative: !!v, alt: v ? "" : block.alt } })
+                    }
                   />
                   <Label htmlFor={`block_image_${imgIdx}_decorative`} className="text-sm">
                     장식용 이미지
@@ -416,94 +533,28 @@ export function BlockEditor({ name, initial }: { name: string; initial: Block[] 
           );
         }
 
-        // ── List block ────────────────────────────────────────────────────────
-        if (block.type === "list") {
-          return (
-            <Card key={row.key}>
-              <CardHeader className="flex-row items-center justify-between gap-2">
-                <span className="text-sm font-medium text-muted-foreground">목록</span>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moveUp(idx)}
-                    disabled={isFirst}
-                    aria-label="위로 이동"
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => moveDown(idx)}
-                    disabled={isLast}
-                    aria-label="아래로 이동"
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => remove(row.key)}
-                  >
-                    삭제
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ListEditor
-                  items={block.items}
-                  onChange={(items) => update(row.key, { type: "list", items })}
-                />
-              </CardContent>
-            </Card>
-          );
-        }
-
-        // ── Paragraph block ───────────────────────────────────────────────────
+        // ── Raw segment (read-only, reorder-only — no delete) ────────────────
         return (
-          <Card key={row.key}>
-            <CardHeader className="flex-row items-center justify-between gap-2">
-              <span className="text-sm font-medium text-muted-foreground">문단</span>
-              <div className="flex gap-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => moveUp(idx)}
-                  disabled={isFirst}
-                  aria-label="위로 이동"
-                >
-                  ↑
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => moveDown(idx)}
-                  disabled={isLast}
-                  aria-label="아래로 이동"
-                >
-                  ↓
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => remove(row.key)}
-                >
-                  삭제
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ParagraphEditor
-                paragraph={{ runs: block.runs }}
-                onChange={(p) => update(row.key, { type: "paragraph", runs: p.runs })}
-              />
+          <Card key={seg.key} className="border-destructive/40">
+            <SegmentHeader
+              label={<Badge variant="destructive">개발자 확인 필요</Badge>}
+              idx={idx}
+              total={total}
+              onUp={() => moveUp(idx)}
+              onDown={() => moveDown(idx)}
+            />
+            <CardContent className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => navigator.clipboard.writeText(seg.block.html)}
+              >
+                복사
+              </Button>
+              <pre className="bg-muted overflow-x-auto rounded-md p-2 text-xs font-mono whitespace-pre-wrap break-all">
+                {seg.block.html}
+              </pre>
             </CardContent>
           </Card>
         );
@@ -512,14 +563,43 @@ export function BlockEditor({ name, initial }: { name: string; initial: Block[] 
       {/* Add block controls */}
       <div className="flex flex-wrap items-center gap-1">
         <span className="text-xs text-muted-foreground mr-1">+ 블록 추가</span>
-        <Button type="button" variant="outline" size="sm" onClick={() => addBlock("paragraph")}>
-          문단
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => addBlock("list")}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            addBlock(() => ({
+              kind: "list",
+              key: newSegmentKey(),
+              block: { type: "list", items: [[{ runs: [{ text: "" }] }]] },
+            }))
+          }
+        >
           목록
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => addBlock("image")}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            addBlock(() => ({
+              kind: "image",
+              key: newSegmentKey(),
+              block: { type: "image", src: "", alt: "" },
+            }))
+          }
+        >
           이미지
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            addBlock(() => ({ kind: "paragraph", key: newSegmentKey(), runs: [{ text: "" }] }))
+          }
+        >
+          서식 문단
         </Button>
       </div>
     </div>
