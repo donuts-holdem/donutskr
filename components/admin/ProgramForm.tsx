@@ -34,7 +34,7 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-12">
+          <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="title">프로그램명 *</Label>
             <Input id="title" name="title" defaultValue={program?.title ?? ""} required />
           </div>
@@ -42,6 +42,23 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
             <Label htmlFor="slug">슬러그 *</Label>
             <Input id="slug" name="slug" defaultValue={program?.slug ?? ""} required />
             <p className="text-muted-foreground text-xs">URL 경로로 쓰이는 고유값입니다. (영문/숫자/하이픈)</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 미디어 */}
+      <Card>
+        <CardHeader>
+          <CardTitle asChild>
+            <h2>미디어</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="cover_image_file">커버 이미지</Label>
+            <ImagePreview src={program?.cover_image} />
+            {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
+            <Input id="cover_image_file" name="cover_image_file" type="file" accept="image/*" />
           </div>
         </CardContent>
       </Card>
@@ -103,15 +120,15 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-4">
+          <div className="flex flex-col gap-2 md:col-span-3">
             <Label htmlFor="start_date">시작일</Label>
             <Input id="start_date" name="start_date" type="date" defaultValue={program?.start_date ?? ""} />
           </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
+          <div className="flex flex-col gap-2 md:col-span-3">
             <Label htmlFor="end_date">종료일</Label>
             <Input id="end_date" name="end_date" type="date" defaultValue={program?.end_date ?? ""} />
           </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
+          <div className="flex flex-col gap-2 md:col-span-3">
             <Label htmlFor="location">지역</Label>
             <Input id="location" name="location" defaultValue={program?.location ?? ""} />
           </div>
@@ -133,23 +150,6 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
           <ProgramRichEditor name="description_blocks" initialHtml={descriptionInitialHtml ?? ""} />
           {/* Preserve the legacy description column so the public fallback is never lost on save */}
           <input type="hidden" name="description" value={program?.description ?? ""} />
-        </CardContent>
-      </Card>
-
-      {/* 미디어 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>미디어</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="cover_image_file">커버 이미지</Label>
-            <ImagePreview src={program?.cover_image} />
-            {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
-            <Input id="cover_image_file" name="cover_image_file" type="file" accept="image/*" />
-          </div>
         </CardContent>
       </Card>
 
