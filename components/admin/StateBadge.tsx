@@ -8,8 +8,8 @@ const CONFIG: Record<Kind, {
   OnIcon: typeof Eye; OffIcon: typeof Eye;
 }> = {
   visible: { onText: "노출", offText: "비노출", onAria: "노출 중", offAria: "노출 안 함", OnIcon: Eye, OffIcon: EyeOff },
-  hot: { onText: "HOT", offText: "HOT", onAria: "HOT 표시 켜짐", offAria: "HOT 표시 꺼짐", OnIcon: Flame, OffIcon: Flame },
-  affiliate: { onText: "제휴", offText: "제휴", onAria: "제휴 표시 켜짐", offAria: "제휴 표시 꺼짐", OnIcon: Handshake, OffIcon: Handshake },
+  hot: { onText: "HOT", offText: "HOT 꺼짐", onAria: "HOT 표시 켜짐", offAria: "HOT 표시 꺼짐", OnIcon: Flame, OffIcon: Flame },
+  affiliate: { onText: "제휴", offText: "제휴 꺼짐", onAria: "제휴 표시 켜짐", offAria: "제휴 표시 꺼짐", OnIcon: Handshake, OffIcon: Handshake },
 };
 
 export function StateBadge({ on, kind }: { on: boolean; kind: Kind }) {
