@@ -45,7 +45,6 @@ export default async function AdminDashboard() {
       <Card className="mt-6">
         <CardContent className="flex items-center gap-2 py-3">
           <span className={`size-2 rounded-full ${activeSeason ? "bg-primary" : "bg-muted-foreground/40"}`} aria-hidden />
-          <span className="sr-only">활성 시즌</span>
           <span className="text-muted-foreground text-sm">현재 활성 시즌</span>
           <span className="text-foreground font-medium">
             {activeSeason ? `${activeSeason.name} (${activeSeason.year})` : "없음"}
@@ -64,7 +63,7 @@ export default async function AdminDashboard() {
                     <c.Icon className="text-muted-foreground group-hover:text-primary size-5" aria-hidden />
                     <p className="text-foreground mt-3 font-semibold">{c.title}</p>
                     <p className="text-primary mt-1 text-sm font-medium">
-                      {c.count !== null ? `${c.title} ${c.count}${c.unit}` : "바로가기 →"}
+                      {c.count !== null ? `${c.count}${c.unit}` : "바로가기 →"}
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">{c.desc}</p>
                   </CardContent>
@@ -102,6 +101,7 @@ export default async function AdminDashboard() {
               <Button key={l.href} asChild variant="ghost" size="sm" className="justify-start">
                 <a href={l.href} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4" aria-hidden /> {l.label}
+                  <span className="sr-only">(새 창)</span>
                 </a>
               </Button>
             ))}

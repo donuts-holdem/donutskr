@@ -19,7 +19,7 @@ export default async function EditSpecialPagePage({ params }: { params: Promise<
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>특수 페이지 수정</h1>
+        <h1 className="text-2xl font-bold text-gold">특수 페이지 수정</h1>
         <ViewOnSiteLink href={`/${page.slug}`} />
       </div>
       <SpecialPageForm page={page} structures={structures} action={action} />

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
+import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
 import { ProgramForm } from "@/components/admin/ProgramForm";
 import { updateProgram, deleteProgram } from "@/app/admin/actions/programs";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -9,17 +10,6 @@ import { VerifyCutover } from "@/components/admin/VerifyCutover";
 import { ProgramBlocks } from "@/components/program/ProgramBlocks";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { mapProgram } from "@/lib/data/programs";
-
-// Sanitize config mirrors the public page pipeline in app/(site)/programs/[slug]/page.tsx
-const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
-  allowedAttributes: {
-    ...sanitizeHtml.defaults.allowedAttributes,
-    a: ["href", "name", "target", "rel"],
-    img: ["src", "alt", "title", "width", "height"],
-  },
-  allowedSchemes: ["http", "https", "mailto"],
-};
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,13 +29,13 @@ export default async function EditProgramPage({ params }: Props) {
   // Compute legacy HTML preview only when blocks exist (side-by-side comparison)
   const legacyHtml =
     blocks !== null && program.description
-      ? sanitizeHtml(await marked.parse(program.description), SANITIZE_CONFIG)
+      ? sanitizeHtml(await marked.parse(program.description), PROGRAM_SANITIZE_CONFIG)
       : null;
 
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--color-gold)" }}>
+        <h1 className="text-2xl font-bold text-gold">
           프로그램 수정: {program.title}
         </h1>
         <ViewOnSiteLink href={`/programs/${program.slug}`} />
@@ -88,8 +78,8 @@ export default async function EditProgramPage({ params }: Props) {
       )}
 
       <ProgramForm program={program} action={updateProgram.bind(null, id)} />
-      <div className="border-t border-white/10" style={{ marginTop: "2rem", paddingTop: "1.5rem" }}>
-        <p style={{ color: "var(--muted-3)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>위험 구역</p>
+      <div className="mt-8 pt-6 border-t border-border">
+        <p className="text-muted-foreground text-xs mb-3">위험 구역</p>
         <DeleteButton onDelete={deleteProgram.bind(null, id)} />
       </div>
     </div>

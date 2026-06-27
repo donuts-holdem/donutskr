@@ -29,11 +29,12 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
       {/* 시즌 (optional) */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="season_id">시즌</Label>
-        <Select name="season_id" defaultValue={event?.season_id ?? undefined}>
+        <Select name="season_id" defaultValue={event?.season_id ?? "none"}>
           <SelectTrigger id="season_id" className="w-full">
             <SelectValue placeholder="-- 선택 --" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="none">없음</SelectItem>
             {seasons.map((s) => (
               <SelectItem key={s.id} value={s.id}>
                 {s.name} ({s.year})
@@ -166,11 +167,12 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
       {/* 블라인드 스트럭처 (optional) */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="blind_structure_id">블라인드 스트럭처</Label>
-        <Select name="blind_structure_id" defaultValue={event?.blind_structure_id ?? undefined}>
+        <Select name="blind_structure_id" defaultValue={event?.blind_structure_id ?? "none"}>
           <SelectTrigger id="blind_structure_id" className="w-full">
             <SelectValue placeholder="-- 선택 --" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="none">없음</SelectItem>
             {structures.map((s) => (
               <SelectItem key={s.id} value={s.id}>
                 {s.name}

@@ -11,7 +11,7 @@ import fixtures from "./fixtures/program-descriptions.json";
 
 describe("backfill converter parity — scripts/lib mirror vs lib/program-blocks-convert (TS)", () => {
   it.each(fixtures as { slug: string; description: string }[])(
-    "mirror output matches TS converter for %s",
+    "mirror output matches TS converter for $slug",
     ({ description }) => {
       const tsResult = tsHtmlToBlocks(description);
       const mjsResult = (mjsHtmlToBlocks as typeof tsHtmlToBlocks)(description);

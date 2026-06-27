@@ -24,9 +24,11 @@ export async function getEvents(opts?: { category?: EventCategory }): Promise<Ev
   const supabase = await createServerSupabase();
   let q = supabase.from("events").select("*").is("deleted_at", null).eq("is_visible", true);
   if (opts?.category) q = q.eq("category", opts.category);
-  const { data, error } = await q.order("sort_order", { ascending: true }).order("date", { ascending: true });
+  const [{ data, error }, active] = await Promise.all([
+    q.order("sort_order", { ascending: true }).order("date", { ascending: true }),
+    getActiveSeason(),
+  ]);
   if (error) throw error;
-  const active = await getActiveSeason();
   const events = (data ?? []).map(mapEvent).filter(isEventPublic);
   return filterByActiveSeason(events, active?.id ?? null);
 }

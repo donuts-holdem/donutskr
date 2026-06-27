@@ -1,3 +1,5 @@
+import type { Block } from "@/lib/program-blocks";
+
 export type SeasonCode = "spring" | "summer" | "autumn" | "winter";
 export type EventCategory = "festival" | "confirmed" | "upcoming" | "completed";
 export type EventStatus = "scheduled" | "confirmed" | "running" | "reg_closed" | "completed" | "canceled" | "hidden";
@@ -52,8 +54,6 @@ export interface SiteConfig {
   leaderboard_tab_visible: boolean; leaderboard_api_url: string | null; leaderboard_personal_rank_visible: boolean;
   footer_sponsors: { name: string; logo?: string; url?: string }[];
 }
-
-import type { Block } from "@/lib/program-blocks";
 
 export type ProgramGroup = "poker" | "social" | "others";
 export interface Program {

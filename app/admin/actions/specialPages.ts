@@ -7,6 +7,7 @@ import { parseJsonField, coerceStringList, coerceLabelValueList } from "@/lib/ad
 
 function parseSpecialPageForm(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
+  const fk = (k: string) => { const v = s(k); return v === "none" ? null : v; };
   return {
     slug: String(fd.get("slug") || ""),
     label: s("label"),
@@ -22,7 +23,7 @@ function parseSpecialPageForm(fd: FormData) {
     gallery: coerceStringList(parseJsonField(fd.get("gallery"), "갤러리")),
     info_cards: coerceLabelValueList(parseJsonField(fd.get("info_cards"), "정보 카드")),
     note_list: coerceStringList(parseJsonField(fd.get("note_list"), "노트 목록")),
-    blind_structure_id: s("blind_structure_id"),
+    blind_structure_id: fk("blind_structure_id"),
     start_show_date: s("start_show_date"),
     end_show_date: s("end_show_date"),
     is_visible: fd.get("is_visible") === "on",

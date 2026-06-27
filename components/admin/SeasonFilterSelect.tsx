@@ -24,7 +24,7 @@ export function SeasonFilterSelect({
         router.push(v === "all" ? "/admin/events" : `/admin/events?season=${v}`)
       }
     >
-      <SelectTrigger className="w-56">
+      <SelectTrigger className="w-56" aria-label="시즌 필터">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

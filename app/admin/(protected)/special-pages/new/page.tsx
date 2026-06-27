@@ -6,7 +6,7 @@ export default async function NewSpecialPagePage() {
   const structures = await getAllStructures();
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--color-gold)" }}>새 특수 페이지</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gold">새 특수 페이지</h1>
       <SpecialPageForm action={createSpecialPage} structures={structures} />
     </div>
   );
