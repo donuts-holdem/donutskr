@@ -2,6 +2,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import type { Program, ProgramGroup } from "@/lib/types";
 import type { Block } from "@/lib/program-blocks";
 import { coerceDescriptionBlocks } from "@/lib/admin/structured-fields";
+import { normalizeSlug } from "@/lib/slug";
 
 function coerceNullableBlocks(v: unknown): Block[] | null {
   if (v === null || v === undefined) return null;
@@ -52,6 +53,6 @@ export async function getAffiliatePartners(): Promise<Program[]> {
 }
 export async function getProgramBySlug(slug: string): Promise<Program | null> {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("programs").select("*").eq("slug", slug).is("deleted_at", null).maybeSingle();
+  const { data, error } = await supabase.from("programs").select("*").eq("slug", normalizeSlug(slug)).is("deleted_at", null).maybeSingle();
   if (error) throw error; return data ? mapProgram(data) : null;
 }

@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { SpecialPage } from "@/lib/types";
+import { normalizeSlug } from "@/lib/slug";
 
 export function mapSpecialPage(r: any): SpecialPage {
   return {
@@ -32,7 +33,7 @@ export async function getSpecialPageBySlug(slug: string): Promise<SpecialPage | 
   const { data, error } = await supabase
     .from("special_pages")
     .select("*")
-    .eq("slug", slug)
+    .eq("slug", normalizeSlug(slug))
     .is("deleted_at", null)
     .eq("is_visible", true)
     .maybeSingle();
