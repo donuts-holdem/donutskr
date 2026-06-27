@@ -14,7 +14,7 @@ function parse(fd: FormData) {
     program_group: String(fd.get("program_group") || "poker"), status: s("status"),
     member_count: Number(fd.get("member_count") || 0), location: s("location"),
     start_date: s("start_date"), end_date: s("end_date"), description: s("description"),
-    manager_name: s("manager_name"), manager_role: s("manager_role"), manager_avatar: s("manager_avatar"),
+    manager_name: s("manager_name"), manager_role: s("manager_role"),
     cta_label: s("cta_label"), entry_link: s("entry_link"), external_url: s("external_url"),
     is_hot: fd.get("is_hot") === "on", is_affiliate: fd.get("is_affiliate") === "on",
     is_visible: fd.get("is_visible") === "on", sort_order: Number(fd.get("sort_order") || 0),
@@ -34,8 +34,9 @@ async function reconcileBlockImages(supabase: Awaited<ReturnType<typeof requireA
 
 export async function createProgram(fd: FormData) {
   const supabase = await requireAdmin();
-  const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
+  const values: ReturnType<typeof parse> & { cover_image: string | null; manager_avatar: string | null } = { ...parse(fd), cover_image: null, manager_avatar: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", null);
+  values.manager_avatar = await uploadIfPresent(supabase, fd, "manager_avatar", null);
   const blocks = sanitizeRawBlocks(
     await reconcileBlockImages(
       supabase,
@@ -51,8 +52,9 @@ export async function createProgram(fd: FormData) {
 
 export async function updateProgram(id: string, fd: FormData) {
   const supabase = await requireAdmin();
-  const values: ReturnType<typeof parse> & { cover_image: string | null } = { ...parse(fd), cover_image: null };
+  const values: ReturnType<typeof parse> & { cover_image: string | null; manager_avatar: string | null } = { ...parse(fd), cover_image: null, manager_avatar: null };
   values.cover_image = await uploadIfPresent(supabase, fd, "cover_image", (fd.get("cover_image_existing") as string) || null);
+  values.manager_avatar = await uploadIfPresent(supabase, fd, "manager_avatar", (fd.get("manager_avatar_existing") as string) || null);
   const blocks = sanitizeRawBlocks(
     await reconcileBlockImages(
       supabase,

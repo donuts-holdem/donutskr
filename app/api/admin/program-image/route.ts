@@ -13,7 +13,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "이미지 파일만 업로드할 수 있습니다." }, { status: 400 });
   }
 
-  const path = `program_body/${Date.now()}-${file.name}`;
+  // Optional destination folder (allowlisted). Defaults to program_body so the
+  // existing rich-editor caller is unaffected.
+  const ALLOWED_FOLDERS = new Set(["program_body", "site_media"]);
+  const folderRaw = fd.get("folder");
+  const folder = typeof folderRaw === "string" && ALLOWED_FOLDERS.has(folderRaw) ? folderRaw : "program_body";
+
+  const path = `${folder}/${Date.now()}-${file.name}`;
   const { error } = await supabase.storage.from("media").upload(path, file, { upsert: true });
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

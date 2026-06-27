@@ -170,8 +170,10 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
             <Input id="manager_role" name="manager_role" defaultValue={program?.manager_role ?? ""} />
           </div>
           <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="manager_avatar">담당자 아바타</Label>
-            <Input id="manager_avatar" name="manager_avatar" defaultValue={program?.manager_avatar ?? ""} />
+            <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
+            <ImagePreview src={program?.manager_avatar} />
+            {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
+            <Input id="manager_avatar_file" name="manager_avatar_file" type="file" accept="image/*" />
           </div>
         </CardContent>
       </Card>
