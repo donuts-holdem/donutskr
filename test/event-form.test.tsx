@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { EventForm } from "@/components/admin/EventForm";
-import type { Event } from "@/lib/types";
 
 describe("EventForm", () => {
   it("renders core fields", () => {
@@ -13,23 +12,11 @@ describe("EventForm", () => {
 });
 
 describe("EventForm Phase 2 localization", () => {
-  it("shows the status select in Korean and hides the category select", () => {
+  it("shows the status select in Korean", () => {
     render(<EventForm structures={[]} action={async () => {}} />);
-    // Korean status label visible (default 예정 = scheduled)
+    // Korean status label visible (default 예정 = scheduled).
     // Radix Select renders both a visible <span> and a hidden native <option>,
     // so use getAllByText to avoid "multiple elements" error.
     expect(screen.getAllByText("예정")[0]).toBeInTheDocument();
-    // category is hidden: no English category options, but value preserved in a hidden input
-    expect(screen.queryByText("festival")).not.toBeInTheDocument();
-    const hidden = document.querySelector('input[type="hidden"][name="category"]') as HTMLInputElement;
-    expect(hidden).not.toBeNull();
-    expect(hidden.value).toBe("upcoming"); // default for a new event
-  });
-
-  it("preserves existing event category in hidden input", () => {
-    render(<EventForm structures={[]} action={async () => {}} event={{ category: "festival" } as Event} />);
-    const hidden = document.querySelector('input[type="hidden"][name="category"]') as HTMLInputElement;
-    expect(hidden).not.toBeNull();
-    expect(hidden.value).toBe("festival");
   });
 });

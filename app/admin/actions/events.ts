@@ -9,11 +9,11 @@ function parse(fd: FormData) {
   const fk = (k: string) => { const v = s(k); return v === "none" ? null : v; };
   return {
     season_id: fk("season_id"), title: String(fd.get("title")),
-    event_type: s("event_type"), date: s("date"), weekday: s("weekday"),
+    date: s("date"),
     location: s("location"), address: s("address"),
     start_time: s("start_time"), reg_close_time: s("reg_close_time"),
     buy_in: s("buy_in"), entry_link: s("entry_link"), button_label: s("button_label"),
-    description: s("description"), category: String(fd.get("category") || "upcoming"),
+    description: s("description"),
     status: String(fd.get("status") || "scheduled"), is_visible: fd.get("is_visible") === "on",
     blind_structure_id: fk("blind_structure_id"),
     timer_event_id: s("timer_event_id"), timer_event_url: s("timer_event_url"),

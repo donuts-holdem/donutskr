@@ -14,6 +14,18 @@ const TERMINAL = new Set(["completed", "canceled"]);
 
 const DATE_PREFIX = /^(\d{4}-\d{2}-\d{2})/;
 
+const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
+/**
+ * Korean weekday ("일".."토") derived from a "YYYY-MM-DD" date, or null if
+ * unparseable. Computed in UTC so it is deterministic across server/browser
+ * (the calendar date's day-of-week doesn't depend on the viewer's timezone).
+ */
+export function weekdayKO(date: string | null): string | null {
+  const m = DATE_PREFIX.exec(date ?? "");
+  if (!m) return null;
+  return WEEKDAY_KO[new Date(`${m[1]}T00:00:00Z`).getUTCDay()] ?? null;
+}
+
 /**
  * Whether an event belongs in the past/archive bucket.
  * Precedence: terminal status → live status → undated → date vs today.

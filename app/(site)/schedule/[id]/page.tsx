@@ -8,6 +8,7 @@ import { BlindStructureTable } from "@/components/schedule/BlindStructureTable";
 import { StatusBadge } from "@/components/schedule/StatusBadge";
 import { display, eventTime, IconArrow } from "@/components/schedule/fixtures";
 import { formatDotDate } from "@/lib/program-display";
+import { weekdayKO } from "@/lib/schedule";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -96,9 +97,10 @@ export default async function EventDetailPage({ params }: Props) {
     : null;
 
   const dateLabel = event.date ? formatDotDate(event.date) : null;
+  const weekday = weekdayKO(event.date);
   const time = eventTime(event);
   const whenValue = dateLabel
-    ? `${dateLabel}${event.weekday ? ` (${event.weekday})` : ""}`
+    ? `${dateLabel}${weekday ? ` (${weekday})` : ""}`
     : event.date ?? "일정 미정";
 
   // Live timer is only meaningful while the event is live or about to be.
@@ -122,11 +124,6 @@ export default async function EventDetailPage({ params }: Props) {
       <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-8">
         <div className="flex flex-wrap items-center gap-2.5">
           <StatusBadge status={event.status} />
-          {event.event_type && (
-            <span className="inline-flex items-center rounded-pill bg-white/[0.06] px-3 py-1 text-2xs font-medium text-white/65">
-              {event.event_type}
-            </span>
-          )}
           {isCompleted && (
             <span className="inline-flex items-center rounded-pill bg-white/[0.04] px-3 py-1 text-2xs font-medium text-white/40">
               아카이브
@@ -228,12 +225,6 @@ export default async function EventDetailPage({ params }: Props) {
               </>
             )}
 
-            {event.event_type && (
-              <>
-                <span className="h-px w-full bg-white/[0.06]" />
-                <InfoRow label="종류">{event.event_type}</InfoRow>
-              </>
-            )}
           </div>
 
           {/* CTAs */}

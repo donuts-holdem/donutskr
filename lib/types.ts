@@ -1,6 +1,5 @@
 import type { Block } from "@/lib/program-blocks";
 
-export type EventCategory = "festival" | "confirmed" | "upcoming" | "completed";
 export type EventStatus = "scheduled" | "confirmed" | "running" | "reg_closed" | "completed" | "canceled" | "hidden";
 export type RowType = "level" | "break" | "stage";
 export type TabType = "internal" | "external" | "special";
@@ -14,12 +13,12 @@ export interface Season {
 }
 export interface Event {
   id: string; season_id: string | null; title: string;
-  event_type: string | null; date: string | null; weekday: string | null;
+  date: string | null;
   location: string | null; address: string | null;
   start_time: string | null; reg_close_time: string | null;
   buy_in: string | null; entry_link: string | null; button_label: string | null;
   description: string | null; poster_image: string | null;
-  category: EventCategory; status: EventStatus; is_visible: boolean;
+  status: EventStatus; is_visible: boolean;
   blind_structure_id: string | null; timer_event_id: string | null; timer_event_url: string | null;
 }
 export interface BlindStructure { id: string; name: string; is_template: boolean; event_type: string | null; }

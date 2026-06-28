@@ -36,8 +36,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          {/* 카테고리: 운영자에겐 무의미해 숨김. 기존값 보존(신규는 upcoming). */}
-          <input type="hidden" name="category" value={event?.category ?? "upcoming"} />
 
           <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="title">이벤트명 *</Label>
@@ -75,10 +73,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             </Select>
           </div>
           <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="event_type">이벤트 타입</Label>
-            <Input id="event_type" name="event_type" defaultValue={event?.event_type ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="description">설명</Label>
             <Textarea id="description" name="description" rows={4} defaultValue={event?.description ?? ""} />
           </div>
@@ -96,10 +90,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           <div className="flex flex-col gap-2 md:col-span-4">
             <Label htmlFor="date">날짜</Label>
             <Input id="date" name="date" type="date" defaultValue={event?.date ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="weekday">요일</Label>
-            <Input id="weekday" name="weekday" defaultValue={event?.weekday ?? ""} />
           </div>
           <div className="flex flex-col gap-2 md:col-span-4">
             <Label htmlFor="start_time">시작 시간</Label>

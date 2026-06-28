@@ -238,7 +238,7 @@ export function HomeMagazine({
   // The home board shows the live season — upcoming and active events,
   // not the completed archive (that lives on the full schedule page).
   const board = events
-    .filter((e) => e.status !== "completed" && e.status !== "canceled" && e.category !== "completed")
+    .filter((e) => e.status !== "completed" && e.status !== "canceled")
     .slice(0, 8);
 
   // Recommended programs: one lead card + a side list of up to four.

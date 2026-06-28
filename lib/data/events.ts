@@ -1,5 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { Event, EventCategory } from "@/lib/types";
+import type { Event } from "@/lib/types";
 import { isEventPublic } from "@/lib/visibility";
 import { filterByActiveSeason } from "@/lib/season-rules";
 import { getActiveSeason } from "@/lib/data/seasons";
@@ -8,22 +8,21 @@ import { getActiveSeason } from "@/lib/data/seasons";
 export function mapEvent(r: any): Event {
   return {
     id: String(r.id ?? ""), season_id: r.season_id ?? null,
-    title: String(r.title ?? ""), event_type: r.event_type ?? null, date: r.date ?? null,
-    weekday: r.weekday ?? null, location: r.location ?? null, address: r.address ?? null,
+    title: String(r.title ?? ""), date: r.date ?? null,
+    location: r.location ?? null, address: r.address ?? null,
     start_time: r.start_time ?? null, reg_close_time: r.reg_close_time ?? null,
     buy_in: r.buy_in ?? null, entry_link: r.entry_link ?? null, button_label: r.button_label ?? null,
     description: r.description ?? null, poster_image: r.poster_image ?? null,
-    category: (r.category ?? "upcoming") as EventCategory, status: (r.status ?? "scheduled"),
+    status: (r.status ?? "scheduled"),
     is_visible: r.is_visible ?? true,
     blind_structure_id: r.blind_structure_id ?? null,
     timer_event_id: r.timer_event_id ?? null, timer_event_url: r.timer_event_url ?? null,
   };
 }
 
-export async function getEvents(opts?: { category?: EventCategory }): Promise<Event[]> {
+export async function getEvents(): Promise<Event[]> {
   const supabase = await createServerSupabase();
-  let q = supabase.from("events").select("*").is("deleted_at", null).eq("is_visible", true);
-  if (opts?.category) q = q.eq("category", opts.category);
+  const q = supabase.from("events").select("*").is("deleted_at", null).eq("is_visible", true);
   const [{ data, error }, active] = await Promise.all([
     q.order("date", { ascending: true }).order("start_time", { ascending: true }).order("id", { ascending: true }),
     getActiveSeason(),

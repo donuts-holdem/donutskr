@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
 import type { Event, EventStatus } from "@/lib/types";
+import { weekdayKO } from "@/lib/schedule";
 
 /* ------------------------------------------------------------------ *
  * Fixtures — the shared vocabulary for the club's schedule board. The
@@ -149,7 +150,7 @@ export function FixtureRow({
               result ? "text-white/40" : "text-white/55"
             }`}
           >
-            {pd ? `${pd.month}월${event.weekday ? ` · ${event.weekday}` : ""}` : event.date}
+            {pd ? `${pd.month}월${weekdayKO(event.date) ? ` · ${weekdayKO(event.date)}` : ""}` : event.date}
           </span>
         </div>
 
