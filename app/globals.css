@@ -180,6 +180,11 @@ body {
 .prose-dark em { font-style: italic; }
 .prose-dark u { text-decoration-color: currentColor; }
 .prose-dark s { text-decoration-color: currentColor; color: rgba(255,255,255,0.55); }
+/* Keep author-supplied rich text from forcing horizontal page scroll on mobile:
+   images shrink, wide tables / preformatted blocks scroll inside themselves. */
+.prose-dark img { max-width: 100%; height: auto; }
+.prose-dark pre { overflow-x: auto; max-width: 100%; }
+.prose-dark table { display: block; max-width: 100%; overflow-x: auto; }
 /*
   ---break---
 */
