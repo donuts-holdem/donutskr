@@ -115,7 +115,7 @@ export function FixtureRow({
 }) {
   const result = variant === "result";
   const pd = parseEventDate(event.date);
-  const time = result ? null : eventTime(event);
+  const time = eventTime(event);
   const meta = (result
     ? [event.location]
     : [event.location, event.buy_in]
@@ -141,7 +141,11 @@ export function FixtureRow({
             {pd?.day ?? "—"}
           </span>
           {time && (
-            <span className="mt-1 text-sm font-semibold leading-none tabular-nums text-gold/90">
+            <span
+              className={`mt-1 font-semibold leading-none tabular-nums ${
+                result ? "text-xs text-white/45" : "text-sm text-gold/90"
+              }`}
+            >
               {time}
             </span>
           )}
@@ -165,13 +169,15 @@ export function FixtureRow({
           </h3>
           {meta.length > 0 && (
             <div
-              className={`${display.className} mt-1.5 flex flex-wrap items-center text-xs ${
+              className={`${display.className} mt-1.5 flex flex-col gap-1 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-0 ${
                 result ? "text-white/40" : "text-white/55"
               }`}
             >
               {meta.map((m, i) => (
                 <span key={i} className="inline-flex items-center">
-                  {i > 0 && <span aria-hidden="true" className="mx-2 text-white/25">·</span>}
+                  {i > 0 && (
+                    <span aria-hidden="true" className="mx-2 hidden text-white/25 sm:inline">·</span>
+                  )}
                   {m}
                 </span>
               ))}

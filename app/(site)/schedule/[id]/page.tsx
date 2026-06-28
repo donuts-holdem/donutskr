@@ -85,6 +85,29 @@ function InfoRow({
   );
 }
 
+/* --------------------------- entry CTA --------------------------- */
+function EntryButton({
+  href,
+  label,
+  className,
+}: {
+  href: string;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`group inline-flex items-center justify-center gap-2 rounded-pill bg-coral-cta px-8 py-3.5 text-sm font-semibold text-white transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${className ?? ""}`}
+    >
+      {label}
+      <IconArrow size={16} className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+    </a>
+  );
+}
+
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params;
   const event = await getEventById(id);
@@ -105,6 +128,9 @@ export default async function EventDetailPage({ params }: Props) {
 
   // Live timer is only meaningful while the event is live or about to be.
   const showTimer = !isCompleted && Boolean(event.timer_event_url);
+
+  const showEntry = !isCompleted && Boolean(event.entry_link);
+  const entryLabel = event.button_label ?? "참가 신청하기";
 
   return (
     <div
@@ -156,6 +182,15 @@ export default async function EventDetailPage({ params }: Props) {
             </span>
           )}
         </div>
+
+        {/* Entry CTA near the title (mobile only — desktop uses the sticky aside) */}
+        {showEntry && (
+          <EntryButton
+            href={event.entry_link!}
+            label={entryLabel}
+            className="w-full sm:w-fit lg:hidden"
+          />
+        )}
       </header>
 
       {/* Body */}
@@ -228,16 +263,8 @@ export default async function EventDetailPage({ params }: Props) {
           </div>
 
           {/* CTAs */}
-          {!isCompleted && event.entry_link && (
-            <a
-              href={event.entry_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex w-full items-center justify-center gap-2 rounded-pill bg-coral-cta px-8 py-3.5 text-sm font-semibold text-white transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-            >
-              {event.button_label ?? "참가 신청하기"}
-              <IconArrow size={16} className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
-            </a>
+          {showEntry && (
+            <EntryButton href={event.entry_link!} label={entryLabel} className="w-full" />
           )}
 
           {showTimer && (

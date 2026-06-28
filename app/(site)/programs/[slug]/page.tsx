@@ -64,6 +64,29 @@ function ExternalNotice({ url }: { url: string }) {
   );
 }
 
+function CtaButton({
+  href,
+  label,
+  external,
+  className,
+}: {
+  href: string;
+  label: string;
+  external: boolean;
+  className?: string;
+}) {
+  const cls = `rounded-pill bg-coral-cta text-white font-semibold text-sm hover:opacity-90 transition-opacity ${className ?? ""}`;
+  return external ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+      {label}
+    </a>
+  ) : (
+    <Link href={href} className={cls}>
+      {label}
+    </Link>
+  );
+}
+
 export default async function ProgramDetailPage({ params }: Props) {
   const { slug } = await params;
   const [program, hotPrograms] = await Promise.all([
@@ -119,6 +142,16 @@ export default async function ProgramDetailPage({ params }: Props) {
             <span><span aria-hidden="true">📅</span> {formatDotDate(program.start_date)}</span>
           )}
         </div>
+
+        {/* Shortcut CTA near the title (mobile only — desktop uses the right rail) */}
+        {ctaHref && (
+          <CtaButton
+            href={ctaHref}
+            label={ctaLabel}
+            external={ctaIsExternal}
+            className="inline-flex w-fit items-center px-6 py-2.5 lg:hidden"
+          />
+        )}
       </section>
 
       {/* 2-col body */}
@@ -172,23 +205,12 @@ export default async function ProgramDetailPage({ params }: Props) {
 
           {/* CTA */}
           {ctaHref && (
-            ctaIsExternal ? (
-              <a
-                href={ctaHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-3 rounded-pill bg-coral-cta text-white text-center font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                {ctaLabel}
-              </a>
-            ) : (
-              <Link
-                href={ctaHref}
-                className="block w-full py-3 rounded-pill bg-coral-cta text-white text-center font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                {ctaLabel}
-              </Link>
-            )
+            <CtaButton
+              href={ctaHref}
+              label={ctaLabel}
+              external={ctaIsExternal}
+              className="block w-full py-3 text-center"
+            />
           )}
         </div>
       </section>

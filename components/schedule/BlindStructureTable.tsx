@@ -12,7 +12,7 @@ export function BlindStructureTable({ rows }: { rows: BlindRow[] }) {
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-white/[0.08] bg-surface">
-      <table className="w-full border-collapse text-sm text-white/80">
+      <table className="w-full table-fixed border-collapse text-sm text-white/80">
         <thead>
           <tr
             className={`${display.className} bg-white/[0.03] text-2xs uppercase tracking-[0.12em] text-white/40`}

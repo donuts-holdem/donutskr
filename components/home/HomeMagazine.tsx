@@ -253,7 +253,7 @@ export function HomeMagazine({
       <ScrollProgress />
 
       {/* ---------------------------- HERO ---------------------------- */}
-      <section className="relative ml-[calc(50%-50vw)] flex min-h-[78vh] w-screen flex-col justify-center overflow-hidden">
+      <section className="relative ml-[calc(50%-50vw)] flex min-h-[58vh] w-screen flex-col justify-center overflow-hidden sm:min-h-[78vh]">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <Image
             src="/hero.jpg"
@@ -269,7 +269,7 @@ export function HomeMagazine({
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4">
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-9 py-24 text-center sm:gap-11 lg:max-w-3xl">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-9 py-14 text-center sm:gap-11 sm:py-24 lg:max-w-3xl">
             <Reveal immediate className="flex flex-col items-center gap-6 sm:gap-7">
               <h1 className="text-pretty text-hero font-extrabold leading-[1.0] tracking-[-0.04em] text-white">
                 포커, 그 이상의
