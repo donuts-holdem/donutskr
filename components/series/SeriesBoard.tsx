@@ -88,7 +88,7 @@ function NavCard({ card }: { card: (typeof NAV_CARDS)[number] }) {
   return (
     <Link
       href={card.href}
-      className="group flex flex-col gap-3.5 rounded-card border border-border bg-surface p-6 transition-[border-color,background-color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7"
+      className="group flex flex-col gap-3.5 rounded-card border border-border bg-surface p-6 transition-[border-color,background-color] duration-300 hover:border-white/20 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none sm:p-7"
     >
       <span
         className={`${display.className} text-2xs font-bold uppercase tracking-[0.18em] text-pink`}

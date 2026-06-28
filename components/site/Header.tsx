@@ -1,14 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-
-const NAV_LINKS = [
-  { label: "프로그램", href: "/programs" },
-  { label: "일정", href: "/schedule" },
-  { label: "시리즈", href: "/series" },
-  { label: "리더보드", href: "/leaderboard" },
-  { label: "온라인 리그", href: "/online-league" },
-  { label: "챌린지", href: "/challenge" },
-];
+import { HeaderNav } from "@/components/site/HeaderNav";
 
 export function Header() {
   return (
@@ -26,21 +18,8 @@ export function Header() {
           />
         </Link>
 
-        {/* Primary navigation */}
-        <nav
-          aria-label="주요 메뉴"
-          className="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
-        >
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="shrink-0 px-3 py-2 text-sm font-medium text-ink/60 hover:text-gold transition-colors rounded-pill hover:bg-gold/10"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Primary navigation (client island — highlights the active route) */}
+        <HeaderNav />
       </div>
     </header>
   );
