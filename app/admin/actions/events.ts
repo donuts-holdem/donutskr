@@ -8,22 +8,21 @@ function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const fk = (k: string) => { const v = s(k); return v === "none" ? null : v; };
   return {
-    season_id: fk("season_id"), round: s("round"), title: String(fd.get("title")),
+    season_id: fk("season_id"), title: String(fd.get("title")),
     event_type: s("event_type"), date: s("date"), weekday: s("weekday"),
     location: s("location"), address: s("address"),
-    start_time: s("start_time"), reg_close_time: s("reg_close_time"), end_time: s("end_time"),
+    start_time: s("start_time"), reg_close_time: s("reg_close_time"),
     buy_in: s("buy_in"), entry_link: s("entry_link"), button_label: s("button_label"),
     description: s("description"), category: String(fd.get("category") || "upcoming"),
     status: String(fd.get("status") || "scheduled"), is_visible: fd.get("is_visible") === "on",
-    sort_order: Number(fd.get("sort_order") || 0), blind_structure_id: fk("blind_structure_id"),
+    blind_structure_id: fk("blind_structure_id"),
     timer_event_id: s("timer_event_id"), timer_event_url: s("timer_event_url"),
   };
 }
 export async function createEvent(fd: FormData) {
   const supabase = await requireAdmin();
   const poster_image = await uploadIfPresent(supabase, fd, "poster_image", null);
-  const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", null);
-  const { error } = await supabase.from("events").insert({ ...parse(fd), poster_image, sponsor_logo });
+  const { error } = await supabase.from("events").insert({ ...parse(fd), poster_image });
   if (error) throw error;
   revalidatePublic(); redirect("/admin/events?saved=1");
 }
@@ -31,8 +30,7 @@ export async function updateEvent(id: string, fd: FormData) {
   const supabase = await requireAdmin();
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const poster_image = await uploadIfPresent(supabase, fd, "poster_image", s("poster_image_existing"));
-  const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", s("sponsor_logo_existing"));
-  const { error } = await supabase.from("events").update({ ...parse(fd), poster_image, sponsor_logo }).eq("id", id);
+  const { error } = await supabase.from("events").update({ ...parse(fd), poster_image }).eq("id", id);
   if (error) throw error;
   revalidatePublic([`/schedule/${id}`]); redirect("/admin/events?saved=1");
 }

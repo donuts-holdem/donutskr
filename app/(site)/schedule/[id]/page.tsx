@@ -122,11 +122,6 @@ export default async function EventDetailPage({ params }: Props) {
       <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-8">
         <div className="flex flex-wrap items-center gap-2.5">
           <StatusBadge status={event.status} />
-          {event.round && (
-            <span className={`${display.className} inline-flex items-center rounded-pill border border-white/15 px-3 py-1 text-2xs font-medium uppercase tracking-[0.08em] text-white/70`}>
-              {event.round}
-            </span>
-          )}
           {event.event_type && (
             <span className="inline-flex items-center rounded-pill bg-white/[0.06] px-3 py-1 text-2xs font-medium text-white/65">
               {event.event_type}

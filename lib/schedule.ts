@@ -41,7 +41,7 @@ export function todayKST(now: Date = new Date()): string {
 
 /**
  * Partition events into upcoming and past buckets.
- * - upcoming keeps the incoming (admin-curated sort_order, then date asc) order.
+ * - upcoming keeps the incoming (date asc, then start_time asc, then id) order.
  * - past is reversed to most-recent-first, the way an archive reads.
  */
 export function partitionEvents(

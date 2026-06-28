@@ -74,11 +74,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="round">회차</Label>
-            <Input id="round" name="round" defaultValue={event?.round ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-8">
+          <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="event_type">이벤트 타입</Label>
             <Input id="event_type" name="event_type" defaultValue={event?.event_type ?? ""} />
           </div>
@@ -112,10 +108,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           <div className="flex flex-col gap-2 md:col-span-4">
             <Label htmlFor="reg_close_time">레지 마감 시간</Label>
             <Input id="reg_close_time" name="reg_close_time" defaultValue={event?.reg_close_time ?? ""} placeholder="예: 16:00" />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="end_time">종료 시간</Label>
-            <Input id="end_time" name="end_time" defaultValue={event?.end_time ?? ""} placeholder="예: 22:00" />
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="location">장소</Label>
@@ -159,17 +151,11 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-6">
+          <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="poster_image_file">포스터 이미지</Label>
             <ImagePreview src={event?.poster_image} />
             {event && <input type="hidden" name="poster_image_existing" value={event.poster_image ?? ""} />}
             <FileInput id="poster_image_file" name="poster_image_file" />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="sponsor_logo_file">스폰서 로고</Label>
-            <ImagePreview src={event?.sponsor_logo} />
-            {event && <input type="hidden" name="sponsor_logo_existing" value={event.sponsor_logo ?? ""} />}
-            <FileInput id="sponsor_logo_file" name="sponsor_logo_file" label="로고 선택" />
           </div>
         </CardContent>
       </Card>
@@ -220,10 +206,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           <div className="flex items-center gap-2 md:col-span-12">
             <Checkbox id="is_visible" name="is_visible" defaultChecked={event?.is_visible ?? true} />
             <Label htmlFor="is_visible">노출 여부</Label>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-3">
-            <Label htmlFor="sort_order">노출 순서</Label>
-            <Input id="sort_order" name="sort_order" type="number" defaultValue={event?.sort_order ?? 0} />
           </div>
         </CardContent>
       </Card>

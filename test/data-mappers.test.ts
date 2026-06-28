@@ -8,7 +8,6 @@ describe("mapEvent", () => {
     const e = mapEvent({ id: "1", title: "9회차", category: "confirmed", status: "confirmed" });
     expect(e.title).toBe("9회차");
     expect(e.is_visible).toBe(true);
-    expect(e.sort_order).toBe(0);
     expect(e.timer_event_id).toBeNull();
   });
 });

@@ -7,14 +7,14 @@ import { getActiveSeason } from "@/lib/data/seasons";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapEvent(r: any): Event {
   return {
-    id: String(r.id ?? ""), season_id: r.season_id ?? null, round: r.round ?? null,
+    id: String(r.id ?? ""), season_id: r.season_id ?? null,
     title: String(r.title ?? ""), event_type: r.event_type ?? null, date: r.date ?? null,
     weekday: r.weekday ?? null, location: r.location ?? null, address: r.address ?? null,
-    start_time: r.start_time ?? null, reg_close_time: r.reg_close_time ?? null, end_time: r.end_time ?? null,
+    start_time: r.start_time ?? null, reg_close_time: r.reg_close_time ?? null,
     buy_in: r.buy_in ?? null, entry_link: r.entry_link ?? null, button_label: r.button_label ?? null,
-    description: r.description ?? null, poster_image: r.poster_image ?? null, sponsor_logo: r.sponsor_logo ?? null,
+    description: r.description ?? null, poster_image: r.poster_image ?? null,
     category: (r.category ?? "upcoming") as EventCategory, status: (r.status ?? "scheduled"),
-    is_visible: r.is_visible ?? true, sort_order: Number(r.sort_order ?? 0),
+    is_visible: r.is_visible ?? true,
     blind_structure_id: r.blind_structure_id ?? null,
     timer_event_id: r.timer_event_id ?? null, timer_event_url: r.timer_event_url ?? null,
   };
@@ -25,7 +25,7 @@ export async function getEvents(opts?: { category?: EventCategory }): Promise<Ev
   let q = supabase.from("events").select("*").is("deleted_at", null).eq("is_visible", true);
   if (opts?.category) q = q.eq("category", opts.category);
   const [{ data, error }, active] = await Promise.all([
-    q.order("sort_order", { ascending: true }).order("date", { ascending: true }),
+    q.order("date", { ascending: true }).order("start_time", { ascending: true }).order("id", { ascending: true }),
     getActiveSeason(),
   ]);
   if (error) throw error;
@@ -38,7 +38,7 @@ export async function getAllEvents(): Promise<Event[]> {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase
     .from("events").select("*").is("deleted_at", null)
-    .order("sort_order", { ascending: true }).order("date", { ascending: true });
+    .order("date", { ascending: true }).order("start_time", { ascending: true }).order("id", { ascending: true });
   if (error) throw error;
   return (data ?? []).map(mapEvent);
 }
