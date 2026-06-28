@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getAllSeasons } from "@/lib/data/seasons";
 import { getAllEvents } from "@/lib/data/events";
-import { seasonCodeLabel } from "@/lib/labels";
 import { activateSeason, deleteSeason } from "@/app/admin/actions/seasons";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
@@ -33,7 +32,6 @@ export default async function AdminSeasonsPage() {
         <TableHeader>
           <TableRow>
             <TableHead>이름</TableHead>
-            <TableHead>코드</TableHead>
             <TableHead>연도</TableHead>
             <TableHead>이벤트</TableHead>
             <TableHead>활성</TableHead>
@@ -44,7 +42,6 @@ export default async function AdminSeasonsPage() {
           {seasons.map((season) => (
             <TableRow key={season.id}>
               <TableCell className="text-foreground">{season.name}</TableCell>
-              <TableCell className="text-muted-foreground">{seasonCodeLabel(season.code)}</TableCell>
               <TableCell className="text-muted-foreground">{season.year}</TableCell>
               <TableCell className="text-muted-foreground">{countBySeason.get(season.id) ?? 0}개</TableCell>
               <TableCell>

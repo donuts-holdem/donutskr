@@ -8,7 +8,6 @@ function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   return {
     name: String(fd.get("name")),
-    code: String(fd.get("code") || "spring"),
     year: Number(fd.get("year") || new Date().getFullYear()),
     start_date: s("start_date"),
     end_date: s("end_date"),

@@ -32,7 +32,7 @@ const minimalEvent: Event = {
 };
 
 const seasons: Season[] = [
-  { id: "S1", name: "2024 봄", code: "spring", year: 2024, start_date: null, end_date: null, is_active: true, hero_text: null, sub_text: null, badge_text: null, hero_image: null, bg_image: null },
+  { id: "S1", name: "2024 봄", year: 2024, start_date: null, end_date: null, is_active: true, hero_text: null, sub_text: null, badge_text: null, hero_image: null, bg_image: null },
 ];
 
 const structures: BlindStructure[] = [

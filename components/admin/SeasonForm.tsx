@@ -3,16 +3,9 @@
 import type { Season } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SEASON_CODE_OPTIONS } from "@/lib/labels";
 import { ImagePreview } from "@/components/admin/ImagePreview";
 import { FileInput } from "@/components/admin/FileInput";
 
@@ -36,22 +29,7 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
             <Label htmlFor="name">시즌명 *</Label>
             <Input id="name" name="name" defaultValue={season?.name ?? ""} required />
           </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="code">코드</Label>
-            <Select name="code" defaultValue={season?.code ?? "spring"}>
-              <SelectTrigger id="code" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SEASON_CODE_OPTIONS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
+          <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="year">연도 *</Label>
             <Input id="year" name="year" type="number" defaultValue={season?.year ?? new Date().getFullYear()} required />
           </div>
@@ -91,7 +69,8 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="sub_text">서브 문구</Label>
-            <Input id="sub_text" name="sub_text" defaultValue={season?.sub_text ?? ""} />
+            <Textarea id="sub_text" name="sub_text" rows={3} defaultValue={season?.sub_text ?? ""} />
+            <p className="text-muted-foreground text-xs">줄바꿈(Enter)은 시리즈 페이지에 그대로 반영됩니다.</p>
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="badge_text">배지 문구</Label>

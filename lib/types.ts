@@ -1,6 +1,5 @@
 import type { Block } from "@/lib/program-blocks";
 
-export type SeasonCode = "spring" | "summer" | "autumn" | "winter";
 export type EventCategory = "festival" | "confirmed" | "upcoming" | "completed";
 export type EventStatus = "scheduled" | "confirmed" | "running" | "reg_closed" | "completed" | "canceled" | "hidden";
 export type RowType = "level" | "break" | "stage";
@@ -8,7 +7,7 @@ export type TabType = "internal" | "external" | "special";
 export type LeagueStatus = "operating" | "revamping" | "preparing" | "suspended" | "hidden";
 
 export interface Season {
-  id: string; name: string; code: SeasonCode; year: number;
+  id: string; name: string; year: number;
   start_date: string | null; end_date: string | null; is_active: boolean;
   hero_text: string | null; sub_text: string | null; badge_text: string | null;
   hero_image: string | null; bg_image: string | null;

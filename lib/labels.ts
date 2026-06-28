@@ -4,7 +4,7 @@
 // this module deliberately does not import or modify them, to avoid any public
 // regression. Stored values stay the English keys; these are display only.
 // Pure / client-safe — no server imports.
-import type { EventStatus, ProgramGroup, SeasonCode, LeagueStatus } from "@/lib/types";
+import type { EventStatus, ProgramGroup, LeagueStatus } from "@/lib/types";
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   scheduled: "예정",
@@ -32,20 +32,6 @@ export const PROGRAM_GROUP_OPTIONS = (Object.keys(PROGRAM_GROUP_LABELS) as Progr
 );
 export function programGroupLabel(g: string): string {
   return PROGRAM_GROUP_LABELS[g as ProgramGroup] ?? g;
-}
-
-export const SEASON_CODE_LABELS: Record<SeasonCode, string> = {
-  spring: "봄",
-  summer: "여름",
-  autumn: "가을",
-  winter: "겨울",
-};
-// Options keep the English code in parentheses (matches the existing SeasonForm UX).
-export const SEASON_CODE_OPTIONS = (Object.keys(SEASON_CODE_LABELS) as SeasonCode[]).map(
-  (value) => ({ value, label: `${SEASON_CODE_LABELS[value]} (${value})` }),
-);
-export function seasonCodeLabel(c: string): string {
-  return SEASON_CODE_LABELS[c as SeasonCode] ?? c;
 }
 
 export const TAB_TYPE_OPTIONS: { value: "internal" | "external" | "special"; label: string }[] = [

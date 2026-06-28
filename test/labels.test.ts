@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   EVENT_STATUS_LABELS, EVENT_STATUS_OPTIONS, eventStatusLabel,
-  PROGRAM_GROUP_OPTIONS, programGroupLabel, SEASON_CODE_OPTIONS, seasonCodeLabel,
+  PROGRAM_GROUP_OPTIONS, programGroupLabel,
   TAB_TYPE_OPTIONS, LEAGUE_STATUS_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus,
 } from "@/lib/labels";
 
@@ -14,11 +14,9 @@ describe("labels", () => {
     expect(eventStatusLabel("unknown")).toBe("unknown"); // passthrough
     expect(EVENT_STATUS_OPTIONS.find((o) => o.value === "scheduled")?.label).toBe("예정");
   });
-  it("localizes program group / season code", () => {
+  it("localizes program group", () => {
     expect(programGroupLabel("poker")).toBe("포커");
     expect(PROGRAM_GROUP_OPTIONS).toHaveLength(3);
-    expect(seasonCodeLabel("autumn")).toBe("가을");
-    expect(SEASON_CODE_OPTIONS.find((o) => o.value === "spring")?.label).toBe("봄 (spring)");
   });
   it("provides tab type and league status options in Korean", () => {
     expect(TAB_TYPE_OPTIONS.find((o) => o.value === "external")?.label).toBe("외부 링크");

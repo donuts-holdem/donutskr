@@ -1,12 +1,11 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { Season, SeasonCode } from "@/lib/types";
+import type { Season } from "@/lib/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapSeason(r: any): Season {
   return {
     id: String(r.id ?? ""),
     name: String(r.name ?? ""),
-    code: (r.code ?? "spring") as SeasonCode,
     year: Number(r.year ?? 0),
     start_date: r.start_date ?? null,
     end_date: r.end_date ?? null,
