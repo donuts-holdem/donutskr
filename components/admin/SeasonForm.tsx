@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImagePreview } from "@/components/admin/ImagePreview";
-import { FileInput } from "@/components/admin/FileInput";
+import { ImageField } from "@/components/admin/ImageField";
 
 interface SeasonFormProps {
   season?: Season;
@@ -89,15 +88,11 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="hero_image_file">히어로 이미지</Label>
-            <ImagePreview src={season?.hero_image} />
-            {season && <input type="hidden" name="hero_image_existing" value={season.hero_image ?? ""} />}
-            <FileInput id="hero_image_file" name="hero_image_file" />
+            <ImageField name="hero_image" existing={season?.hero_image} />
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="bg_image_file">배경 이미지</Label>
-            <ImagePreview src={season?.bg_image} />
-            {season && <input type="hidden" name="bg_image_existing" value={season.bg_image ?? ""} />}
-            <FileInput id="bg_image_file" name="bg_image_file" />
+            <ImageField name="bg_image" existing={season?.bg_image} />
           </div>
         </CardContent>
       </Card>

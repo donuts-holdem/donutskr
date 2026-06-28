@@ -14,8 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PROGRAM_GROUP_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus } from "@/lib/labels";
-import { ImagePreview } from "@/components/admin/ImagePreview";
-import { FileInput } from "@/components/admin/FileInput";
+import { ImageField } from "@/components/admin/ImageField";
 import { ProgramRichEditor } from "@/components/admin/ProgramRichEditor";
 
 interface ProgramFormProps {
@@ -52,9 +51,7 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
               {/* 우: 커버 이미지 */}
               <div className="flex flex-col gap-2 sm:w-32">
                 <Label htmlFor="cover_image_file">커버 이미지</Label>
-                <ImagePreview src={program?.cover_image} className="h-32 w-32 sm:w-full" />
-                {program && <input type="hidden" name="cover_image_existing" value={program.cover_image ?? ""} />}
-                <FileInput id="cover_image_file" name="cover_image_file" />
+                <ImageField name="cover_image" existing={program?.cover_image} className="h-32 w-32 sm:w-full" />
               </div>
             </div>
           </CardContent>
@@ -82,9 +79,7 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
               {/* 우: 담당자 아바타 */}
               <div className="flex flex-col gap-2 sm:w-32">
                 <Label htmlFor="manager_avatar_file">담당자 아바타</Label>
-                <ImagePreview src={program?.manager_avatar} className="h-32 w-32 sm:w-full" />
-                {program && <input type="hidden" name="manager_avatar_existing" value={program.manager_avatar ?? ""} />}
-                <FileInput id="manager_avatar_file" name="manager_avatar_file" />
+                <ImageField name="manager_avatar" existing={program?.manager_avatar} className="h-32 w-32 sm:w-full" />
               </div>
             </div>
           </CardContent>

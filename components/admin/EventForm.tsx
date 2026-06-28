@@ -15,8 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EVENT_STATUS_OPTIONS } from "@/lib/labels";
-import { ImagePreview } from "@/components/admin/ImagePreview";
-import { FileInput } from "@/components/admin/FileInput";
+import { ImageField } from "@/components/admin/ImageField";
 
 interface EventFormProps {
   event?: Event;
@@ -28,53 +27,68 @@ interface EventFormProps {
 export function EventForm({ event, structures, seasons = [], action }: EventFormProps) {
   return (
     <form action={action} className="flex max-w-4xl flex-col gap-6">
-      {/* 기본 정보 */}
+      {/* 기본 정보 — 좌: 텍스트 / 우: 포스터 (프로그램 폼과 동일 패턴) */}
       <Card>
         <CardHeader>
           <CardTitle asChild>
             <h2>기본 정보</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-
-          <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="title">이벤트명 *</Label>
-            <Input id="title" name="title" defaultValue={event?.title ?? ""} required />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="season_id">시즌</Label>
-            <Select name="season_id" defaultValue={event?.season_id ?? "none"}>
-              <SelectTrigger id="season_id" className="w-full">
-                <SelectValue placeholder="-- 선택 --" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">없음</SelectItem>
-                {seasons.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name} ({s.year})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="status">상태</Label>
-            <Select name="status" defaultValue={event?.status ?? "scheduled"}>
-              <SelectTrigger id="status" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {EVENT_STATUS_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="description">설명</Label>
-            <Textarea id="description" name="description" rows={4} defaultValue={event?.description ?? ""} />
+        <CardContent>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+            {/* 좌: 텍스트 입력 */}
+            <div className="flex flex-1 flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="title">이벤트명 *</Label>
+                <Input id="title" name="title" defaultValue={event?.title ?? ""} required />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="season_id">시즌</Label>
+                  <Select name="season_id" defaultValue={event?.season_id ?? "none"}>
+                    <SelectTrigger id="season_id" className="w-full">
+                      <SelectValue placeholder="-- 선택 --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">없음</SelectItem>
+                      {seasons.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} ({s.year})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="status">상태</Label>
+                  <Select name="status" defaultValue={event?.status ?? "scheduled"}>
+                    <SelectTrigger id="status" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EVENT_STATUS_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="description">설명</Label>
+                <Textarea id="description" name="description" rows={4} defaultValue={event?.description ?? ""} />
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <Checkbox id="is_visible" name="is_visible" defaultChecked={event?.is_visible ?? true} />
+                <Label htmlFor="is_visible">노출 여부</Label>
+              </div>
+            </div>
+            {/* 우: 포스터 이미지 */}
+            <div className="flex flex-col gap-2 sm:w-40">
+              <Label htmlFor="poster_image_file">포스터 이미지</Label>
+              <ImageField name="poster_image" existing={event?.poster_image} className="h-40 w-40 sm:w-full" />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -133,23 +147,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
         </CardContent>
       </Card>
 
-      {/* 미디어 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>미디어</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="poster_image_file">포스터 이미지</Label>
-            <ImagePreview src={event?.poster_image} />
-            {event && <input type="hidden" name="poster_image_existing" value={event.poster_image ?? ""} />}
-            <FileInput id="poster_image_file" name="poster_image_file" />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* 토너먼트 설정 */}
       <Card>
         <CardHeader>
@@ -181,21 +178,6 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
           <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="timer_event_url">타이머 URL</Label>
             <Input id="timer_event_url" name="timer_event_url" type="url" defaultValue={event?.timer_event_url ?? ""} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 노출 설정 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>노출 설정</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex items-center gap-2 md:col-span-12">
-            <Checkbox id="is_visible" name="is_visible" defaultChecked={event?.is_visible ?? true} />
-            <Label htmlFor="is_visible">노출 여부</Label>
           </div>
         </CardContent>
       </Card>
