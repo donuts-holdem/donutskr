@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -17,13 +17,18 @@ export function SeasonFilterSelect({
   value: string;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  function select(v: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (v === "all") params.delete("season");
+    else params.set("season", v);
+    const qs = params.toString();
+    router.push(qs ? `/admin/events?${qs}` : "/admin/events");
+  }
+
   return (
-    <Select
-      value={value}
-      onValueChange={(v) =>
-        router.push(v === "all" ? "/admin/events" : `/admin/events?season=${v}`)
-      }
-    >
+    <Select value={value} onValueChange={select}>
       <SelectTrigger className="w-56" aria-label="시즌 필터">
         <SelectValue />
       </SelectTrigger>
