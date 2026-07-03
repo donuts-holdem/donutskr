@@ -6,6 +6,7 @@ import { uploadIfPresent } from "@/lib/upload";
 import { parseJsonField, coerceDescriptionBlocks } from "@/lib/admin/structured-fields";
 import type { Block } from "@/lib/program-blocks";
 import { sanitizeRawBlocks } from "@/lib/admin/sanitize-blocks";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -74,16 +75,18 @@ export async function updateProgram(id: string, fd: FormData) {
       coerceDescriptionBlocks(parseJsonField(fd.get("description_blocks"), "description_blocks")),
     ),
   );
-  const { error } = await supabase.from("programs").update({ ...values, description_blocks: blocks, description_verified: true }).eq("id", id);
+  const { data, error } = await supabase.from("programs").update({ ...values, description_blocks: blocks, description_verified: true }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic([`/programs/${values.slug}`]);
   redirect("/admin/programs?saved=1");
 }
 
 export async function deleteProgram(id: string) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("programs").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  const { data, error } = await supabase.from("programs").update({ deleted_at: new Date().toISOString() }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic(["/programs"]);
   redirect("/admin/programs?deleted=1");
 }
@@ -111,6 +114,11 @@ export async function reorderPrograms(fd: FormData) {
   let order = 0;
   for (const id of ids) {
     if (!validIds.has(id)) continue; // ignore ids that don't exist
+    // No assertRowsAffected here (intentional): this is a best-effort bulk
+    // reorder. A row can legitimately match 0 rows if it was concurrently deleted
+    // after the validIds snapshot above, and throwing mid-loop would leave a
+    // partial reorder. sort_order carries no user data, and a genuine RLS
+    // permission problem still surfaces loudly on the next single-row save.
     const { error } = await supabase.from("programs").update({ sort_order: order * 10 }).eq("id", id);
     if (error) throw error;
     order++;

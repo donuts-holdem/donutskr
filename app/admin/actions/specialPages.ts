@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
 import { parseJsonField, coerceStringList, coerceLabelValueList } from "@/lib/admin/structured-fields";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 function parseSpecialPageForm(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -44,16 +45,18 @@ export async function updateSpecialPage(id: string, fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const poster = await uploadIfPresent(supabase, fd, "poster", s("poster_existing"));
   const sponsor_logo = await uploadIfPresent(supabase, fd, "sponsor_logo", s("sponsor_logo_existing"));
-  const { error } = await supabase.from("special_pages").update({ ...parseSpecialPageForm(fd), poster, sponsor_logo }).eq("id", id);
+  const { data, error } = await supabase.from("special_pages").update({ ...parseSpecialPageForm(fd), poster, sponsor_logo }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/special-pages?saved=1");
 }
 
 export async function deleteSpecialPage(id: string) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("special_pages").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  const { data, error } = await supabase.from("special_pages").update({ deleted_at: new Date().toISOString() }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/special-pages?deleted=1");
 }

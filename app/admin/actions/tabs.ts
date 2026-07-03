@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 function parseTabForm(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -34,16 +35,18 @@ export async function createTab(fd: FormData) {
 
 export async function updateTab(id: string, fd: FormData) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("navigation_tabs").update(parseTabForm(fd)).eq("id", id);
+  const { data, error } = await supabase.from("navigation_tabs").update(parseTabForm(fd)).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/tabs?saved=1");
 }
 
 export async function deleteTab(id: string) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("navigation_tabs").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  const { data, error } = await supabase.from("navigation_tabs").update({ deleted_at: new Date().toISOString() }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/tabs?deleted=1");
 }

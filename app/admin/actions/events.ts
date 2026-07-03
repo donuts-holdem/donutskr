@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -30,13 +31,15 @@ export async function updateEvent(id: string, fd: FormData) {
   const supabase = await requireAdmin();
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const poster_image = await uploadIfPresent(supabase, fd, "poster_image", s("poster_image_existing"));
-  const { error } = await supabase.from("events").update({ ...parse(fd), poster_image }).eq("id", id);
+  const { data, error } = await supabase.from("events").update({ ...parse(fd), poster_image }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic([`/schedule/${id}`]); redirect("/admin/events?saved=1");
 }
 export async function deleteEvent(id: string) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("events").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  const { data, error } = await supabase.from("events").update({ deleted_at: new Date().toISOString() }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic([`/schedule/${id}`]); redirect("/admin/events?deleted=1");
 }

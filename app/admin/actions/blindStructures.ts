@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveStructure(id: string | null, name: string, eventType: string | null, rows: any[]) {
@@ -12,8 +13,9 @@ export async function saveStructure(id: string | null, name: string, eventType: 
     if (error) throw error;
     structureId = data.id;
   } else {
-    const { error } = await supabase.from("blind_structures").update({ name, event_type: eventType }).eq("id", structureId);
+    const { data, error } = await supabase.from("blind_structures").update({ name, event_type: eventType }).eq("id", structureId).select("id");
     if (error) throw error;
+    assertRowsAffected(data);
   }
   // Delete existing rows
   await supabase.from("blind_structure_rows").delete().eq("structure_id", structureId);
@@ -79,8 +81,9 @@ export async function duplicateStructure(fd: FormData) {
 
 export async function deleteStructure(id: string) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("blind_structures").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  const { data, error } = await supabase.from("blind_structures").update({ deleted_at: new Date().toISOString() }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/blind-structures?deleted=1");
 }

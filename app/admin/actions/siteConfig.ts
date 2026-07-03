@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { validateHttpsUrlFormat } from "@/lib/safe-url";
 import { parseJsonField, coerceSponsors } from "@/lib/admin/structured-fields";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 export async function updateSiteConfig(fd: FormData) {
   const supabase = await requireAdmin();
@@ -23,8 +24,9 @@ export async function updateSiteConfig(fd: FormData) {
     leaderboard_personal_rank_visible: fd.get("leaderboard_personal_rank_visible") === "on",
     footer_sponsors: coerceSponsors(parseJsonField(fd.get("footer_sponsors"), "푸터 스폰서")),
   };
-  const { error } = await supabase.from("site_config").update(payload).eq("id", 1);
+  const { data, error } = await supabase.from("site_config").update(payload).eq("id", 1).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic(["/leaderboard"]);
   redirect("/admin/settings?saved=1");
 }

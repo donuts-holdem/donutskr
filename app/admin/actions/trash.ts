@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { TRASH_ENTITIES, isTrashEntity, type TrashEntity } from "@/lib/data/trash";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -22,12 +23,17 @@ function parseTarget(fd: FormData): { entity: TrashEntity; id: string } {
 export async function restoreItem(fd: FormData) {
   const { entity, id } = parseTarget(fd);
   const supabase = await requireAdmin();
-  const { error } = await supabase
+  // The .not(deleted_at) filter means 0 rows also signals "already restored /
+  // not in trash", not only an RLS denial — both are worth surfacing here rather
+  // than flashing a false success.
+  const { data, error } = await supabase
     .from(TRASH_ENTITIES[entity].table)
     .update({ deleted_at: null })
     .eq("id", id)
-    .not("deleted_at", "is", null);
+    .not("deleted_at", "is", null)
+    .select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/trash?saved=1");
 }

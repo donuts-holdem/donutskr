@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { uploadIfPresent } from "@/lib/upload";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
@@ -32,19 +33,22 @@ export async function updateSeason(id: string, fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const hero_image = await uploadIfPresent(supabase, fd, "hero_image", s("hero_image_existing"));
   const bg_image = await uploadIfPresent(supabase, fd, "bg_image", s("bg_image_existing"));
-  const { error } = await supabase.from("seasons").update({ ...parse(fd), hero_image, bg_image }).eq("id", id);
+  const { data, error } = await supabase.from("seasons").update({ ...parse(fd), hero_image, bg_image }).eq("id", id).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/seasons?saved=1");
 }
 
 export async function deleteSeason(id: string) {
   const supabase = await requireAdmin();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("seasons")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic();
   redirect("/admin/seasons?deleted=1");
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
 import { parseJsonField, coerceStringList, coerceStringRecord, coerceTodayLeagues } from "@/lib/admin/structured-fields";
+import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 export async function updateOnlineLeague(fd: FormData) {
   const supabase = await requireAdmin();
@@ -21,8 +22,9 @@ export async function updateOnlineLeague(fd: FormData) {
     cta_url: s("cta_url"),
     sheet_url: s("sheet_url"),
   };
-  const { error } = await supabase.from("online_league_settings").update(payload).eq("id", 1);
+  const { data, error } = await supabase.from("online_league_settings").update(payload).eq("id", 1).select("id");
   if (error) throw error;
+  assertRowsAffected(data);
   revalidatePublic(["/online-league"]);
   redirect("/admin/online-league?saved=1");
 }
