@@ -16,6 +16,7 @@ const NAV_GROUPS = [
   ]},
   { label: "사이트 설정", links: [
     { href: "/admin/online-league", label: "온라인 리그" },
+    { href: "/admin/program-options", label: "프로그램 옵션" },
     { href: "/admin/settings", label: "설정" },
   ]},
 ] as const;

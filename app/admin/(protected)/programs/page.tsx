@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllPrograms } from "@/lib/data/programs";
+import { getProgramOptions } from "@/lib/data/programOptions";
 import { programGroupLabel } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,14 @@ import { StateBadge } from "@/components/admin/StateBadge";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 
 export default async function AdminProgramsPage() {
-  const programs = await getAllPrograms();
+  const [programs, groupOptions] = await Promise.all([
+    getAllPrograms(),
+    getProgramOptions("group"),
+  ]);
+  // DB option labels take priority; fall back to the static map for legacy /
+  // removed group values so a row never shows a raw English key it can avoid.
+  const groupLabels = new Map(groupOptions.map((o) => [o.value, o.label]));
+  const groupLabel = (g: string) => groupLabels.get(g) ?? programGroupLabel(g);
 
   return (
     <div>
@@ -40,7 +48,7 @@ export default async function AdminProgramsPage() {
           {programs.map((program) => (
             <TableRow key={program.id}>
               <TableCell className="text-foreground">{program.title}</TableCell>
-              <TableCell className="text-muted-foreground">{programGroupLabel(program.program_group)}</TableCell>
+              <TableCell className="text-muted-foreground">{groupLabel(program.program_group)}</TableCell>
               <TableCell><StateBadge on={program.is_hot} kind="hot" /></TableCell>
               <TableCell><StateBadge on={program.is_affiliate} kind="affiliate" /></TableCell>
               <TableCell><StateBadge on={program.is_visible} kind="visible" /></TableCell>

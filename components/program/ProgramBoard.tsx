@@ -191,17 +191,13 @@ function MetaRow({ program }: { program: Program }) {
   );
 }
 
-function categoryLabel(program: Program) {
-  return (
-    program.category ??
-    PROGRAM_CATEGORIES.find((c) => c.key === program.program_group)?.label ??
-    program.program_group
-  );
+function categoryLabel(program: Program, groupLabels: Record<string, string>) {
+  return program.category ?? groupLabels[program.program_group] ?? program.program_group;
 }
 
 /* ----------------------------- card ------------------------------ */
 // Matches HomeMagazine's StandardCard exactly so the grid reads identically.
-function ProgramCardItem({ program }: { program: Program }) {
+function ProgramCardItem({ program, groupLabels }: { program: Program; groupLabels: Record<string, string> }) {
   return (
     <ProgramLink
       program={program}
@@ -228,7 +224,7 @@ function ProgramCardItem({ program }: { program: Program }) {
           <span
             className={`${display.className} min-w-0 truncate text-xs font-medium uppercase tracking-[0.1em] text-white/65`}
           >
-            {categoryLabel(program)}
+            {categoryLabel(program, groupLabels)}
           </span>
           <span className="shrink-0">
             <StatusDot status={program.status} />
@@ -252,19 +248,31 @@ function ProgramCardItem({ program }: { program: Program }) {
 }
 
 /* ----------------------------- board ----------------------------- */
+const DEFAULT_CATEGORIES = PROGRAM_CATEGORIES.map((c) => ({ key: c.key, label: c.label }));
+
 export function ProgramBoard({
   programs,
   initialCategory = "all",
+  categories = DEFAULT_CATEGORIES,
 }: {
   programs: Program[];
   initialCategory?: string;
+  // Category tabs, DB-managed (program_options group). Includes the leading
+  // "all" entry. Falls back to the static list when not provided.
+  categories?: { key: string; label: string }[];
 }) {
   const [cat, setCatState] = useState(
-    PROGRAM_CATEGORIES.some((c) => c.key === initialCategory)
+    categories.some((c) => c.key === initialCategory)
       ? initialCategory
       : "all"
   );
   const [query, setQuery] = useState("");
+
+  // Map group value → label for the per-card category eyebrow.
+  const groupLabels = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.key, c.label])),
+    [categories]
+  );
 
   function setCat(key: string) {
     setCatState(key);
@@ -316,7 +324,7 @@ export function ProgramBoard({
           aria-label="프로그램 카테고리"
           className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 lg:mx-0 lg:px-0"
         >
-          {PROGRAM_CATEGORIES.map((c) => {
+          {categories.map((c) => {
             const active = cat === c.key;
             return (
               <button
@@ -373,7 +381,7 @@ export function ProgramBoard({
             <h2 className="text-sm font-medium text-white/55">
               {cat === "all"
                 ? "전체"
-                : PROGRAM_CATEGORIES.find((c) => c.key === cat)?.label}
+                : categories.find((c) => c.key === cat)?.label}
             </h2>
             <span className={`${display.className} text-xs tabular-nums text-white/35`}>
               {filtered.length}
@@ -381,7 +389,7 @@ export function ProgramBoard({
           </div>
           <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((p) => (
-              <ProgramCardItem key={p.id} program={p} />
+              <ProgramCardItem key={p.id} program={p} groupLabels={groupLabels} />
             ))}
           </div>
         </section>

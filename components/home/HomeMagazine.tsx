@@ -158,15 +158,16 @@ function MetaRow({ program }: { program: Program }) {
   );
 }
 
-function categoryLabel(program: Program) {
-  return (
-    program.category ??
-    PROGRAM_CATEGORIES.find((c) => c.key === program.program_group)?.label ??
-    program.program_group
-  );
+// Default group labels (static fallback); DB-managed labels are passed via props.
+const DEFAULT_GROUP_LABELS: Record<string, string> = Object.fromEntries(
+  PROGRAM_CATEGORIES.filter((c) => c.key !== "all").map((c) => [c.key, c.label])
+);
+
+function categoryLabel(program: Program, groupLabels: Record<string, string>) {
+  return program.category ?? groupLabels[program.program_group] ?? program.program_group;
 }
 
-function FeaturedCard({ program }: { program: Program }) {
+function FeaturedCard({ program, groupLabels }: { program: Program; groupLabels: Record<string, string> }) {
   return (
     <ProgramLink
       program={program}
@@ -182,7 +183,7 @@ function FeaturedCard({ program }: { program: Program }) {
       <div className="flex flex-1 flex-col gap-3 p-6">
         <div className="flex items-center justify-between gap-3">
           <span className={`${display.className} min-w-0 truncate text-xs font-medium uppercase tracking-[0.1em] text-gold/80`}>
-            {categoryLabel(program)}
+            {categoryLabel(program, groupLabels)}
           </span>
           <span className="shrink-0"><StatusDot status={program.status} /></span>
         </div>
@@ -198,7 +199,7 @@ function FeaturedCard({ program }: { program: Program }) {
   );
 }
 
-function CompactCard({ program }: { program: Program }) {
+function CompactCard({ program, groupLabels }: { program: Program; groupLabels: Record<string, string> }) {
   return (
     <ProgramLink
       program={program}
@@ -209,7 +210,7 @@ function CompactCard({ program }: { program: Program }) {
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-1">
         <span className={`${display.className} truncate text-2xs font-medium uppercase tracking-[0.1em] text-white/40`}>
-          {categoryLabel(program)}
+          {categoryLabel(program, groupLabels)}
         </span>
         <h3 className="line-clamp-2 text-pretty text-sm font-semibold leading-snug tracking-[-0.01em] text-white/95 transition-colors duration-200 group-hover:text-white motion-reduce:transition-none">
           {program.title}
@@ -226,10 +227,13 @@ export function HomeMagazine({
   events,
   hotPrograms,
   signupLink,
+  groupLabels = DEFAULT_GROUP_LABELS,
 }: {
   events: Event[];
   hotPrograms: Program[];
   signupLink?: string | null;
+  // Group value → label, DB-managed (program_options group). Static fallback.
+  groupLabels?: Record<string, string>;
 }) {
   // The home board shows the live season — upcoming and active events,
   // not the completed archive (that lives on the full schedule page).
@@ -359,11 +363,11 @@ export function HomeMagazine({
           </Reveal>
           <Reveal className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <FeaturedCard program={featured} />
+              <FeaturedCard program={featured} groupLabels={groupLabels} />
             </div>
             <div className="flex h-full flex-col gap-4">
               {side.length > 0 ? (
-                side.map((p) => <CompactCard key={p.id} program={p} />)
+                side.map((p) => <CompactCard key={p.id} program={p} groupLabels={groupLabels} />)
               ) : (
                 <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-white/10 p-6 text-center text-xs text-white/40">
                   더 많은 프로그램이 곧 열려요.

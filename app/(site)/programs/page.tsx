@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getPrograms } from "@/lib/data/programs";
+import { getProgramOptions } from "@/lib/data/programOptions";
 import { ProgramBoard } from "@/components/program/ProgramBoard";
 
 export const dynamic = "force-dynamic";
@@ -13,10 +14,17 @@ export default async function ProgramsPage({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
-  const [{ category }, programs] = await Promise.all([
+  const [{ category }, programs, groupOptions] = await Promise.all([
     searchParams,
     getPrograms(),
+    getProgramOptions("group"),
   ]);
 
-  return <ProgramBoard programs={programs} initialCategory={category} />;
+  // Category tabs: leading "전체" (all) + the admin-managed group options.
+  const categories = [
+    { key: "all", label: "전체" },
+    ...groupOptions.map((o) => ({ key: o.value, label: o.label })),
+  ];
+
+  return <ProgramBoard programs={programs} initialCategory={category} categories={categories} />;
 }

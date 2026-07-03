@@ -17,13 +17,47 @@ import { PROGRAM_GROUP_OPTIONS, PROGRAM_STATUS_OPTIONS, normalizeProgramStatus }
 import { ImageField } from "@/components/admin/ImageField";
 import { ProgramRichEditor } from "@/components/admin/ProgramRichEditor";
 
+interface OptionItem {
+  value: string;
+  label: string;
+}
+
 interface ProgramFormProps {
   program?: Program;
   descriptionInitialHtml?: string;
+  // Admin-managed option lists (from program_options). Fall back to the static
+  // labels so the form still renders in isolation (e.g. unit tests).
+  groupOptions?: OptionItem[];
+  statusOptions?: OptionItem[];
   action: (fd: FormData) => void | Promise<void>;
 }
 
-export function ProgramForm({ program, descriptionInitialHtml, action }: ProgramFormProps) {
+const DEFAULT_STATUS_OPTIONS: OptionItem[] = PROGRAM_STATUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
+
+export function ProgramForm({
+  program,
+  descriptionInitialHtml,
+  action,
+  groupOptions = PROGRAM_GROUP_OPTIONS,
+  statusOptions = DEFAULT_STATUS_OPTIONS,
+}: ProgramFormProps) {
+  // Group: keep the stored value even if its option was removed (no data loss).
+  const groupValues = new Set(groupOptions.map((o) => o.value));
+  const groupDefault = program?.program_group ?? groupOptions[0]?.value ?? "poker";
+  const groupFallback = groupDefault && !groupValues.has(groupDefault) ? groupDefault : null;
+
+  // Status: prefer the raw stored value if it's a live option, else its
+  // normalized standard key, else preserve the raw value via a fallback item.
+  const statusValues = new Set(statusOptions.map((o) => o.value));
+  const rawStatus = program?.status ?? "";
+  const normalizedStatus = normalizeProgramStatus(rawStatus);
+  const statusDefault = statusValues.has(rawStatus)
+    ? rawStatus
+    : statusValues.has(normalizedStatus)
+      ? normalizedStatus
+      : rawStatus || undefined;
+  const statusFallback = statusDefault && !statusValues.has(statusDefault) ? statusDefault : null;
+
   return (
     <form action={action} className="flex max-w-4xl flex-col gap-6">
       {/* 기본 정보 + 담당자 (같은 줄, 각 절반 폭) */}
@@ -96,34 +130,38 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
           <div className="flex flex-col gap-2 md:col-span-4">
             <Label htmlFor="program_group">그룹</Label>
-            <Select name="program_group" defaultValue={program?.program_group ?? "poker"}>
+            <Select name="program_group" defaultValue={groupDefault}>
               <SelectTrigger id="program_group" className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="-- 선택 --" />
               </SelectTrigger>
               <SelectContent>
-                {PROGRAM_GROUP_OPTIONS.map((o) => (
+                {groupOptions.map((o) => (
                   <SelectItem key={o.value} value={o.value}>
                     {o.label}
                   </SelectItem>
                 ))}
+                {/* 삭제된 옵션 등 목록에 없는 기존값은 원본 그대로 보존 */}
+                {groupFallback && (
+                  <SelectItem value={groupFallback}>{groupFallback} (원본값)</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
           <div className="flex flex-col gap-2 md:col-span-4">
             <Label htmlFor="status">상태</Label>
-            <Select name="status" defaultValue={normalizeProgramStatus(program?.status) || program?.status || undefined}>
+            <Select name="status" defaultValue={statusDefault}>
               <SelectTrigger id="status" className="w-full">
                 <SelectValue placeholder="-- 선택 --" />
               </SelectTrigger>
               <SelectContent>
-                {PROGRAM_STATUS_OPTIONS.map((o) => (
+                {statusOptions.map((o) => (
                   <SelectItem key={o.value} value={o.value}>
                     {o.label}
                   </SelectItem>
                 ))}
-                {/* 표준 키로 매핑되지 않는 기존값은 원본 그대로 보존(다음 저장에서 덮이지 않게) */}
-                {program?.status && normalizeProgramStatus(program.status) === "" && (
-                  <SelectItem value={program.status}>{program.status} (원본값)</SelectItem>
+                {/* 옵션 목록에 없는 기존값(레거시/삭제된 옵션)은 원본 그대로 보존 */}
+                {statusFallback && (
+                  <SelectItem value={statusFallback}>{statusFallback} (원본값)</SelectItem>
                 )}
               </SelectContent>
             </Select>

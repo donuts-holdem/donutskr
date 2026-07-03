@@ -9,6 +9,7 @@ import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 import { blocksToHtml } from "@/lib/program-blocks-to-html";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { mapProgram } from "@/lib/data/programs";
+import { getProgramOptions } from "@/lib/data/programOptions";
 import type { Block } from "@/lib/program-blocks";
 
 interface Props {
@@ -34,7 +35,11 @@ export default async function EditProgramPage({ params }: Props) {
   if (!data) notFound();
 
   const program = mapProgram(data);
-  const initialHtml = await computeInitialHtml(program.description_blocks, program.description);
+  const [initialHtml, groupOptions, statusOptions] = await Promise.all([
+    computeInitialHtml(program.description_blocks, program.description),
+    getProgramOptions("group"),
+    getProgramOptions("status"),
+  ]);
 
   return (
     <div>
@@ -46,6 +51,8 @@ export default async function EditProgramPage({ params }: Props) {
       <ProgramForm
         program={program}
         descriptionInitialHtml={initialHtml}
+        groupOptions={groupOptions}
+        statusOptions={statusOptions}
         action={updateProgram.bind(null, id)}
       />
       <div className="mt-8 pt-6 border-t border-border">

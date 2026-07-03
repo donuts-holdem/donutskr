@@ -62,7 +62,13 @@ export interface SiteConfig {
   footer_sponsors: { name: string; logo?: string; url?: string }[];
 }
 
-export type ProgramGroup = "poker" | "social" | "others";
+// program_group is admin-managed (see program_options); values are open strings,
+// not a fixed enum, so any option the operator creates is a valid group.
+export type ProgramGroup = string;
+export type ProgramOptionKind = "group" | "status";
+export interface ProgramOption {
+  id: string; kind: ProgramOptionKind; value: string; label: string; sort_order: number;
+}
 export interface Program {
   id: string; slug: string; title: string; category: string | null; program_group: ProgramGroup;
   status: string | null; member_count: number; location: string | null;
