@@ -9,6 +9,7 @@ function ev(over: Partial<Event>): Event {
     title: "도너츠 토너먼트",
     date: "2026-07-04",
     buy_in: "50,000 Pt",
+    organizer: "도너츠",
     status: "confirmed",
     location: "챔스홀덤",
     weekday: "토",
@@ -20,14 +21,40 @@ function ev(over: Partial<Event>): Event {
 describe("CalendarView", () => {
   const today = "2026-07-04";
 
-  it("shows the month label and a clickable stakes chip linking to detail", () => {
+  it("shows the month label and a title chip linking to detail without a buy-in prefix", () => {
     render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
     expect(screen.getByText("2026년 7월")).toBeInTheDocument();
     // Scope to the grid: Task 5 adds a mobile selected-day list (outside role="grid")
     // that renders the same event as another link, so a bare getByRole would collide.
     const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
     expect(link).toHaveAttribute("href", "/schedule/e1");
-    expect(within(link).getByText("50K")).toBeInTheDocument();
+    // buy-in no longer prefixes the calendar chip
+    expect(within(link).queryByText("50K")).not.toBeInTheDocument();
+  });
+
+  it("highlights DO:NUTS-organized events with a non-color marker in the grid", () => {
+    render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 기획.*도너츠 토너먼트/ });
+    expect(link).toBeInTheDocument();
+  });
+
+  it("does not mark events organized by other groups", () => {
+    render(
+      <CalendarView
+        events={[ev({ id: "e2", organizer: "파이널나인" })]}
+        today={today}
+        initialMonth="2026-07"
+      />
+    );
+    const grid = screen.getByRole("grid");
+    expect(within(grid).queryByText("도너츠 기획", { exact: false })).not.toBeInTheDocument();
+    expect(within(grid).getByRole("link", { name: /도너츠 토너먼트/ })).toBeInTheDocument();
+  });
+
+  it("shows the venue on its own line in the selected-day list", () => {
+    render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
+    // selected-day list renders the event's location beneath its title
+    expect(screen.getAllByText("챔스홀덤").length).toBeGreaterThan(0);
   });
 
   it("renders an undated strip for events without a date", () => {

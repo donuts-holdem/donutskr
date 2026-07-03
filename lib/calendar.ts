@@ -59,18 +59,13 @@ export function monthLabel(ym: string): string {
   return `${y}년 ${m}월`;
 }
 
-// Compact buy-in for an in-cell chip: "50,000 Pt" -> "50K"; "프리롤" -> "프리롤".
-export function formatBuyInShort(buyIn: string | null): string | null {
-  if (!buyIn) return null;
-  const trimmed = buyIn.trim();
-  if (!trimmed) return null;
-  const match = trimmed.match(/[\d,]+/); // first amount only ("30,000 + 3,000" → "30,000")
-  if (!match) return trimmed; // no number → show as-is (e.g. "프리롤")
-  const n = Number(match[0].replace(/,/g, ""));
-  if (!n) return trimmed;
-  if (n >= 1000) {
-    const k = n / 1000;
-    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
-  }
-  return String(n);
+// Events planned/hosted by the DO:NUTS club get a gold highlight in the
+// calendar (buy-in no longer prefixes the title — see CalendarView). Match is a
+// case-insensitive substring against the known spellings the operators type.
+export const DONUTS_ORGANIZER_MATCH = ["도너츠", "donuts", "do:nuts"] as const;
+
+export function isDonutsOrganized(organizer: string | null | undefined): boolean {
+  if (!organizer) return false;
+  const v = organizer.toLowerCase();
+  return DONUTS_ORGANIZER_MATCH.some((m) => v.includes(m));
 }

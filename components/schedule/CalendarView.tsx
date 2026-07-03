@@ -20,7 +20,7 @@ import {
   groupEventsByDate,
   addMonths,
   monthLabel,
-  formatBuyInShort,
+  isDonutsOrganized,
   type DayCell as DayCellT,
 } from "@/lib/calendar";
 
@@ -50,10 +50,28 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
   );
 }
 
-// In-cell "stakes chip": buy-in (gold tabular) + title, links to detail.
+// Non-color marker for DO:NUTS-organized events: a small gold diamond plus an
+// sr-only label so the highlight never rides on color alone.
+function OrganizerMark({ active = true }: { active?: boolean }) {
+  return (
+    <>
+      <span className="sr-only">도너츠 기획 </span>
+      <span
+        aria-hidden="true"
+        className={`shrink-0 text-2xs leading-none ${active ? "text-gold" : "text-gold/60"}`}
+      >
+        ◆
+      </span>
+    </>
+  );
+}
+
+// In-cell chip: title only (buy-in moved off the calendar). DO:NUTS-organized
+// events lead with the gold diamond + gold title; the active-status tint still
+// dims past events.
 function EventChip({ event }: { event: Event }) {
   const gold = isEventGold(event);
-  const stake = formatBuyInShort(event.buy_in);
+  const donuts = isDonutsOrganized(event.organizer);
   return (
     <Link
       href={`/schedule/${event.id}`}
@@ -61,12 +79,14 @@ function EventChip({ event }: { event: Event }) {
         gold ? "" : "opacity-80"
       }`}
     >
-      {stake && (
-        <span className={`${display.className} shrink-0 text-xs font-bold tabular-nums ${gold ? "text-gold" : "text-white/65"}`}>
-          {stake}
-        </span>
-      )}
-      <span className="truncate text-xs text-white/90">{event.title}</span>
+      {donuts && <OrganizerMark active={gold} />}
+      <span
+        className={`truncate text-xs ${
+          donuts ? `font-semibold ${gold ? "text-gold" : "text-gold/70"}` : "text-white/90"
+        }`}
+      >
+        {event.title}
+      </span>
     </Link>
   );
 }
@@ -74,23 +94,32 @@ function EventChip({ event }: { event: Event }) {
 function DayEventRow({ event }: { event: Event }) {
   const past = isPast(event);
   const time = eventTime(event);
-  const stake = formatBuyInShort(event.buy_in);
+  const donuts = isDonutsOrganized(event.organizer);
   const derivedStatus = deriveEventStatus(event, new Date());
   return (
     <li className="border-t border-white/[0.08] first:border-t-0">
       <Link
         href={`/schedule/${event.id}`}
-        className="flex items-center gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+        className="flex items-start gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
       >
-        <span className={`${display.className} w-11 shrink-0 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
+        <span className={`${display.className} w-11 shrink-0 pt-0.5 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
           {time ?? "—"}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm text-white/90">{event.title}</span>
-        {stake && (
-          <span className={`${display.className} shrink-0 text-2xs font-bold tabular-nums ${past ? "text-white/45" : "text-gold"}`}>
-            {stake}
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5">
+            {donuts && <OrganizerMark active={!past} />}
+            <span
+              className={`min-w-0 flex-1 truncate text-sm ${
+                donuts ? `font-semibold ${past ? "text-gold/70" : "text-gold"}` : "text-white/90"
+              }`}
+            >
+              {event.title}
+            </span>
           </span>
-        )}
+          {event.location && (
+            <span className="mt-0.5 block truncate text-2xs text-white/50">{event.location}</span>
+          )}
+        </span>
         <EventStatusTag status={derivedStatus} muted={past} />
       </Link>
     </li>

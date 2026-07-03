@@ -9,6 +9,7 @@ const minimalEvent: Event = {
   title: "Test Event",
   date: null,
   location: null,
+  organizer: null,
   start_time: null,
   reg_close_time: null,
   buy_in: null,

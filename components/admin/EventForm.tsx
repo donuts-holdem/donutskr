@@ -133,6 +133,11 @@ export function EventForm({ event, structures, seasons = [], derivedStatus, acti
             <Input id="location" name="location" defaultValue={event?.location ?? ""} />
             <p className="text-muted-foreground text-xs">지점명과 주소를 함께 입력 (예: 파이널나인 외대점 (서울 동대문구 휘경로3길 4))</p>
           </div>
+          <div className="flex flex-col gap-2 md:col-span-12">
+            <Label htmlFor="organizer">기획 단체</Label>
+            <Input id="organizer" name="organizer" defaultValue={event?.organizer ?? ""} placeholder="예: 도너츠" />
+            <p className="text-muted-foreground text-xs">이벤트를 주최·기획한 단체 (예: 도너츠). &lsquo;도너츠&rsquo; 기획 이벤트는 캘린더에서 강조됩니다.</p>
+          </div>
         </CardContent>
       </Card>
 

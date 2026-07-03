@@ -21,7 +21,7 @@ export interface Season {
 export interface Event {
   id: string; season_id: string | null; title: string;
   date: string | null;
-  location: string | null;
+  location: string | null; organizer: string | null;
   start_time: string | null; reg_close_time: string | null;
   buy_in: string | null; entry_link: string | null; button_label: string | null;
   description: string | null; poster_image: string | null;

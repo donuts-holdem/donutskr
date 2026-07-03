@@ -5,7 +5,7 @@ import {
   groupEventsByDate,
   addMonths,
   monthLabel,
-  formatBuyInShort,
+  isDonutsOrganized,
   WEEKDAYS,
 } from "@/lib/calendar";
 
@@ -76,14 +76,17 @@ describe("monthLabel", () => {
   });
 });
 
-describe("formatBuyInShort", () => {
-  it("abbreviates thousands and falls back gracefully", () => {
-    expect(formatBuyInShort("50,000 Pt")).toBe("50K");
-    expect(formatBuyInShort("5,000P")).toBe("5K");
-    expect(formatBuyInShort("30,000 + 3,000")).toBe("30K"); // first amount only
-    expect(formatBuyInShort("500")).toBe("500");
-    expect(formatBuyInShort("프리롤")).toBe("프리롤");
-    expect(formatBuyInShort(null)).toBeNull();
-    expect(formatBuyInShort("  ")).toBeNull();
+describe("isDonutsOrganized", () => {
+  it("matches known DO:NUTS spellings case-insensitively as a substring", () => {
+    expect(isDonutsOrganized("도너츠")).toBe(true);
+    expect(isDonutsOrganized("도너츠 P.K.O")).toBe(true);
+    expect(isDonutsOrganized("DONUTS")).toBe(true);
+    expect(isDonutsOrganized("Do:Nuts Club")).toBe(true);
+  });
+  it("is false for other organizers or empty values", () => {
+    expect(isDonutsOrganized("파이널나인")).toBe(false);
+    expect(isDonutsOrganized("")).toBe(false);
+    expect(isDonutsOrganized(null)).toBe(false);
+    expect(isDonutsOrganized(undefined)).toBe(false);
   });
 });
