@@ -25,9 +25,10 @@
 create table if not exists public.admin_emails (email text primary key);
 alter table public.admin_emails enable row level security;
 
--- Seed the current admin. TODO: 실제 관리자 로그인 이메일을 확인해 추가/수정하세요.
--- (auth.users의 로그인 이메일과 정확히 일치해야 함 — 대소문자는 무시됨.)
-insert into public.admin_emails (email) values ('undefined0307@gmail.com')
+-- Seed the current admin (프로드 auth.users에서 확인된 실제 관리자 로그인 계정).
+-- ADMIN_EMAILS 환경변수도 이 목록과 항상 동일하게 유지할 것 — 불일치 시
+-- update가 RLS에 걸러져 0행 수정으로 실패한다 (앱은 이제 이 경우 에러를 던짐).
+insert into public.admin_emails (email) values ('donuts.holdem@gmail.com')
   on conflict do nothing;
 
 -- is_admin(): true when the JWT's email is in admin_emails. STABLE + SECURITY
