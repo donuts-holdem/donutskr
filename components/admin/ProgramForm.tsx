@@ -256,10 +256,9 @@ export function ProgramForm({
               <Label htmlFor="is_visible">노출</Label>
             </div>
           </div>
-          <div className="flex flex-col gap-2 md:col-span-3">
-            <Label htmlFor="sort_order">순서</Label>
-            <Input id="sort_order" name="sort_order" type="number" defaultValue={program?.sort_order ?? 0} />
-          </div>
+          <p className="text-muted-foreground md:col-span-12 text-xs">
+            노출 순서는 프로그램 목록의 &ldquo;순서 편집&rdquo;에서 드래그로 변경합니다.
+          </p>
         </CardContent>
       </Card>
 

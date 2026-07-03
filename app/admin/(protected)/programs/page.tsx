@@ -28,9 +28,14 @@ export default async function AdminProgramsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-gold text-2xl font-bold">프로그램 관리</h1>
-        <Button asChild>
-          <Link href="/admin/programs/new">+ 새 프로그램</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link href="/admin/programs/order">순서 편집</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/programs/new">+ 새 프로그램</Link>
+          </Button>
+        </div>
       </div>
 
       <Table>
