@@ -14,7 +14,7 @@ export interface Season {
 export interface Event {
   id: string; season_id: string | null; title: string;
   date: string | null;
-  location: string | null; address: string | null;
+  location: string | null;
   start_time: string | null; reg_close_time: string | null;
   buy_in: string | null; entry_link: string | null; button_label: string | null;
   description: string | null; poster_image: string | null;
@@ -37,7 +37,7 @@ export interface NavTab {
 export interface HeaderTab { label: string; href: string; external: boolean; mobileHidden: boolean; }
 export interface SpecialPage {
   id: string; slug: string; label: string | null; title: string; description: string | null;
-  date: string | null; venue: string | null; address: string | null; start_time: string | null;
+  date: string | null; venue: string | null; start_time: string | null;
   entry_link: string | null; cta_label: string | null; sponsor_name: string | null; sponsor_logo: string | null;
   poster: string | null; gallery: string[]; info_cards: { label: string; value: string }[]; note_list: string[];
   blind_structure_id: string | null; start_show_date: string | null; end_show_date: string | null; is_visible: boolean;
@@ -61,7 +61,7 @@ export interface Program {
   status: string | null; member_count: number; location: string | null;
   start_date: string | null; end_date: string | null; description: string | null;
   cover_image: string | null; manager_name: string | null; manager_role: string | null; manager_avatar: string | null;
-  cta_label: string | null; entry_link: string | null; external_url: string | null;
+  cta_label: string | null; entry_link: string | null;
   is_hot: boolean; is_affiliate: boolean; is_visible: boolean; sort_order: number;
   description_blocks: Block[] | null; description_verified: boolean;
 }

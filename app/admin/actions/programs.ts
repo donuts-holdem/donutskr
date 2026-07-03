@@ -15,7 +15,7 @@ function parse(fd: FormData) {
     member_count: Number(fd.get("member_count") || 0), location: s("location"),
     start_date: s("start_date"), end_date: s("end_date"), description: s("description"),
     manager_name: s("manager_name"), manager_role: s("manager_role"),
-    cta_label: s("cta_label"), entry_link: s("entry_link"), external_url: s("external_url"),
+    cta_label: s("cta_label"), entry_link: s("entry_link"),
     is_hot: fd.get("is_hot") === "on", is_affiliate: fd.get("is_affiliate") === "on",
     is_visible: fd.get("is_visible") === "on", sort_order: Number(fd.get("sort_order") || 0),
   };

@@ -15,7 +15,6 @@ function parseSpecialPageForm(fd: FormData) {
     description: s("description"),
     date: s("date"),
     venue: s("venue"),
-    address: s("address"),
     start_time: s("start_time"),
     entry_link: s("entry_link"),
     cta_label: s("cta_label"),

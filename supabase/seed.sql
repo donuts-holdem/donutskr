@@ -105,7 +105,7 @@ update public.blind_structure_rows
 -- 3-a. Festival
 insert into public.events (
   season_id, title, event_type, round,
-  date, weekday, location, address,
+  date, weekday, location,
   start_time, reg_close_time,
   buy_in,
   category, status,
@@ -119,8 +119,7 @@ insert into public.events (
   'MAIN EVENT',
   '2026-06-09',
   '화',
-  'BPEX 부산 포커 엑스포',
-  '부산광역시 해운대구',
+  'BPEX 부산 포커 엑스포 (부산광역시 해운대구)',
   '12:00',
   '15:00',
   '200,000 Pt',
@@ -134,7 +133,7 @@ insert into public.events (
 -- 3-b. Confirmed event (with entry_link)
 insert into public.events (
   season_id, title, event_type, round,
-  date, weekday, location, address,
+  date, weekday, location,
   start_time, reg_close_time,
   buy_in, entry_link, button_label,
   category, status,
@@ -148,8 +147,7 @@ insert into public.events (
   'Round 5',
   '2026-07-05',
   '일',
-  '도너츠 포커클럽 서울',
-  '서울특별시 강남구',
+  '도너츠 포커클럽 서울 (서울특별시 강남구)',
   '14:00',
   '16:00',
   '50,000 Pt',
@@ -165,7 +163,7 @@ insert into public.events (
 -- 3-c. Upcoming event
 insert into public.events (
   season_id, title, event_type, round,
-  date, weekday, location, address,
+  date, weekday, location,
   start_time,
   buy_in,
   category, status,
@@ -178,8 +176,7 @@ insert into public.events (
   'Round 6',
   '2026-07-19',
   '일',
-  '도너츠 포커클럽 서울',
-  '서울특별시',
+  '도너츠 포커클럽 서울 (서울특별시)',
   '14:00',
   '50,000 Pt',
   'upcoming',
@@ -191,7 +188,7 @@ insert into public.events (
 -- 3-d. Completed event
 insert into public.events (
   season_id, title, event_type, round,
-  date, weekday, location, address,
+  date, weekday, location,
   start_time,
   buy_in,
   category, status,
@@ -205,8 +202,7 @@ insert into public.events (
   'Round 1',
   '2026-05-18',
   '일',
-  '도너츠 포커클럽 서울',
-  '서울특별시 강남구',
+  '도너츠 포커클럽 서울 (서울특별시 강남구)',
   '14:00',
   '50,000 Pt',
   'completed',
@@ -219,7 +215,7 @@ insert into public.events (
 -- 3-e. Super Cup Challenge satellite (양재)
 insert into public.events (
   season_id, title, event_type, round,
-  date, weekday, location, address,
+  date, weekday, location,
   start_time,
   buy_in, entry_link, button_label,
   category, status,
@@ -232,8 +228,7 @@ insert into public.events (
   'Satellite',
   '2026-06-07',
   '일',
-  '양재빌딩 5F',
-  '서울특별시 서초구 양재동',
+  '양재빌딩 5F (서울특별시 서초구 양재동)',
   '13:00',
   '₩50,000',
   'https://forms.gle/6kBtHMZNZJLjn8up6',
@@ -269,7 +264,7 @@ insert into public.programs (
   slug, title, category, program_group, status,
   member_count, location,
   manager_name, manager_role,
-  cta_label, external_url,
+  cta_label, entry_link,
   is_hot, is_affiliate, is_visible,
   sort_order, description
 ) values (
@@ -545,7 +540,7 @@ insert into public.programs (
 insert into public.programs (
   slug, title, category, program_group, status,
   member_count,
-  cta_label, external_url,
+  cta_label, entry_link,
   is_hot, is_affiliate, is_visible,
   sort_order, description
 ) values (
@@ -566,7 +561,7 @@ insert into public.programs (
 insert into public.programs (
   slug, title, category, program_group, status,
   member_count,
-  cta_label, external_url,
+  cta_label, entry_link,
   is_hot, is_affiliate, is_visible,
   sort_order, description
 ) values (
@@ -587,7 +582,7 @@ insert into public.programs (
 insert into public.programs (
   slug, title, category, program_group, status,
   member_count,
-  cta_label, external_url,
+  cta_label, entry_link,
   is_hot, is_affiliate, is_visible,
   sort_order, description
 ) values (
@@ -610,7 +605,7 @@ insert into public.programs (
 -- ---------------------------------------------------------------------------
 insert into public.special_pages (
   slug, label, title, description,
-  date, venue, address, start_time,
+  date, venue, start_time,
   entry_link, cta_label,
   info_cards,
   note_list,
@@ -623,8 +618,7 @@ insert into public.special_pages (
   'SUPER CUP CHALLENGE',
   '도너츠 시리즈 스프링 2026 챌린지 이벤트. 양재 새틀라이트를 통해 본선(부산 BPEX) 진출권을 획득하세요.',
   '2026-06-09',
-  'BPEX 부산 포커 엑스포',
-  '부산광역시 해운대구',
+  'BPEX 부산 포커 엑스포 (부산광역시 해운대구)',
   '12:00',
   'https://forms.gle/6kBtHMZNZJLjn8up6',
   '이벤트 참가하기',

@@ -30,14 +30,10 @@ export function formatDotDate(dateString: string): string {
   return dateString.slice(0, 10).replace(/-/g, ".");
 }
 
-// Resolve a program's click target: external_url wins (opens new tab), else the
-// internal detail route. Single source so every card variant agrees.
-export function programHref(program: {
-  external_url: string | null;
-  slug: string;
-}): { href: string; isExternal: boolean } {
-  if (program.external_url) return resolveHref(program.external_url);
-  return { href: `/programs/${program.slug}`, isExternal: false };
+// A program card always links to its internal detail route; the detail page's
+// CTA is what opens any external link. Single source so every card variant agrees.
+export function programHref(program: { slug: string }): string {
+  return `/programs/${program.slug}`;
 }
 
 // Category groups for the /programs directory filter. `key` matches

@@ -18,7 +18,7 @@ export function mapProgram(r: any): Program {
     start_date: r.start_date ?? null, end_date: r.end_date ?? null, description: r.description ?? null,
     cover_image: r.cover_image ?? null, manager_name: r.manager_name ?? null,
     manager_role: r.manager_role ?? null, manager_avatar: r.manager_avatar ?? null,
-    cta_label: r.cta_label ?? null, entry_link: r.entry_link ?? null, external_url: r.external_url ?? null,
+    cta_label: r.cta_label ?? null, entry_link: r.entry_link ?? null,
     is_hot: Boolean(r.is_hot), is_affiliate: Boolean(r.is_affiliate),
     is_visible: r.is_visible ?? true, sort_order: Number(r.sort_order ?? 0),
     description_blocks: coerceNullableBlocks(r.description_blocks),

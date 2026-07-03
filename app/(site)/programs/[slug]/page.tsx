@@ -115,14 +115,14 @@ export default async function ProgramDetailPage({ params }: Props) {
 
   const relatedPrograms = hotPrograms.filter((p) => p.slug !== slug).slice(0, 4);
 
-  const ctaHref = program.entry_link ?? program.external_url ?? null;
+  const ctaHref = program.entry_link ?? null;
   const ctaLabel = program.cta_label ?? "참가 신청";
   const ctaIsExternal = ctaHref ? isExternalUrl(ctaHref) : false;
 
   return (
     <div className="py-8 flex flex-col gap-10">
-      {/* External URL notice */}
-      {program.external_url && <ExternalNotice url={program.external_url} />}
+      {/* External URL notice — only when the entry link leaves the site */}
+      {ctaHref && ctaIsExternal && <ExternalNotice url={ctaHref} />}
 
       {/* Hero */}
       <section className="flex flex-col gap-3">

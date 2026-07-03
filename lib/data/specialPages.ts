@@ -12,7 +12,6 @@ export function mapSpecialPage(r: any): SpecialPage {
     description: r.description ?? null,
     date: r.date ?? null,
     venue: r.venue ?? null,
-    address: r.address ?? null,
     start_time: r.start_time ?? null,
     entry_link: r.entry_link ?? null,
     cta_label: r.cta_label ?? null,

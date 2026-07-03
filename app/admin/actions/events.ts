@@ -10,7 +10,7 @@ function parse(fd: FormData) {
   return {
     season_id: fk("season_id"), title: String(fd.get("title")),
     date: s("date"),
-    location: s("location"), address: s("address"),
+    location: s("location"),
     start_time: s("start_time"), reg_close_time: s("reg_close_time"),
     buy_in: s("buy_in"), entry_link: s("entry_link"), button_label: s("button_label"),
     description: s("description"),

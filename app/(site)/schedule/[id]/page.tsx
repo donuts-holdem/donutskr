@@ -245,7 +245,7 @@ export default async function EventDetailPage({ params }: Props) {
             {event.location && (
               <>
                 <span className="h-px w-full bg-white/[0.06]" />
-                <InfoRow label="장소" note={event.address}>
+                <InfoRow label="장소">
                   {event.location}
                 </InfoRow>
               </>

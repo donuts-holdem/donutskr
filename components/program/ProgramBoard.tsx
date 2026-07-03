@@ -117,13 +117,8 @@ function ProgramLink({
   className?: string;
   children: React.ReactNode;
 }) {
-  const { href, isExternal } = programHref(program);
-  return isExternal ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-      {children}
-    </a>
-  ) : (
-    <Link href={href} className={className}>
+  return (
+    <Link href={programHref(program)} className={className}>
       {children}
     </Link>
   );

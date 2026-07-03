@@ -15,7 +15,7 @@ describe("SpecialPageForm structured fields", () => {
   it("seeds info_cards hidden input from existing page data", () => {
     const page = {
       id: "1", slug: "x", label: null, title: "t", description: null, date: null, venue: null,
-      address: null, start_time: null, entry_link: null, cta_label: null, sponsor_name: null,
+      start_time: null, entry_link: null, cta_label: null, sponsor_name: null,
       sponsor_logo: null, poster: null, gallery: [], info_cards: [{ label: "날짜", value: "6/9" }],
       note_list: [], blind_structure_id: null, start_show_date: null, end_show_date: null, is_visible: true,
     };

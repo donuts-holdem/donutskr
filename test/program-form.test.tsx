@@ -8,7 +8,9 @@ describe("ProgramForm", () => {
     expect(screen.getByLabelText("프로그램명 *")).toBeInTheDocument();
     expect(screen.getByLabelText("그룹")).toBeInTheDocument();
     expect(screen.getByLabelText("담당자명")).toBeInTheDocument();
-    expect(screen.getByLabelText("외부 링크")).toBeInTheDocument();
+    // The link field's label "링크" is shared by the rich editor's insert-link
+    // button, so target the URL input specifically by its textbox role.
+    expect(screen.getByRole("textbox", { name: "링크" })).toBeInTheDocument();
   });
 });
 
@@ -28,7 +30,7 @@ describe("ProgramForm Phase 2 localization", () => {
       id: "1", slug: "x", title: "t", category: null, program_group: "poker" as const, status: "모집 중",
       member_count: 0, location: null, start_date: null, end_date: null, description: null,
       cover_image: null, manager_name: null, manager_role: null, manager_avatar: null,
-      cta_label: null, entry_link: null, external_url: null, is_hot: false, is_affiliate: false,
+      cta_label: null, entry_link: null, is_hot: false, is_affiliate: false,
       is_visible: true, sort_order: 0, description_blocks: null, description_verified: false,
     };
     render(<ProgramForm program={program} action={async () => {}} />);
@@ -41,7 +43,7 @@ describe("ProgramForm Phase 2 localization", () => {
       id: "1", slug: "x", title: "t", category: null, program_group: "poker" as const, status: "old_custom",
       member_count: 0, location: null, start_date: null, end_date: null, description: null,
       cover_image: null, manager_name: null, manager_role: null, manager_avatar: null,
-      cta_label: null, entry_link: null, external_url: null, is_hot: false, is_affiliate: false,
+      cta_label: null, entry_link: null, is_hot: false, is_affiliate: false,
       is_visible: true, sort_order: 0, description_blocks: null, description_verified: false,
     };
     render(<ProgramForm program={program} action={async () => {}} />);

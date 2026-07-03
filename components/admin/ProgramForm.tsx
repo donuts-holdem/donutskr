@@ -189,12 +189,9 @@ export function ProgramForm({ program, descriptionInitialHtml, action }: Program
             <Input id="cta_label" name="cta_label" defaultValue={program?.cta_label ?? ""} />
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="entry_link">참가 링크</Label>
+            <Label htmlFor="entry_link">링크</Label>
             <Input id="entry_link" name="entry_link" type="url" defaultValue={program?.entry_link ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="external_url">외부 링크</Label>
-            <Input id="external_url" name="external_url" type="url" defaultValue={program?.external_url ?? ""} />
+            <p className="text-muted-foreground text-xs">상세 페이지의 참가 신청 버튼이 여는 주소 (외부 주소면 새 탭)</p>
           </div>
         </CardContent>
       </Card>

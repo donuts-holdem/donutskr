@@ -9,10 +9,10 @@ describe("mapProgram", () => {
     expect(p.member_count).toBe(0);
     expect(p.is_visible).toBe(true);
     expect(p.is_affiliate).toBe(false);
-    expect(p.external_url).toBeNull();
+    expect(p.entry_link).toBeNull();
   });
-  it("preserves external_url for series→/series link", () => {
-    const p = mapProgram({ slug: "series", title: "x", program_group: "poker", external_url: "/series" });
-    expect(p.external_url).toBe("/series");
+  it("preserves entry_link", () => {
+    const p = mapProgram({ slug: "series", title: "x", program_group: "poker", entry_link: "/series" });
+    expect(p.entry_link).toBe("/series");
   });
 });

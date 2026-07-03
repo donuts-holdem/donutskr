@@ -4,6 +4,7 @@ import {
   isExternalUrl,
   resolveHref,
   formatDotDate,
+  programHref,
 } from "@/lib/program-display";
 
 describe("programStatusLabel", () => {
@@ -37,6 +38,13 @@ describe("resolveHref", () => {
   it("returns href with external flag", () => {
     expect(resolveHref("https://x.com")).toEqual({ href: "https://x.com", isExternal: true });
     expect(resolveHref("/series")).toEqual({ href: "/series", isExternal: false });
+  });
+});
+
+describe("programHref", () => {
+  it("always returns the internal detail route", () => {
+    expect(programHref({ slug: "series" })).toBe("/programs/series");
+    expect(programHref({ slug: "holdem-lab" })).toBe("/programs/holdem-lab");
   });
 });
 

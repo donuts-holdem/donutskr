@@ -1,21 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Program } from "@/lib/types";
-import { programStatusLabel, formatDotDate, resolveHref } from "@/lib/program-display";
-
-function getProgramHref(program: Program): { href: string; isExternal: boolean } {
-  if (program.external_url) {
-    return resolveHref(program.external_url);
-  }
-  return { href: `/programs/${program.slug}`, isExternal: false };
-}
+import { programStatusLabel, formatDotDate, programHref } from "@/lib/program-display";
 
 interface ProgramCardProps {
   program: Program;
 }
 
 export function ProgramCard({ program }: ProgramCardProps) {
-  const { href, isExternal } = getProgramHref(program);
+  const href = programHref(program);
 
   const inner = (
     <div className="flex gap-4 items-stretch bg-glass border border-border rounded-card p-4 hover:border-gold/30 transition-colors group">
@@ -66,14 +59,6 @@ export function ProgramCard({ program }: ProgramCardProps) {
       </div>
     </div>
   );
-
-  if (isExternal) {
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="block">
-        {inner}
-      </a>
-    );
-  }
 
   return <Link href={href} className="block">{inner}</Link>;
 }

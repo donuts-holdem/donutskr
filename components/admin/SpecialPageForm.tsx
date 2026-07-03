@@ -38,8 +38,9 @@ export function SpecialPageForm({ page, structures = [], action }: SpecialPageFo
             <Input id="slug" name="slug" defaultValue={page?.slug ?? ""} required />
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="label">레이블</Label>
+            <Label htmlFor="label">상단 소제목</Label>
             <Input id="label" name="label" defaultValue={page?.label ?? ""} />
+            <p className="text-muted-foreground text-xs">제목 위에 작게 표시되는 문구</p>
           </div>
           <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="title">제목 *</Label>
@@ -84,13 +85,10 @@ export function SpecialPageForm({ page, structures = [], action }: SpecialPageFo
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
+          <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="venue">장소</Label>
             <Input id="venue" name="venue" defaultValue={page?.venue ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="address">주소</Label>
-            <Input id="address" name="address" defaultValue={page?.address ?? ""} />
+            <p className="text-muted-foreground text-xs">지점명과 주소를 함께 입력 (예: 파이널나인 외대점 (서울 동대문구 휘경로3길 4))</p>
           </div>
         </CardContent>
       </Card>

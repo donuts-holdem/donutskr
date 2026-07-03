@@ -113,13 +113,10 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
             <Label htmlFor="reg_close_time">레지 마감 시간</Label>
             <Input id="reg_close_time" name="reg_close_time" defaultValue={event?.reg_close_time ?? ""} placeholder="예: 16:00" />
           </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
+          <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="location">장소</Label>
             <Input id="location" name="location" defaultValue={event?.location ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="address">주소</Label>
-            <Input id="address" name="address" defaultValue={event?.address ?? ""} />
+            <p className="text-muted-foreground text-xs">지점명과 주소를 함께 입력 (예: 파이널나인 외대점 (서울 동대문구 휘경로3길 4))</p>
           </div>
         </CardContent>
       </Card>
