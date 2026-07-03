@@ -22,7 +22,9 @@ update public.events
   where status in ('scheduled', 'confirmed', 'running', 'reg_closed', 'completed');
 
 -- New default + guardrail: only the three stored intents are allowed.
+-- 재실행 안전: 기존 제약을 먼저 제거하고 다시 추가한다.
 alter table public.events alter column status set default 'auto';
+alter table public.events drop constraint if exists events_status_check;
 alter table public.events
   add constraint events_status_check check (status in ('auto', 'canceled', 'hidden'));
 

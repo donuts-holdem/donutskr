@@ -18,8 +18,11 @@ create table if not exists public.program_options (
 );
 
 -- RLS: 인증 사용자 = 관리자 쓰기 + 소프트삭제 제외 공개 read (0002/0003 패턴).
+-- 재실행 안전: 정책을 먼저 drop 후 다시 생성한다.
 alter table public.program_options enable row level security;
+drop policy if exists "auth write program_options" on public.program_options;
 create policy "auth write program_options" on public.program_options for all to authenticated using (true) with check (true);
+drop policy if exists "public read program_options" on public.program_options;
 create policy "public read program_options" on public.program_options for select using (deleted_at is null);
 
 -- updated_at 자동 갱신 트리거 (0004 패턴).
