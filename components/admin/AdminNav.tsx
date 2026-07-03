@@ -10,7 +10,7 @@ const NAV_GROUPS = [
     { href: "/admin/special-pages", label: "특수페이지" },
     { href: "/admin/tabs", label: "탭 관리" },
   ]},
-  { label: "구조", links: [
+  { label: "운영", links: [
     { href: "/admin/seasons", label: "시즌" },
     { href: "/admin/blind-structures", label: "블라인드 스트럭처" },
   ]},
@@ -18,6 +18,7 @@ const NAV_GROUPS = [
     { href: "/admin/online-league", label: "온라인 리그" },
     { href: "/admin/program-options", label: "프로그램 옵션" },
     { href: "/admin/settings", label: "설정" },
+    { href: "/admin/trash", label: "휴지통" },
   ]},
 ] as const;
 

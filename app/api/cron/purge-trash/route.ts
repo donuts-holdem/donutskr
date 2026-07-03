@@ -18,7 +18,9 @@ export async function GET(req: Request) {
 
   const { error } = await supabase.rpc("purge_trash");
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Log the detail server-side only; don't leak DB error internals to callers.
+    console.error("purge_trash cron failed:", error);
+    return NextResponse.json({ error: "purge failed" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

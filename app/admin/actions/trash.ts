@@ -45,5 +45,5 @@ export async function purgeItem(fd: FormData) {
     .not("deleted_at", "is", null);
   if (error) throw error;
   revalidatePublic();
-  redirect("/admin/trash?deleted=1");
+  redirect("/admin/trash?saved=1");
 }
