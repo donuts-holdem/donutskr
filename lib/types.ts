@@ -1,6 +1,13 @@
 import type { Block } from "@/lib/program-blocks";
 
-export type EventStatus = "scheduled" | "confirmed" | "running" | "reg_closed" | "completed" | "canceled" | "hidden";
+// Event status is now split: operators store an INTENT, the display state is
+// DERIVED from the schedule times at read time (see lib/event-status.ts).
+export type StoredEventStatus = "auto" | "canceled" | "hidden";
+export type DerivedEventStatus =
+  | "scheduled" | "running" | "reg_closed" | "completed" | "canceled" | "hidden";
+// Kept for the display-side maps (StatusBadge / labels) that key on the derived
+// vocabulary. Stored intent uses StoredEventStatus.
+export type EventStatus = DerivedEventStatus;
 export type RowType = "level" | "break" | "stage";
 export type TabType = "internal" | "external" | "special";
 export type LeagueStatus = "operating" | "revamping" | "preparing" | "suspended" | "hidden";
@@ -18,7 +25,7 @@ export interface Event {
   start_time: string | null; reg_close_time: string | null;
   buy_in: string | null; entry_link: string | null; button_label: string | null;
   description: string | null; poster_image: string | null;
-  status: EventStatus; is_visible: boolean;
+  status: StoredEventStatus; is_visible: boolean;
   blind_structure_id: string | null; timer_event_id: string | null; timer_event_url: string | null;
 }
 export interface BlindStructure { id: string; name: string; is_template: boolean; event_type: string | null; }

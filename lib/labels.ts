@@ -4,22 +4,33 @@
 // this module deliberately does not import or modify them, to avoid any public
 // regression. Stored values stay the English keys; these are display only.
 // Pure / client-safe — no server imports.
-import type { EventStatus, ProgramGroup, LeagueStatus } from "@/lib/types";
+import type { DerivedEventStatus, StoredEventStatus, ProgramGroup, LeagueStatus } from "@/lib/types";
 
-export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+// Display labels for the DERIVED status vocabulary (예정→진행중→레지마감→완료),
+// used by admin lists / detail badges that render lib/event-status output.
+export const EVENT_STATUS_LABELS: Record<DerivedEventStatus, string> = {
   scheduled: "예정",
-  confirmed: "확정",
   running: "진행중",
   reg_closed: "레지마감",
   completed: "완료",
   canceled: "취소",
   hidden: "숨김",
 };
-export const EVENT_STATUS_OPTIONS = (Object.keys(EVENT_STATUS_LABELS) as EventStatus[]).map(
-  (value) => ({ value, label: EVENT_STATUS_LABELS[value] }),
+// Stored INTENT the admin form writes: auto (schedule-driven) + manual overrides.
+export const STORED_EVENT_STATUS_LABELS: Record<StoredEventStatus, string> = {
+  auto: "자동",
+  canceled: "취소",
+  hidden: "숨김",
+};
+export const EVENT_STATUS_OPTIONS = (Object.keys(STORED_EVENT_STATUS_LABELS) as StoredEventStatus[]).map(
+  (value) => ({ value, label: STORED_EVENT_STATUS_LABELS[value] }),
 );
 export function eventStatusLabel(s: string): string {
-  return EVENT_STATUS_LABELS[s as EventStatus] ?? s;
+  return (
+    EVENT_STATUS_LABELS[s as DerivedEventStatus] ??
+    STORED_EVENT_STATUS_LABELS[s as StoredEventStatus] ??
+    s
+  );
 }
 
 export const PROGRAM_GROUP_LABELS: Record<ProgramGroup, string> = {
