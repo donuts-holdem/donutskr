@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Space_Grotesk } from "next/font/google";
 import type { Program } from "@/lib/types";
 import {
-  programStatusLabel,
+  resolveProgramStatusLabel,
   isOpenStatus,
   formatDateRange,
   programHref,
@@ -106,8 +106,8 @@ function ProgramLink({
 
 // Status tag — mirrors HomeMagazine's EventStatusTag: an open program reads
 // in gold (dot + label), a closed one stays neutral.
-function StatusDot({ status }: { status: string | null }) {
-  const label = programStatusLabel(status);
+function StatusDot({ status, statusLabels }: { status: string | null; statusLabels?: Record<string, string> }) {
+  const label = resolveProgramStatusLabel(status, statusLabels);
   if (!label) return null;
   const open = isOpenStatus(status);
   return (
@@ -171,7 +171,15 @@ function categoryLabel(program: Program, groupLabels: Record<string, string>) {
 
 /* ----------------------------- card ------------------------------ */
 // Matches HomeMagazine's StandardCard exactly so the grid reads identically.
-function ProgramCardItem({ program, groupLabels }: { program: Program; groupLabels: Record<string, string> }) {
+function ProgramCardItem({
+  program,
+  groupLabels,
+  statusLabels,
+}: {
+  program: Program;
+  groupLabels: Record<string, string>;
+  statusLabels: Record<string, string>;
+}) {
   return (
     <ProgramLink
       program={program}
@@ -189,7 +197,7 @@ function ProgramCardItem({ program, groupLabels }: { program: Program; groupLabe
             {categoryLabel(program, groupLabels)}
           </span>
           <span className="shrink-0">
-            <StatusDot status={program.status} />
+            <StatusDot status={program.status} statusLabels={statusLabels} />
           </span>
         </div>
 
@@ -216,12 +224,15 @@ export function ProgramBoard({
   programs,
   initialCategory = "all",
   categories = DEFAULT_CATEGORIES,
+  statusLabels = {},
 }: {
   programs: Program[];
   initialCategory?: string;
   // Category tabs, DB-managed (program_options group). Includes the leading
   // "all" entry. Falls back to the static list when not provided.
   categories?: { key: string; label: string }[];
+  // Status value → label, DB-managed (program_options status). Static fallback.
+  statusLabels?: Record<string, string>;
 }) {
   const [cat, setCatState] = useState(
     categories.some((c) => c.key === initialCategory)
@@ -349,7 +360,7 @@ export function ProgramBoard({
           </div>
           <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((p) => (
-              <ProgramCardItem key={p.id} program={p} groupLabels={groupLabels} />
+              <ProgramCardItem key={p.id} program={p} groupLabels={groupLabels} statusLabels={statusLabels} />
             ))}
           </div>
         </section>

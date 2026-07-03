@@ -14,10 +14,11 @@ export default async function ProgramsPage({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
-  const [{ category }, programs, groupOptions] = await Promise.all([
+  const [{ category }, programs, groupOptions, statusOptions] = await Promise.all([
     searchParams,
     getPrograms(),
     getProgramOptions("group"),
+    getProgramOptions("status"),
   ]);
 
   // Category tabs: leading "전체" (all) + the admin-managed group options.
@@ -25,6 +26,14 @@ export default async function ProgramsPage({
     { key: "all", label: "전체" },
     ...groupOptions.map((o) => ({ key: o.value, label: o.label })),
   ];
+  const statusLabels = Object.fromEntries(statusOptions.map((o) => [o.value, o.label]));
 
-  return <ProgramBoard programs={programs} initialCategory={category} categories={categories} />;
+  return (
+    <ProgramBoard
+      programs={programs}
+      initialCategory={category}
+      categories={categories}
+      statusLabels={statusLabels}
+    />
+  );
 }

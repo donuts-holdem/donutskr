@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   programStatusLabel,
+  resolveProgramStatusLabel,
   isExternalUrl,
   resolveHref,
   formatDotDate,
@@ -18,6 +19,26 @@ describe("programStatusLabel", () => {
   it("returns empty string for null and passes through unknown values", () => {
     expect(programStatusLabel(null)).toBe("");
     expect(programStatusLabel("custom")).toBe("custom");
+  });
+});
+
+describe("resolveProgramStatusLabel", () => {
+  it("prefers the DB-managed status label over the static map", () => {
+    // An admin renamed the built-in status; the DB label must win.
+    expect(resolveProgramStatusLabel("recruiting", { recruiting: "참가 접수중" })).toBe("참가 접수중");
+  });
+  it("uses the DB label for a custom status the static map has never heard of", () => {
+    expect(resolveProgramStatusLabel("waitlist", { waitlist: "대기중" })).toBe("대기중");
+  });
+  it("falls back to the static label when the value is absent from the map", () => {
+    expect(resolveProgramStatusLabel("closed", {})).toBe("마감");
+    expect(resolveProgramStatusLabel("closed")).toBe("마감");
+  });
+  it("passes an unknown value straight through when no label exists anywhere", () => {
+    expect(resolveProgramStatusLabel("waitlist", {})).toBe("waitlist");
+  });
+  it("returns empty string for null regardless of the map", () => {
+    expect(resolveProgramStatusLabel(null, { recruiting: "x" })).toBe("");
   });
 });
 

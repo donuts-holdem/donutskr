@@ -1,13 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Program } from "@/lib/types";
-import { programStatusLabel, formatDateRange, programHref } from "@/lib/program-display";
+import { resolveProgramStatusLabel, formatDateRange, programHref } from "@/lib/program-display";
 
 interface ProgramCardProps {
   program: Program;
+  // Status value → label, DB-managed (program_options status). Static fallback.
+  statusLabels?: Record<string, string>;
 }
 
-export function ProgramCard({ program }: ProgramCardProps) {
+export function ProgramCard({ program, statusLabels }: ProgramCardProps) {
   const href = programHref(program);
 
   const inner = (
@@ -35,7 +37,7 @@ export function ProgramCard({ program }: ProgramCardProps) {
         <div className="flex items-center justify-between gap-2 text-xs text-ink/50">
           <span className="truncate">{program.category ?? program.program_group}</span>
           {program.status && (
-            <span className="text-gold/80 shrink-0">{programStatusLabel(program.status)}</span>
+            <span className="text-gold/80 shrink-0">{resolveProgramStatusLabel(program.status, statusLabels)}</span>
           )}
         </div>
 

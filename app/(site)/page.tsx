@@ -12,14 +12,16 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [events, programs, config, groupOptions] = await Promise.all([
+  const [events, programs, config, groupOptions, statusOptions] = await Promise.all([
     getEvents(),
     getPrograms(),
     getSiteConfig(),
     getProgramOptions("group"),
+    getProgramOptions("status"),
   ]);
 
   const groupLabels = Object.fromEntries(groupOptions.map((o) => [o.value, o.label]));
+  const statusLabels = Object.fromEntries(statusOptions.map((o) => [o.value, o.label]));
 
   return (
     <HomeMagazine
@@ -27,6 +29,7 @@ export default async function HomePage() {
       programs={programs}
       signupLink={config.signup_link}
       groupLabels={groupLabels}
+      statusLabels={statusLabels}
     />
   );
 }

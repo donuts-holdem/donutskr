@@ -6,10 +6,11 @@ import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
 import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
 import { getProgramBySlug, getPrograms } from "@/lib/data/programs";
+import { getProgramOptions } from "@/lib/data/programOptions";
 import { ProgramCard } from "@/components/program/ProgramCard";
 import { ProgramBlocks } from "@/components/program/ProgramBlocks";
 import { hasVisibleContent } from "@/lib/program-blocks";
-import { programStatusLabel, formatDateRange, isExternalUrl } from "@/lib/program-display";
+import { resolveProgramStatusLabel, formatDateRange, isExternalUrl } from "@/lib/program-display";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -89,12 +90,15 @@ function CtaButton({
 
 export default async function ProgramDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [program, allPrograms] = await Promise.all([
+  const [program, allPrograms, statusOptions] = await Promise.all([
     getProgramBySlug(slug),
     getPrograms(),
+    getProgramOptions("status"),
   ]);
 
   if (!program) notFound();
+
+  const statusLabels = Object.fromEntries(statusOptions.map((o) => [o.value, o.label]));
 
   // Sanitize rendered markdown before injecting — admin content today, but a
   // dangerouslySetInnerHTML sink fed by stored data must not pass raw HTML/JS.
@@ -134,7 +138,7 @@ export default async function ProgramDetailPage({ params }: Props) {
         <h1 className="text-3xl font-bold text-ink leading-tight">{program.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-ink/50">
           {program.status && (
-            <span className="text-gold/80 font-medium">{programStatusLabel(program.status)}</span>
+            <span className="text-gold/80 font-medium">{resolveProgramStatusLabel(program.status, statusLabels)}</span>
           )}
           {program.location && <span><span aria-hidden="true">📍</span> {program.location}</span>}
           {program.start_date && (
@@ -220,7 +224,7 @@ export default async function ProgramDetailPage({ params }: Props) {
           <h2 className="text-base font-bold text-ink">다른 프로그램</h2>
           <div className="flex flex-col gap-3">
             {relatedPrograms.map((p) => (
-              <ProgramCard key={p.id} program={p} />
+              <ProgramCard key={p.id} program={p} statusLabels={statusLabels} />
             ))}
           </div>
         </section>

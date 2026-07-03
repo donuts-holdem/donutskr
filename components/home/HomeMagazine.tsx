@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Space_Grotesk } from "next/font/google";
 import type { Event, Program } from "@/lib/types";
 import {
-  programStatusLabel,
+  resolveProgramStatusLabel,
   isOpenStatus,
   formatDateRange,
   programHref,
@@ -96,8 +96,8 @@ function ProgramLink({
   );
 }
 
-function StatusDot({ status }: { status: string | null }) {
-  const label = programStatusLabel(status);
+function StatusDot({ status, statusLabels }: { status: string | null; statusLabels?: Record<string, string> }) {
+  const label = resolveProgramStatusLabel(status, statusLabels);
   if (!label) return null;
   const open = isOpenStatus(status);
   return (
@@ -158,7 +158,15 @@ function categoryLabel(program: Program, groupLabels: Record<string, string>) {
   return program.category ?? groupLabels[program.program_group] ?? program.program_group;
 }
 
-function FeaturedCard({ program, groupLabels }: { program: Program; groupLabels: Record<string, string> }) {
+function FeaturedCard({
+  program,
+  groupLabels,
+  statusLabels,
+}: {
+  program: Program;
+  groupLabels: Record<string, string>;
+  statusLabels: Record<string, string>;
+}) {
   return (
     <ProgramLink
       program={program}
@@ -173,7 +181,7 @@ function FeaturedCard({ program, groupLabels }: { program: Program; groupLabels:
           <span className={`${display.className} min-w-0 truncate text-xs font-medium uppercase tracking-[0.1em] text-gold/80`}>
             {categoryLabel(program, groupLabels)}
           </span>
-          <span className="shrink-0"><StatusDot status={program.status} /></span>
+          <span className="shrink-0"><StatusDot status={program.status} statusLabels={statusLabels} /></span>
         </div>
         <h3 className="text-pretty text-display-sm font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-display">
           {program.title}
@@ -216,12 +224,15 @@ export function HomeMagazine({
   programs,
   signupLink,
   groupLabels = DEFAULT_GROUP_LABELS,
+  statusLabels = {},
 }: {
   events: Event[];
   programs: Program[];
   signupLink?: string | null;
   // Group value → label, DB-managed (program_options group). Static fallback.
   groupLabels?: Record<string, string>;
+  // Status value → label, DB-managed (program_options status). Static fallback.
+  statusLabels?: Record<string, string>;
 }) {
   // The home board shows the live season — upcoming and active events,
   // not the completed archive (that lives on the full schedule page).
@@ -352,7 +363,7 @@ export function HomeMagazine({
           </Reveal>
           <Reveal className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <FeaturedCard program={featured} groupLabels={groupLabels} />
+              <FeaturedCard program={featured} groupLabels={groupLabels} statusLabels={statusLabels} />
             </div>
             <div className="flex h-full flex-col gap-4">
               {side.length > 0 ? (

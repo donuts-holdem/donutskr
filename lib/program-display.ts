@@ -13,6 +13,19 @@ export function programStatusLabel(status: string | null): string {
   return PROGRAM_STATUS_LABELS[status] ?? status;
 }
 
+// Resolve a status value to its display label. DB-managed option labels
+// (program_options status) take priority — an admin adding value=waitlist /
+// label=대기중 must show 대기중 on public cards, not the raw slug — with the
+// static map above as the fallback for legacy/removed values. Mirrors the
+// groupLabels prop pattern used across ProgramCard/ProgramBoard/HomeMagazine.
+export function resolveProgramStatusLabel(
+  status: string | null,
+  statusLabels?: Record<string, string>,
+): string {
+  if (!status) return "";
+  return statusLabels?.[status] ?? programStatusLabel(status);
+}
+
 // Treats absolute http(s)/protocol-relative/mailto/tel as external; everything
 // else (including leading-slash app paths) as internal. Single source of truth
 // so ProgramCard / detail CTA / PartnerList / ExternalNotice agree.
@@ -52,7 +65,9 @@ export const PROGRAM_CATEGORIES = [
 ] as const;
 
 // Whether a status counts as "open" (recruiting/ongoing) vs closed/completed —
-// drives the status badge tone so open programs read as actionable.
+// drives the status badge tone so open programs read as actionable. A custom
+// admin status (e.g. "waitlist") that isn't explicitly closed/완료 defaults to
+// open/gold — a defensible default so new statuses read as actionable, not dead.
 export function isOpenStatus(status: string | null): boolean {
   if (!status) return false;
   return !/(closed|completed|마감|종료|완료)/i.test(status);
