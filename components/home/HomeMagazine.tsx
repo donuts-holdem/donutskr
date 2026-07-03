@@ -167,9 +167,6 @@ function FeaturedCard({ program, groupLabels }: { program: Program; groupLabels:
       <div className="relative aspect-[16/10] overflow-hidden">
         <Cover program={program} sizes="(min-width:1024px) 64vw, 100vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" aria-hidden="true" />
-        <span className={`${display.className} absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-2xs font-medium uppercase tracking-[0.12em] text-white/85 backdrop-blur-sm`}>
-          추천
-        </span>
       </div>
       <div className="flex flex-1 flex-col gap-3 p-6">
         <div className="flex items-center justify-between gap-3">
