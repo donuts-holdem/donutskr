@@ -65,6 +65,16 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- purge_trash() hardening. 0015 granted execute to `authenticated` under the
+-- old "authenticated = admin" model, letting any signed-in user hard-delete
+-- trashed rows (SECURITY DEFINER bypasses the policies above). Revoke it: the
+-- cron route calls it via service_role (grant retained from 0015), and
+-- app-side trash operations go through server actions gated by requireAdmin()
+-- + the is_admin() write policies — nothing calls this RPC as `authenticated`.
+-- ---------------------------------------------------------------------------
+revoke execute on function public.purge_trash() from authenticated;
+
+-- ---------------------------------------------------------------------------
 -- storage.objects (media bucket) write policies (from supabase/_apply_all_p0.sql).
 -- "media public read" (select) is intentionally left unchanged.
 -- ---------------------------------------------------------------------------
