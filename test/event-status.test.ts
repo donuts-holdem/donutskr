@@ -117,6 +117,30 @@ const rows: Row[] = [
     now: kst("2026-07-04T23:30:00"),
     expect: "running",
   },
+  {
+    name: "midnight-cross, past midnight but before next-day reg (00:30) → still running",
+    event: { status: "auto", date: "2026-07-04", start_time: "20:00", reg_close_time: "01:00" },
+    now: kst("2026-07-05T00:30:00"),
+    expect: "running",
+  },
+  {
+    name: "midnight-cross, next day between reg (01:00) and end (05:00) → reg_closed",
+    event: { status: "auto", date: "2026-07-04", start_time: "20:00", reg_close_time: "01:00" },
+    now: kst("2026-07-05T02:00:00"),
+    expect: "reg_closed",
+  },
+  {
+    name: "midnight-cross, next day past end (reg 01:00 + 4h = 05:00) → completed",
+    event: { status: "auto", date: "2026-07-04", start_time: "20:00", reg_close_time: "01:00" },
+    now: kst("2026-07-05T06:00:00"),
+    expect: "completed",
+  },
+  {
+    name: "yesterday-dated NON-crossing event at 00:30 → completed (unchanged)",
+    event: { status: "auto", date: "2026-07-04", start_time: "14:00", reg_close_time: "16:00" },
+    now: kst("2026-07-05T00:30:00"),
+    expect: "completed",
+  },
 
   // ---- missing time fields -----------------------------------------
   {

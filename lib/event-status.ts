@@ -28,16 +28,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DATE_PREFIX = /^(\d{4})-(\d{2})-(\d{2})/;
 const TIME_PREFIX = /^(\d{1,2}):(\d{2})/;
 
-/** The KST calendar date ("YYYY-MM-DD") for an instant. */
-function kstDateString(now: Date): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-}
-
 /** Epoch ms of a KST wall-clock time. `minutes` may exceed 59 / span days. */
 function kstEpoch(y: number, mo: number, d: number, minutes: number): number {
   return Date.UTC(y, mo - 1, d, 0, minutes) - KST_OFFSET_MS;
@@ -82,12 +72,13 @@ export function deriveEventStatus(event: DeriveInput, now: Date): DerivedEventSt
   const dm = DATE_PREFIX.exec(event.date ?? "");
   if (!dm) return "scheduled"; // undated ("미정"/null) → upcoming intent
 
-  const eventDay = `${dm[1]}-${dm[2]}-${dm[3]}`;
-  const today = kstDateString(now);
-  if (eventDay > today) return "scheduled";
-  if (eventDay < today) return "completed";
-
-  // ---- same KST day: resolve the intra-day band --------------------
+  // ---- resolve the event's bands as KST epochs ----------------------
+  // No calendar-day shortcut here: a midnight-crossing reg-close (and its
+  // +4h end) belongs to the NEXT KST day, so a yesterday-dated event can
+  // still be running/reg_closed shortly after midnight. Classifying purely
+  // by the band epochs keeps "익일 해석" true on both sides of midnight;
+  // events whose end has passed (including anything 2+ days old) fall out
+  // as completed naturally.
   const y = Number(dm[1]);
   const mo = Number(dm[2]);
   const d = Number(dm[3]);
