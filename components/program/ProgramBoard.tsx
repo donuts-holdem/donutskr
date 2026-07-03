@@ -8,7 +8,7 @@ import type { Program } from "@/lib/types";
 import {
   programStatusLabel,
   isOpenStatus,
-  formatDotDate,
+  formatDateRange,
   programHref,
   PROGRAM_CATEGORIES,
 } from "@/lib/program-display";
@@ -60,12 +60,6 @@ function Line({
   );
 }
 
-const IconUsers = (p: { size?: number; className?: string }) => (
-  <Line
-    {...p}
-    d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 17.5V19 M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M20 19v-1.5a3.5 3.5 0 0 0-2.6-3.4 M15 5.2a3 3 0 0 1 0 5.6"
-  />
-);
 const IconDate = (p: { size?: number; className?: string }) => (
   <Line
     {...p}
@@ -89,20 +83,6 @@ const IconImage = (p: { size?: number; className?: string }) => (
     {...p}
     d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z M8.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3 M21 16l-4.5-4.5L7 19"
   />
-);
-// Filled spade — the club's mark on a recommended program. Decorative; the
-// badge's "추천" text carries the meaning for assistive tech.
-const IconSpade = ({ size = 12, className }: { size?: number; className?: string }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-    className={className}
-  >
-    <path d="M12 2C9 6 4 8.5 4 13a4 4 0 0 0 6.8 2.9C10.6 18 9.7 19.6 8 20.5v.5h8v-.5c-1.7-.9-2.6-2.5-2.8-4.6A4 4 0 0 0 20 13c0-4.5-5-7-8-11z" />
-  </svg>
 );
 
 /* --------------------------- primitives -------------------------- */
@@ -169,16 +149,10 @@ function MetaRow({ program }: { program: Program }) {
     <div
       className={`${display.className} flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm tabular-nums text-white/65`}
     >
-      {program.member_count > 0 && (
-        <span className="inline-flex items-center gap-1.5">
-          <IconUsers size={15} className="text-white/45" />
-          {program.member_count.toLocaleString()}
-        </span>
-      )}
       {program.start_date && (
         <span className="inline-flex items-center gap-1.5">
           <IconDate size={15} className="text-white/45" />
-          {formatDotDate(program.start_date)}
+          {formatDateRange(program.start_date, program.end_date)}
         </span>
       )}
       {program.location && (
@@ -201,22 +175,10 @@ function ProgramCardItem({ program, groupLabels }: { program: Program; groupLabe
   return (
     <ProgramLink
       program={program}
-      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none ${
-        program.is_hot
-          ? "border-gold/45 hover:border-gold/70"
-          : "border-white/[0.08] hover:border-white/[0.20]"
-      }`}
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-[border-color,background-color] duration-200 hover:border-white/[0.20] hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none"
     >
       <div className="relative aspect-[16/9] overflow-hidden border-b border-white/[0.08]">
         <Cover program={program} sizes="(min-width:1024px) 32vw, (min-width:640px) 48vw, 100vw" />
-        {program.is_hot && (
-          <span
-            className={`${display.className} absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-bg shadow-sm`}
-          >
-            <IconSpade size={12} className="text-bg" />
-            추천
-          </span>
-        )}
       </div>
 
       <div className="flex flex-col p-4">
@@ -285,19 +247,17 @@ export function ProgramBoard({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return programs
-      .filter((p) => {
-        if (cat !== "all" && p.program_group !== cat) return false;
-        if (!q) return true;
-        return (
-          p.title.toLowerCase().includes(q) ||
-          (p.category ?? "").toLowerCase().includes(q) ||
-          (p.location ?? "").toLowerCase().includes(q)
-        );
-      })
-      // Recommended programs lead the list; sort is stable, so the existing
-      // sort_order is preserved within the hot and non-hot groups.
-      .sort((a, b) => Number(b.is_hot) - Number(a.is_hot));
+    // Order is the admin-managed sort_order (single source, set via DnD); the
+    // incoming list already carries it, so we only filter here.
+    return programs.filter((p) => {
+      if (cat !== "all" && p.program_group !== cat) return false;
+      if (!q) return true;
+      return (
+        p.title.toLowerCase().includes(q) ||
+        (p.category ?? "").toLowerCase().includes(q) ||
+        (p.location ?? "").toLowerCase().includes(q)
+      );
+    });
   }, [programs, cat, query]);
 
   return (

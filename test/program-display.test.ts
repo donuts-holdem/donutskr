@@ -4,6 +4,7 @@ import {
   isExternalUrl,
   resolveHref,
   formatDotDate,
+  formatDateRange,
   programHref,
 } from "@/lib/program-display";
 
@@ -52,5 +53,14 @@ describe("formatDotDate", () => {
   it("formats ISO timestamps and dates as YYYY.MM.DD", () => {
     expect(formatDotDate("2026-06-20T12:00:00.000Z")).toBe("2026.06.20");
     expect(formatDotDate("2026-06-20")).toBe("2026.06.20");
+  });
+});
+
+describe("formatDateRange", () => {
+  it("shows the start alone when there is no end date", () => {
+    expect(formatDateRange("2026-06-20", null)).toBe("2026.06.20");
+  });
+  it("joins start and end with an en dash when an end date exists", () => {
+    expect(formatDateRange("2026-06-20", "2026-07-04")).toBe("2026.06.20 – 2026.07.04");
   });
 });

@@ -5,7 +5,7 @@ import type { Event, Program } from "@/lib/types";
 import {
   programStatusLabel,
   isOpenStatus,
-  formatDotDate,
+  formatDateRange,
   programHref,
   PROGRAM_CATEGORIES,
 } from "@/lib/program-display";
@@ -69,9 +69,6 @@ function Line({ d, size = 14, className }: { d: string; size?: number; className
     </svg>
   );
 }
-const IconUsers = (p: { size?: number; className?: string }) => (
-  <Line {...p} d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 17.5V19 M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M20 19v-1.5a3.5 3.5 0 0 0-2.6-3.4 M15 5.2a3 3 0 0 1 0 5.6" />
-);
 const IconDate = (p: { size?: number; className?: string }) => (
   <Line {...p} d="M7 3v3 M17 3v3 M4 8h16 M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z" />
 );
@@ -136,16 +133,10 @@ function Cover({ program, sizes, className }: { program: Program; sizes: string;
 function MetaRow({ program }: { program: Program }) {
   return (
     <div className={`${display.className} flex flex-wrap items-center gap-x-3.5 gap-y-1 text-2xs tabular-nums text-white/45`}>
-      {program.member_count > 0 && (
-        <span className="inline-flex items-center gap-1.5">
-          <IconUsers size={13} className="text-white/30" />
-          {program.member_count.toLocaleString()}
-        </span>
-      )}
       {program.start_date && (
         <span className="inline-flex items-center gap-1.5">
           <IconDate size={13} className="text-white/30" />
-          {formatDotDate(program.start_date)}
+          {formatDateRange(program.start_date, program.end_date)}
         </span>
       )}
       {program.location && (
@@ -225,12 +216,12 @@ function CompactCard({ program, groupLabels }: { program: Program; groupLabels: 
 /* ============================== view ============================= */
 export function HomeMagazine({
   events,
-  hotPrograms,
+  programs,
   signupLink,
   groupLabels = DEFAULT_GROUP_LABELS,
 }: {
   events: Event[];
-  hotPrograms: Program[];
+  programs: Program[];
   signupLink?: string | null;
   // Group value → label, DB-managed (program_options group). Static fallback.
   groupLabels?: Record<string, string>;
@@ -239,9 +230,10 @@ export function HomeMagazine({
   // not the completed archive (that lives on the full schedule page).
   const board = events.filter((e) => !isPast(e)).slice(0, 8);
 
-  // Recommended programs: one lead card + a side list of up to four.
-  const featured = hotPrograms[0];
-  const side = hotPrograms.slice(1, 5);
+  // Featured programs: one lead card + a side list of up to four, taken in the
+  // admin-managed sort_order (DnD single source) from the live public list.
+  const featured = programs[0];
+  const side = programs.slice(1, 5);
 
   return (
     <div

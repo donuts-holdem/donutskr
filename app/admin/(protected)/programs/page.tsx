@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getAllPrograms } from "@/lib/data/programs";
 import { getProgramOptions } from "@/lib/data/programOptions";
 import { programGroupLabel } from "@/lib/labels";
+import { isProgramExpired } from "@/lib/visibility";
+import { todayKST } from "@/lib/schedule";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -23,6 +25,9 @@ export default async function AdminProgramsPage() {
   // removed group values so a row never shows a raw English key it can avoid.
   const groupLabels = new Map(groupOptions.map((o) => [o.value, o.label]));
   const groupLabel = (g: string) => groupLabels.get(g) ?? programGroupLabel(g);
+  // Expired programs stay editable here (getAllPrograms is unfiltered) but drop
+  // off the public site; flag them so operators know why they're hidden.
+  const today = todayKST();
 
   return (
     <div>
@@ -43,9 +48,8 @@ export default async function AdminProgramsPage() {
           <TableRow>
             <TableHead>제목</TableHead>
             <TableHead>그룹</TableHead>
-            <TableHead>HOT</TableHead>
-            <TableHead>제휴</TableHead>
             <TableHead>노출</TableHead>
+            <TableHead>종료</TableHead>
             <TableHead>작업</TableHead>
           </TableRow>
         </TableHeader>
@@ -54,9 +58,14 @@ export default async function AdminProgramsPage() {
             <TableRow key={program.id}>
               <TableCell className="text-foreground">{program.title}</TableCell>
               <TableCell className="text-muted-foreground">{groupLabel(program.program_group)}</TableCell>
-              <TableCell><StateBadge on={program.is_hot} kind="hot" /></TableCell>
-              <TableCell><StateBadge on={program.is_affiliate} kind="affiliate" /></TableCell>
               <TableCell><StateBadge on={program.is_visible} kind="visible" /></TableCell>
+              <TableCell>
+                {isProgramExpired(program, today) ? (
+                  <StateBadge on kind="expired" />
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
+                )}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Button asChild variant="link" size="sm" className="h-auto p-0">
@@ -69,7 +78,7 @@ export default async function AdminProgramsPage() {
           ))}
           {programs.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+              <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
                 등록된 프로그램이 없습니다.
               </TableCell>
             </TableRow>

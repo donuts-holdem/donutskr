@@ -15,16 +15,9 @@ describe("StateBadge", () => {
     rerender(<StateBadge on={false} kind="visible" />);
     expect(screen.getByText("비노출")).toBeInTheDocument();
   });
-  it("conveys HOT state with text, not color alone (off text differs)", () => {
-    const { rerender } = render(<StateBadge on kind="hot" />);
-    expect(screen.getByText("HOT")).toBeInTheDocument();
-    rerender(<StateBadge on={false} kind="hot" />);
-    expect(screen.getByText("HOT 꺼짐")).toBeInTheDocument();
-  });
-  it("labels HOT and 제휴 with on/off accessible names", () => {
-    const { rerender } = render(<StateBadge on kind="hot" />);
-    expect(screen.getByLabelText("HOT 표시 켜짐")).toBeInTheDocument();
-    rerender(<StateBadge on={false} kind="affiliate" />);
-    expect(screen.getByLabelText("제휴 표시 꺼짐")).toBeInTheDocument();
+  it("flags an expired program with text and an accessible label", () => {
+    render(<StateBadge on kind="expired" />);
+    expect(screen.getByText("종료됨")).toBeInTheDocument();
+    expect(screen.getByLabelText("종료일 지남 (공개 사이트 미노출)")).toBeInTheDocument();
   });
 });

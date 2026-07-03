@@ -30,6 +30,12 @@ export function formatDotDate(dateString: string): string {
   return dateString.slice(0, 10).replace(/-/g, ".");
 }
 
+// A program's run as "2026.06.20 – 2026.07.04" when an end date exists, else the
+// start alone. Single source so every card/detail agrees on the range format.
+export function formatDateRange(start: string, end: string | null): string {
+  return end ? `${formatDotDate(start)} – ${formatDotDate(end)}` : formatDotDate(start);
+}
+
 // A program card always links to its internal detail route; the detail page's
 // CTA is what opens any external link. Single source so every card variant agrees.
 export function programHref(program: { slug: string }): string {

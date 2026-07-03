@@ -5,11 +5,11 @@ import Image from "next/image";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
 import { PROGRAM_SANITIZE_CONFIG } from "@/lib/program-sanitize";
-import { getProgramBySlug, getHotPrograms } from "@/lib/data/programs";
+import { getProgramBySlug, getPrograms } from "@/lib/data/programs";
 import { ProgramCard } from "@/components/program/ProgramCard";
 import { ProgramBlocks } from "@/components/program/ProgramBlocks";
 import { hasVisibleContent } from "@/lib/program-blocks";
-import { programStatusLabel, formatDotDate, isExternalUrl } from "@/lib/program-display";
+import { programStatusLabel, formatDateRange, isExternalUrl } from "@/lib/program-display";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -89,9 +89,9 @@ function CtaButton({
 
 export default async function ProgramDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [program, hotPrograms] = await Promise.all([
+  const [program, allPrograms] = await Promise.all([
     getProgramBySlug(slug),
-    getHotPrograms(),
+    getPrograms(),
   ]);
 
   if (!program) notFound();
@@ -113,7 +113,7 @@ export default async function ProgramDetailPage({ params }: Props) {
   // non-verified programs with rendered markdown should show the legacy body.
   const showLegacy = !program.description_verified && descHtml;
 
-  const relatedPrograms = hotPrograms.filter((p) => p.slug !== slug).slice(0, 4);
+  const relatedPrograms = allPrograms.filter((p) => p.slug !== slug).slice(0, 4);
 
   const ctaHref = program.entry_link ?? null;
   const ctaLabel = program.cta_label ?? "참가 신청";
@@ -136,10 +136,9 @@ export default async function ProgramDetailPage({ params }: Props) {
           {program.status && (
             <span className="text-gold/80 font-medium">{programStatusLabel(program.status)}</span>
           )}
-          {program.member_count > 0 && <span><span aria-hidden="true">👥</span> {program.member_count}명</span>}
           {program.location && <span><span aria-hidden="true">📍</span> {program.location}</span>}
           {program.start_date && (
-            <span><span aria-hidden="true">📅</span> {formatDotDate(program.start_date)}</span>
+            <span><span aria-hidden="true">📅</span> {formatDateRange(program.start_date, program.end_date)}</span>
           )}
         </div>
 
@@ -215,13 +214,10 @@ export default async function ProgramDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* Related HOT programs */}
+      {/* Other programs */}
       {relatedPrograms.length > 0 && (
         <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <span>🔥</span>
-            <h2 className="text-base font-bold text-ink">HOT 프로그램</h2>
-          </div>
+          <h2 className="text-base font-bold text-ink">다른 프로그램</h2>
           <div className="flex flex-col gap-3">
             {relatedPrograms.map((p) => (
               <ProgramCard key={p.id} program={p} />

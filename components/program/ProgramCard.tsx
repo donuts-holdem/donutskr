@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Program } from "@/lib/types";
-import { programStatusLabel, formatDotDate, programHref } from "@/lib/program-display";
+import { programStatusLabel, formatDateRange, programHref } from "@/lib/program-display";
 
 interface ProgramCardProps {
   program: Program;
@@ -31,17 +31,12 @@ export function ProgramCard({ program }: ProgramCardProps) {
 
       {/* Right: Text */}
       <div className="flex flex-col justify-between min-w-0 flex-1 py-0.5">
-        {/* Row 1: category · status / member_count */}
+        {/* Row 1: category · status */}
         <div className="flex items-center justify-between gap-2 text-xs text-ink/50">
           <span className="truncate">{program.category ?? program.program_group}</span>
-          <div className="flex items-center gap-2 shrink-0">
-            {program.status && (
-              <span className="text-gold/80">{programStatusLabel(program.status)}</span>
-            )}
-            {program.member_count > 0 && (
-              <span>{program.member_count}명</span>
-            )}
-          </div>
+          {program.status && (
+            <span className="text-gold/80 shrink-0">{programStatusLabel(program.status)}</span>
+          )}
         </div>
 
         {/* Row 2: title · date / location */}
@@ -51,7 +46,7 @@ export function ProgramCard({ program }: ProgramCardProps) {
           </span>
           <div className="text-xs text-ink/40 shrink-0 text-right leading-snug">
             {program.start_date && (
-              <div>{formatDotDate(program.start_date)}</div>
+              <div>{formatDateRange(program.start_date, program.end_date)}</div>
             )}
             {program.location && <div>{program.location}</div>}
           </div>

@@ -3,6 +3,14 @@ import type { Program, ProgramGroup } from "@/lib/types";
 import type { Block } from "@/lib/program-blocks";
 import { coerceDescriptionBlocks } from "@/lib/admin/structured-fields";
 import { normalizeSlug } from "@/lib/slug";
+import { todayKST } from "@/lib/schedule";
+
+// Public reads hide programs past their (inclusive) end date, in KST. Kept in
+// sync with lib/visibility.ts isProgramExpired — the SQL runs the same rule
+// server-side so expired rows never reach the client.
+function notExpired(today = todayKST()) {
+  return `end_date.is.null,end_date.gte.${today}`;
+}
 
 function coerceNullableBlocks(v: unknown): Block[] | null {
   if (v === null || v === undefined) return null;
@@ -27,32 +35,23 @@ export function mapProgram(r: any): Program {
 }
 export async function getPrograms(): Promise<Program[]> {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).order("sort_order", { ascending: true });
+  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).or(notExpired()).order("sort_order", { ascending: true });
   if (error) throw error; return (data ?? []).map(mapProgram);
 }
-// Admin-only: includes hidden (is_visible=false) programs so they remain editable.
+// Admin-only: includes hidden (is_visible=false) and expired (past end_date)
+// programs so they remain editable.
 export async function getAllPrograms(): Promise<Program[]> {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).order("sort_order", { ascending: true });
   if (error) throw error; return (data ?? []).map(mapProgram);
 }
-export async function getHotPrograms(): Promise<Program[]> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).eq("is_hot", true).order("sort_order", { ascending: true });
-  if (error) throw error; return (data ?? []).map(mapProgram);
-}
 export async function getProgramsByGroup(group: ProgramGroup): Promise<Program[]> {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).eq("program_group", group).order("sort_order", { ascending: true });
-  if (error) throw error; return (data ?? []).map(mapProgram);
-}
-export async function getAffiliatePartners(): Promise<Program[]> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).eq("is_affiliate", true).order("sort_order", { ascending: true });
+  const { data, error } = await supabase.from("programs").select("*").is("deleted_at", null).eq("is_visible", true).eq("program_group", group).or(notExpired()).order("sort_order", { ascending: true });
   if (error) throw error; return (data ?? []).map(mapProgram);
 }
 export async function getProgramBySlug(slug: string): Promise<Program | null> {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("programs").select("*").eq("slug", normalizeSlug(slug)).is("deleted_at", null).maybeSingle();
+  const { data, error } = await supabase.from("programs").select("*").eq("slug", normalizeSlug(slug)).is("deleted_at", null).or(notExpired()).maybeSingle();
   if (error) throw error; return data ? mapProgram(data) : null;
 }

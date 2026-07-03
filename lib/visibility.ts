@@ -1,4 +1,4 @@
-import type { Event, SpecialPage } from "@/lib/types";
+import type { Event, Program, SpecialPage } from "@/lib/types";
 
 /* ------------------------------------------------------------------ *
  * Effective public visibility — the SINGLE source of truth shared by
@@ -39,4 +39,26 @@ export function isSpecialPagePublic(
   today: string
 ): boolean {
   return effectiveSpecialPageVisibility(page, today) === "live";
+}
+
+/**
+ * Whether a program is past its end date and should drop off the public site.
+ * `end_date` is INCLUSIVE — a program stays live through its final day. Programs
+ * without an end date never expire. `today` is a "YYYY-MM-DD" string (KST; see
+ * lib/schedule.ts todayKST) so the check is pure and testable. Admin views keep
+ * showing expired programs (with a "종료됨" badge) — this only gates the public site.
+ */
+export function isProgramExpired(
+  program: Pick<Program, "end_date">,
+  today: string
+): boolean {
+  if (!program.end_date) return false;
+  return program.end_date.slice(0, 10) < today;
+}
+
+export function isProgramPublic(
+  program: Pick<Program, "end_date">,
+  today: string
+): boolean {
+  return !isProgramExpired(program, today);
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getEvents } from "@/lib/data/events";
-import { getHotPrograms } from "@/lib/data/programs";
+import { getPrograms } from "@/lib/data/programs";
 import { getProgramOptions } from "@/lib/data/programOptions";
 import { getSiteConfig } from "@/lib/data/siteConfig";
 import { HomeMagazine } from "@/components/home/HomeMagazine";
@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [events, hotPrograms, config, groupOptions] = await Promise.all([
+  const [events, programs, config, groupOptions] = await Promise.all([
     getEvents(),
-    getHotPrograms(),
+    getPrograms(),
     getSiteConfig(),
     getProgramOptions("group"),
   ]);
@@ -24,7 +24,7 @@ export default async function HomePage() {
   return (
     <HomeMagazine
       events={events}
-      hotPrograms={hotPrograms}
+      programs={programs}
       signupLink={config.signup_link}
       groupLabels={groupLabels}
     />

@@ -196,6 +196,7 @@ export function ProgramForm({
           <div className="flex flex-col gap-2 md:col-span-3">
             <Label htmlFor="member_count">인원</Label>
             <Input id="member_count" name="member_count" type="number" defaultValue={program?.member_count ?? 0} />
+            <p className="text-muted-foreground text-xs">내부 기록용 — 공개 사이트에는 표시되지 않습니다.</p>
           </div>
         </CardContent>
       </Card>
@@ -244,20 +245,13 @@ export function ProgramForm({
         <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
           <div className="flex flex-wrap gap-6 md:col-span-12">
             <div className="flex items-center gap-2">
-              <Checkbox id="is_hot" name="is_hot" defaultChecked={program?.is_hot ?? false} />
-              <Label htmlFor="is_hot">HOT</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox id="is_affiliate" name="is_affiliate" defaultChecked={program?.is_affiliate ?? false} />
-              <Label htmlFor="is_affiliate">제휴</Label>
-            </div>
-            <div className="flex items-center gap-2">
               <Checkbox id="is_visible" name="is_visible" defaultChecked={program?.is_visible ?? true} />
               <Label htmlFor="is_visible">노출</Label>
             </div>
           </div>
           <p className="text-muted-foreground md:col-span-12 text-xs">
             노출 순서는 프로그램 목록의 &ldquo;순서 편집&rdquo;에서 드래그로 변경합니다.
+            종료일이 지난 프로그램은 공개 사이트에서 자동으로 숨겨집니다.
           </p>
         </CardContent>
       </Card>
