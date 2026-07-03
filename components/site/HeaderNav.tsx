@@ -5,21 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const NAV_LINKS = [
-  { label: "프로그램", href: "/programs" },
-  { label: "일정", href: "/schedule" },
-  { label: "시리즈", href: "/series" },
-  { label: "리더보드", href: "/leaderboard" },
-  { label: "온라인 리그", href: "/online-league" },
-  { label: "챌린지", href: "/challenge" },
-];
+import type { HeaderTab } from "@/lib/types";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function HeaderNav() {
+export function HeaderNav({ links }: { links: HeaderTab[] }) {
   // Match the section, including detail routes (e.g. /schedule/[id] → 일정).
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
@@ -53,19 +45,30 @@ export function HeaderNav() {
         aria-label="주요 메뉴"
         className="hidden items-center gap-1 md:flex"
       >
-        {NAV_LINKS.map((link) => {
-          const active = isActive(pathname, link.href);
-          return (
+        {links.map((link) => {
+          const active = !link.external && isActive(pathname, link.href);
+          const className = cn(
+            "shrink-0 rounded-pill px-3 py-2 text-sm font-medium transition-colors",
+            active
+              ? "text-gold bg-gold/10"
+              : "text-ink/60 hover:text-gold hover:bg-gold/10",
+          );
+          return link.external ? (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={className}
+            >
+              {link.label}
+            </a>
+          ) : (
             <Link
               key={link.href}
               href={link.href}
               aria-current={active ? "page" : undefined}
-              className={cn(
-                "shrink-0 rounded-pill px-3 py-2 text-sm font-medium transition-colors",
-                active
-                  ? "text-gold bg-gold/10"
-                  : "text-ink/60 hover:text-gold hover:bg-gold/10",
-              )}
+              className={className}
             >
               {link.label}
             </Link>
@@ -113,25 +116,39 @@ export function HeaderNav() {
               aria-label="주요 메뉴"
               className="flex flex-col gap-1 overflow-y-auto px-4 py-4"
             >
-              {NAV_LINKS.map((link) => {
-                const active = isActive(pathname, link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    aria-current={active ? "page" : undefined}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "rounded-card px-4 py-3 text-lg font-semibold transition-colors",
-                      active
-                        ? "text-gold bg-gold/10"
-                        : "text-ink/80 hover:text-gold hover:bg-gold/10",
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+              {links
+                .filter((link) => !link.mobileHidden)
+                .map((link) => {
+                  const active = !link.external && isActive(pathname, link.href);
+                  const className = cn(
+                    "rounded-card px-4 py-3 text-lg font-semibold transition-colors",
+                    active
+                      ? "text-gold bg-gold/10"
+                      : "text-ink/80 hover:text-gold hover:bg-gold/10",
+                  );
+                  return link.external ? (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setOpen(false)}
+                      className={className}
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => setOpen(false)}
+                      className={className}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
             </nav>
           </div>,
           document.body,

@@ -8,6 +8,7 @@ const NAV_GROUPS = [
     { href: "/admin/programs", label: "프로그램" },
     { href: "/admin/events", label: "이벤트" },
     { href: "/admin/special-pages", label: "특수페이지" },
+    { href: "/admin/tabs", label: "탭 관리" },
   ]},
   { label: "구조", links: [
     { href: "/admin/seasons", label: "시즌" },

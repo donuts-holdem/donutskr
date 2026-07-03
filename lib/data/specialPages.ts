@@ -1,6 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { SpecialPage } from "@/lib/types";
 import { normalizeSlug } from "@/lib/slug";
+import { isSpecialPagePublic } from "@/lib/visibility";
 
 export function mapSpecialPage(r: any): SpecialPage {
   return {
@@ -50,4 +51,10 @@ export async function getAllSpecialPages(): Promise<SpecialPage[]> {
     .order("slug");
   if (error) throw error;
   return (data ?? []).map(mapSpecialPage);
+}
+
+/** Slugs of special pages that are currently publicly visible (for nav cross-checks). */
+export async function getPublicSpecialPageSlugs(today: string): Promise<Set<string>> {
+  const pages = await getAllSpecialPages();
+  return new Set(pages.filter((p) => isSpecialPagePublic(p, today)).map((p) => p.slug));
 }

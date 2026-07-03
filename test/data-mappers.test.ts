@@ -23,6 +23,7 @@ describe("mapRow (blind row keeps text ante)", () => {
 describe("isTabActive (date-window visibility)", () => {
   const base = { id: "t", name: "챌린지", key: "challenge", type: "special" as const,
     slug: "challenge", external_url: null, is_visible: true, sort_order: 0, mobile_visible: true,
+    header_visible: false,
     home_card_visible: false, home_card_title: null, home_card_desc: null, home_card_cta: null };
   it("hidden after end_show_date", () => {
     expect(isTabActive({ ...base, start_show_date: "2026-07-01", end_show_date: "2026-07-20" }, "2026-07-21")).toBe(false);
