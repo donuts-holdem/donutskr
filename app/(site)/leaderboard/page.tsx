@@ -68,10 +68,15 @@ export default async function LeaderboardPage() {
           {showPersonal && data.personal && data.personal.length > 0 && (
             <section className="flex flex-col gap-4">
               <h2 className="text-lg font-bold text-gold">개인순위</h2>
-              <div className="overflow-x-auto rounded-card border border-border">
+              <div
+                role="region"
+                aria-label="개인순위 표"
+                tabIndex={0}
+                className="max-h-80 sm:max-h-96 overflow-auto rounded-card border border-border"
+              >
                 <table className="w-full text-sm text-ink/80 border-collapse">
                   <thead>
-                    <tr className="bg-ink/5 text-ink/40 text-xs uppercase tracking-wider">
+                    <tr className="sticky top-0 z-10 bg-surface text-ink/40 text-xs uppercase tracking-wider">
                       <th className="px-4 py-3 text-left">순위</th>
                       <th className="px-4 py-3 text-left">이름</th>
                       <th className="px-4 py-3 text-right">포인트</th>
@@ -106,10 +111,15 @@ export default async function LeaderboardPage() {
           {data.university && data.university.length > 0 && (
             <section className="flex flex-col gap-4">
               <h2 className="text-lg font-bold text-gold">대학순위</h2>
-              <div className="overflow-x-auto rounded-card border border-border">
+              <div
+                role="region"
+                aria-label="대학순위 표"
+                tabIndex={0}
+                className="max-h-80 sm:max-h-96 overflow-auto rounded-card border border-border"
+              >
                 <table className="w-full text-sm text-ink/80 border-collapse">
                   <thead>
-                    <tr className="bg-ink/5 text-ink/40 text-xs uppercase tracking-wider">
+                    <tr className="sticky top-0 z-10 bg-surface text-ink/40 text-xs uppercase tracking-wider">
                       <th className="px-4 py-3 text-left">순위</th>
                       <th className="px-4 py-3 text-left">학교</th>
                       <th className="px-4 py-3 text-right">포인트</th>
