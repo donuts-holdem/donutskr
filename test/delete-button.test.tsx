@@ -9,8 +9,9 @@ describe("DeleteButton", () => {
     // Clicking the row '삭제' opens the dialog, does NOT delete.
     fireEvent.click(screen.getByRole("button", { name: "삭제" }));
     expect(onDelete).not.toHaveBeenCalled();
-    // Dialog shows the irreversible warning + item name.
-    expect(screen.getByText(/되돌릴 수 없습니다/)).toBeInTheDocument();
+    // Dialog explains soft-delete → trash + item name.
+    expect(screen.getByText(/휴지통으로 이동/)).toBeInTheDocument();
+    expect(screen.getByText(/30일 내 복구/)).toBeInTheDocument();
     expect(screen.getByText(/슈퍼컵/)).toBeInTheDocument();
   });
 

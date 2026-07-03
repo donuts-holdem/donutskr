@@ -14,31 +14,42 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteButtonProps {
-  onDelete: () => void | Promise<void>;
+interface PurgeButtonProps {
+  action: (fd: FormData) => void | Promise<void>;
+  entity: string;
+  id: string;
   itemName?: string;
 }
 
-export function DeleteButton({ onDelete, itemName }: DeleteButtonProps) {
+/**
+ * Permanent-delete control for the trash page. Unlike DeleteButton (which
+ * soft-deletes), this hard-deletes a row, so it carries a stronger,
+ * non-recoverable confirmation.
+ */
+export function PurgeButton({ action, entity, id, itemName }: PurgeButtonProps) {
   const formRef = useRef<HTMLFormElement>(null);
   return (
-    <form action={onDelete} ref={formRef}>
+    <form action={action} ref={formRef}>
+      <input type="hidden" name="entity" value={entity} />
+      <input type="hidden" name="id" value={id} />
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button type="button" variant="destructive" size="sm">
-            삭제
+            완전 삭제
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogTitle>완전 삭제하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              {itemName ? `"${itemName}"을(를) ` : ""}삭제하면 공개 사이트에서 숨겨지고 휴지통으로 이동합니다. 휴지통에서 30일 내 복구할 수 있습니다.
+              {itemName ? `"${itemName}"은(는) ` : ""}영구 삭제되며 복구할 수 없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={() => formRef.current?.requestSubmit()}>삭제</AlertDialogAction>
+            <AlertDialogAction onClick={() => formRef.current?.requestSubmit()}>
+              완전 삭제
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
