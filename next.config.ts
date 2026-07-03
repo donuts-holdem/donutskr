@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // 75 = Next default (used across the site); 30 powers the heavily-blurred
+    // season backdrop, where extra fidelity would only add bytes.
+    qualities: [30, 75],
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
       // Framer CDN — program/host/sponsor images migrated from the Framer CMS

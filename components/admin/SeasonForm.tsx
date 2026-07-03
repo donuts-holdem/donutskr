@@ -93,6 +93,9 @@ export function SeasonForm({ season, action }: SeasonFormProps) {
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="bg_image_file">배경 이미지</Label>
             <ImageField name="bg_image" existing={season?.bg_image} />
+            <p className="text-muted-foreground text-xs">
+              공개 사이트 전체 배경에 은은하게 깔리는 무드 이미지입니다 (자동으로 흐림·어둡게 처리).
+            </p>
           </div>
         </CardContent>
       </Card>
