@@ -14,17 +14,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EVENT_STATUS_OPTIONS } from "@/lib/labels";
+import { EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/labels";
+import { toStoredStatus } from "@/lib/event-status";
+import type { DerivedEventStatus } from "@/lib/types";
 import { ImageField } from "@/components/admin/ImageField";
 
 interface EventFormProps {
   event?: Event;
   structures: BlindStructure[];
   seasons?: Season[];
+  /** The current DISPLAY status, derived on the server, shown read-only on edit. */
+  derivedStatus?: DerivedEventStatus;
   action: (fd: FormData) => void | Promise<void>;
 }
 
-export function EventForm({ event, structures, seasons = [], action }: EventFormProps) {
+export function EventForm({ event, structures, seasons = [], derivedStatus, action }: EventFormProps) {
   return (
     <form action={action} className="flex max-w-4xl flex-col gap-6">
       {/* 기본 정보 — 좌: 텍스트 / 우: 포스터 (프로그램 폼과 동일 패턴) */}
@@ -61,7 +65,7 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="status">상태</Label>
-                  <Select name="status" defaultValue={event?.status ?? "scheduled"}>
+                  <Select name="status" defaultValue={toStoredStatus(event?.status)}>
                     <SelectTrigger id="status" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
@@ -73,6 +77,17 @@ export function EventForm({ event, structures, seasons = [], action }: EventForm
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-muted-foreground text-xs">
+                    자동: 날짜·시간에 따라 예정→진행중→레지마감→완료로 표시
+                  </p>
+                  {derivedStatus && (
+                    <p className="text-muted-foreground text-xs">
+                      현재 표시 상태:{" "}
+                      <span className="text-foreground font-medium">
+                        {eventStatusLabel(derivedStatus)}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-2">

@@ -16,7 +16,7 @@ const minimalEvent: Event = {
   button_label: null,
   description: null,
   poster_image: null,
-  status: "scheduled",
+  status: "auto",
   is_visible: true,
   blind_structure_id: null,
   timer_event_id: null,

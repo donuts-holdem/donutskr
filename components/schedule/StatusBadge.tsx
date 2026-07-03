@@ -1,8 +1,7 @@
-import type { EventStatus } from "@/lib/types";
+import type { DerivedEventStatus } from "@/lib/types";
 
-const LABEL: Record<EventStatus, string> = {
+const LABEL: Record<DerivedEventStatus, string> = {
   scheduled: "예정",
-  confirmed: "확정",
   running: "진행중",
   reg_closed: "레지마감",
   completed: "완료",
@@ -10,9 +9,8 @@ const LABEL: Record<EventStatus, string> = {
   hidden: "숨김",
 };
 
-const STYLE: Record<EventStatus, string> = {
+const STYLE: Record<DerivedEventStatus, string> = {
   scheduled: "border border-gold/40 text-gold",
-  confirmed: "bg-gold text-bg",
   running: "bg-coral-cta text-white",
   reg_closed: "border border-white/15 text-white/55",
   completed: "border border-white/10 text-white/40",
@@ -20,7 +18,7 @@ const STYLE: Record<EventStatus, string> = {
   hidden: "border border-white/10 text-white/35",
 };
 
-export function StatusBadge({ status }: { status: EventStatus }) {
+export function StatusBadge({ status }: { status: DerivedEventStatus }) {
   return (
     <span
       className={`inline-flex items-center rounded-pill px-3 py-1 text-2xs font-semibold uppercase tracking-[0.06em] ${STYLE[status]}`}

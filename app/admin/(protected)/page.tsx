@@ -5,7 +5,7 @@ import { getAllEvents, getEvents } from "@/lib/data/events";
 import { getAllSpecialPages } from "@/lib/data/specialPages";
 import { getAllSeasons, getActiveSeason } from "@/lib/data/seasons";
 import { getAllStructures } from "@/lib/data/blindStructures";
-import { partitionEvents, todayKST } from "@/lib/schedule";
+import { partitionEvents } from "@/lib/schedule";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,7 @@ export default async function AdminDashboard() {
       getAllPrograms(), getAllEvents(), getAllSpecialPages(),
       getAllSeasons(), getAllStructures(), getActiveSeason(), getEvents(),
     ]);
-  const upcoming = partitionEvents(publicEvents, todayKST()).upcoming.slice(0, 4);
+  const upcoming = partitionEvents(publicEvents).upcoming.slice(0, 4);
 
   const GROUPS = [
     { label: "콘텐츠", cards: [

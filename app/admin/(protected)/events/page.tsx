@@ -5,6 +5,7 @@ import { getAllEvents } from "@/lib/data/events";
 import { getAllSeasons } from "@/lib/data/seasons";
 import { eventStatusLabel } from "@/lib/labels";
 import { weekdayKO } from "@/lib/schedule";
+import { deriveEventStatus } from "@/lib/event-status";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -90,8 +91,12 @@ export default async function AdminEventsPage({
         ? e.season_id == null
         : e.season_id === filter,
   );
-  const active = scoped.filter((e) => e.status !== "completed");
-  const completed = scoped.filter((e) => e.status === "completed");
+  // Derive display status once per render so the completed bucket + badges
+  // track the schedule clock, not a manually-set column.
+  const now = new Date();
+  const derived = new Map(scoped.map((e) => [e.id, deriveEventStatus(e, now)]));
+  const active = scoped.filter((e) => derived.get(e.id) !== "completed");
+  const completed = scoped.filter((e) => derived.get(e.id) === "completed");
 
   const renderRow = (event: Event) => (
     <TableRow key={event.id}>
@@ -103,7 +108,7 @@ export default async function AdminEventsPage({
         {event.season_id ? (seasonName.get(event.season_id) ?? "—") : "미배정"}
       </TableCell>
       <TableCell className="text-muted-foreground">
-        {eventStatusLabel(event.status)}
+        {eventStatusLabel(derived.get(event.id) ?? event.status)}
       </TableCell>
       <TableCell>
         <EffectiveVisibilityBadge state={effectiveEventVisibility(event)} />

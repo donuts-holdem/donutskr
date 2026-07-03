@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Popover } from "radix-ui";
 import type { Event } from "@/lib/types";
 import { isPast } from "@/lib/schedule";
+import { deriveEventStatus } from "@/lib/event-status";
 import {
   display,
   FixtureRow,
@@ -35,8 +36,10 @@ function koWeekday(date: string): string {
   return WEEKDAYS[new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()];
 }
 
-function isEventGold(event: Event, today: string): boolean {
-  return !isPast(event, today) && ACTIVE_STATUS.has(event.status);
+// Upcoming / live (derived scheduled or running) reads gold; anything past or
+// registration-closed reads muted.
+function isEventGold(event: Event): boolean {
+  return ACTIVE_STATUS.has(deriveEventStatus(event, new Date()));
 }
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
@@ -48,8 +51,8 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
 }
 
 // In-cell "stakes chip": buy-in (gold tabular) + title, links to detail.
-function EventChip({ event, today }: { event: Event; today: string }) {
-  const gold = isEventGold(event, today);
+function EventChip({ event }: { event: Event }) {
+  const gold = isEventGold(event);
   const stake = formatBuyInShort(event.buy_in);
   return (
     <Link
@@ -68,10 +71,11 @@ function EventChip({ event, today }: { event: Event; today: string }) {
   );
 }
 
-function DayEventRow({ event, today }: { event: Event; today: string }) {
-  const past = isPast(event, today);
+function DayEventRow({ event }: { event: Event }) {
+  const past = isPast(event);
   const time = eventTime(event);
   const stake = formatBuyInShort(event.buy_in);
+  const derivedStatus = deriveEventStatus(event, new Date());
   return (
     <li className="border-t border-white/[0.08] first:border-t-0">
       <Link
@@ -87,7 +91,7 @@ function DayEventRow({ event, today }: { event: Event; today: string }) {
             {stake}
           </span>
         )}
-        <EventStatusTag status={event.status} muted={past} />
+        <EventStatusTag status={derivedStatus} muted={past} />
       </Link>
     </li>
   );
@@ -96,12 +100,10 @@ function DayEventRow({ event, today }: { event: Event; today: string }) {
 function OverflowPopover({
   date,
   events,
-  today,
   count,
 }: {
   date: string;
   events: Event[];
-  today: string;
   count: number;
 }) {
   return (
@@ -127,7 +129,7 @@ function OverflowPopover({
           </p>
           <ul className="flex flex-col">
             {events.map((e) => (
-              <DayEventRow key={e.id} event={e} today={today} />
+              <DayEventRow key={e.id} event={e} />
             ))}
           </ul>
           <Popover.Arrow className="fill-surface" />
@@ -197,7 +199,7 @@ function DayCell({
         {events.length > 0 && (
           <span className="flex gap-0.5" aria-hidden="true">
             {events.slice(0, 3).map((e) => (
-              <span key={e.id} className={`h-1.5 w-1.5 rounded-full ${isEventGold(e, today) ? "bg-gold" : "bg-white/30"}`} />
+              <span key={e.id} className={`h-1.5 w-1.5 rounded-full ${isEventGold(e) ? "bg-gold" : "bg-white/30"}`} />
             ))}
           </span>
         )}
@@ -208,10 +210,10 @@ function DayCell({
         <span className={`${numClass} ${isToday ? "ring-1 ring-gold/80 text-gold" : "text-white/80"}`}>{cell.day}</span>
         <div className="mt-1 flex flex-col gap-0.5">
           {visible.map((e) => (
-            <EventChip key={e.id} event={e} today={today} />
+            <EventChip key={e.id} event={e} />
           ))}
           {overflow > 0 && (
-            <OverflowPopover date={cell.date} events={events} today={today} count={overflow} />
+            <OverflowPopover date={cell.date} events={events} count={overflow} />
           )}
         </div>
       </div>
@@ -335,7 +337,7 @@ export function CalendarView({
           {(byDate.get(selected)?.length ?? 0) > 0 ? (
             <ul className="flex flex-col">
               {byDate.get(selected)!.map((e) => (
-                <DayEventRow key={e.id} event={e} today={today} />
+                <DayEventRow key={e.id} event={e} />
               ))}
             </ul>
           ) : (
@@ -352,7 +354,7 @@ export function CalendarView({
           </span>
           <ul className="flex flex-col">
             {undated.map((e) => (
-              <FixtureRow key={e.id} event={e} variant={isPast(e, today) ? "result" : "fixture"} />
+              <FixtureRow key={e.id} event={e} variant={isPast(e) ? "result" : "fixture"} />
             ))}
           </ul>
         </div>

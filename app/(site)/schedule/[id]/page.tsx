@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/schedule/StatusBadge";
 import { display, eventTime, IconArrow } from "@/components/schedule/fixtures";
 import { formatDotDate } from "@/lib/program-display";
 import { weekdayKO } from "@/lib/schedule";
+import { deriveEventStatus } from "@/lib/event-status";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -113,7 +114,8 @@ export default async function EventDetailPage({ params }: Props) {
   const event = await getEventById(id);
   if (!event) notFound();
 
-  const isCompleted = event.status === "completed";
+  const derivedStatus = deriveEventStatus(event, new Date());
+  const isCompleted = derivedStatus === "completed" || derivedStatus === "canceled";
 
   const blindData = event.blind_structure_id
     ? await getStructureWithRows(event.blind_structure_id)
@@ -149,7 +151,7 @@ export default async function EventDetailPage({ params }: Props) {
       {/* Hero */}
       <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-8">
         <div className="flex flex-wrap items-center gap-2.5">
-          <StatusBadge status={event.status} />
+          <StatusBadge status={derivedStatus} />
           {isCompleted && (
             <span className="inline-flex items-center rounded-pill bg-white/[0.04] px-3 py-1 text-2xs font-medium text-white/40">
               아카이브

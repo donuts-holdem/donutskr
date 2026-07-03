@@ -3,6 +3,7 @@ import { getEventById } from "@/lib/data/events";
 import { getAllStructures } from "@/lib/data/blindStructures";
 import { getAllSeasons } from "@/lib/data/seasons";
 import { EventForm } from "@/components/admin/EventForm";
+import { deriveEventStatus } from "@/lib/event-status";
 import { updateEvent, deleteEvent } from "@/app/admin/actions/events";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
@@ -29,7 +30,13 @@ export default async function EditEventPage({ params }: Props) {
         </h1>
         <ViewOnSiteLink href={`/schedule/${event.id}`} />
       </div>
-      <EventForm event={event} structures={structures} seasons={seasons} action={updateEvent.bind(null, id)} />
+      <EventForm
+        event={event}
+        structures={structures}
+        seasons={seasons}
+        derivedStatus={deriveEventStatus(event, new Date())}
+        action={updateEvent.bind(null, id)}
+      />
       <div className="mt-8 pt-6 border-t border-border">
         <p className="text-muted-foreground text-xs mb-3">위험 구역</p>
         <DeleteButton onDelete={deleteEvent.bind(null, id)} />

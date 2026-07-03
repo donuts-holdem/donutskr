@@ -6,13 +6,17 @@ import {
 } from "@/lib/labels";
 
 describe("labels", () => {
-  it("covers every EventStatus key with a Korean label", () => {
+  it("covers every derived status key with a Korean label", () => {
     expect(Object.keys(EVENT_STATUS_LABELS).sort()).toEqual(
-      ["canceled","completed","confirmed","hidden","reg_closed","running","scheduled"]
+      ["canceled","completed","hidden","reg_closed","running","scheduled"]
     );
-    expect(eventStatusLabel("reg_closed")).toBe("레지마감");
+    expect(eventStatusLabel("reg_closed")).toBe("레지마감"); // derived label
+    expect(eventStatusLabel("auto")).toBe("자동"); // stored-intent label
     expect(eventStatusLabel("unknown")).toBe("unknown"); // passthrough
-    expect(EVENT_STATUS_OPTIONS.find((o) => o.value === "scheduled")?.label).toBe("예정");
+  });
+  it("offers the three stored intents as form options", () => {
+    expect(EVENT_STATUS_OPTIONS.map((o) => o.value)).toEqual(["auto","canceled","hidden"]);
+    expect(EVENT_STATUS_OPTIONS.find((o) => o.value === "auto")?.label).toBe("자동");
   });
   it("localizes program group", () => {
     expect(programGroupLabel("poker")).toBe("포커");

@@ -14,9 +14,9 @@ describe("EventForm", () => {
 describe("EventForm Phase 2 localization", () => {
   it("shows the status select in Korean", () => {
     render(<EventForm structures={[]} action={async () => {}} />);
-    // Korean status label visible (default 예정 = scheduled).
+    // Korean stored-intent label visible (default 자동 = auto).
     // Radix Select renders both a visible <span> and a hidden native <option>,
     // so use getAllByText to avoid "multiple elements" error.
-    expect(screen.getAllByText("예정")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("자동")[0]).toBeInTheDocument();
   });
 });

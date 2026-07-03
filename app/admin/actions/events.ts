@@ -14,7 +14,7 @@ function parse(fd: FormData) {
     start_time: s("start_time"), reg_close_time: s("reg_close_time"),
     buy_in: s("buy_in"), entry_link: s("entry_link"), button_label: s("button_label"),
     description: s("description"),
-    status: String(fd.get("status") || "scheduled"), is_visible: fd.get("is_visible") === "on",
+    status: String(fd.get("status") || "auto"), is_visible: fd.get("is_visible") === "on",
     blind_structure_id: fk("blind_structure_id"),
     timer_event_id: s("timer_event_id"), timer_event_url: s("timer_event_url"),
   };

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
-import type { Event, EventStatus } from "@/lib/types";
+import type { Event, DerivedEventStatus } from "@/lib/types";
 import { weekdayKO } from "@/lib/schedule";
+import { deriveEventStatus } from "@/lib/event-status";
 
 /* ------------------------------------------------------------------ *
  * Fixtures — the shared vocabulary for the club's schedule board. The
@@ -17,9 +18,8 @@ export const display = Space_Grotesk({
   display: "swap",
 });
 
-export const STATUS_LABEL: Record<EventStatus, string> = {
+export const STATUS_LABEL: Record<DerivedEventStatus, string> = {
   scheduled: "예정",
-  confirmed: "확정",
   running: "진행중",
   reg_closed: "레지마감",
   completed: "완료",
@@ -27,10 +27,9 @@ export const STATUS_LABEL: Record<EventStatus, string> = {
   hidden: "숨김",
 };
 
-// Registration-open / live states get the gold accent on the board.
-export const ACTIVE_STATUS: ReadonlySet<EventStatus> = new Set<EventStatus>([
+// Upcoming / live derived states get the gold accent on the board.
+export const ACTIVE_STATUS: ReadonlySet<DerivedEventStatus> = new Set<DerivedEventStatus>([
   "scheduled",
-  "confirmed",
   "running",
 ]);
 
@@ -75,7 +74,7 @@ export function EventStatusTag({
   status,
   muted = false,
 }: {
-  status: EventStatus;
+  status: DerivedEventStatus;
   muted?: boolean;
 }) {
   if (status === "scheduled") return null;
@@ -116,6 +115,7 @@ export function FixtureRow({
   const result = variant === "result";
   const pd = parseEventDate(event.date);
   const time = eventTime(event);
+  const derivedStatus = deriveEventStatus(event, new Date());
   const meta = (result
     ? [event.location]
     : [event.location, event.buy_in]
@@ -187,7 +187,7 @@ export function FixtureRow({
 
         {/* status + arrow */}
         <div className="flex items-center gap-3 sm:gap-5">
-          <EventStatusTag status={event.status} muted={result} />
+          <EventStatusTag status={derivedStatus} muted={result} />
           {!result && (
             <IconArrow
               size={16}

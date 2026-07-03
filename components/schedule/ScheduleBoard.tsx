@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Event } from "@/lib/types";
+import { deriveEventStatus } from "@/lib/event-status";
 import { display, FixtureRow, parseEventDate } from "@/components/schedule/fixtures";
 
 /* ------------------------------------------------------------------ *
@@ -97,7 +98,7 @@ function MonthBoard({
 // A live event in the season gets a gold pulse banner at the top of the
 // upcoming view — the single most time-sensitive thing on the page.
 function LiveBanner({ events }: { events: Event[] }) {
-  const live = events.filter((e) => e.status === "running");
+  const live = events.filter((e) => deriveEventStatus(e, new Date()) === "running");
   if (live.length === 0) return null;
   const extra = live.length - 1;
 

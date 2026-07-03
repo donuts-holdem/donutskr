@@ -14,8 +14,12 @@ export default async function SchedulePage({
   searchParams: Promise<{ view?: string; tab?: string; category?: string; month?: string }>;
 }) {
   const [sp, events] = await Promise.all([searchParams, getEvents()]);
-  const today = todayKST();
-  const { upcoming, past } = partitionEvents(events, today);
+  // Status is DERIVED from the schedule times at read time (lib/event-status).
+  // This page has no `revalidate` export and reads Supabase via request cookies,
+  // so it renders dynamically — the derived status is always current on load.
+  const now = new Date();
+  const today = todayKST(now);
+  const { upcoming, past } = partitionEvents(events, now);
 
   const initialMode = sp.view === "calendar" ? "calendar" : "list";
   // ?tab= is the list sub-tab; legacy ?category=completed maps to the past tab.

@@ -1,16 +1,14 @@
 import type { Event } from "@/lib/types";
+import { deriveEventStatus } from "@/lib/event-status";
 
 /* ------------------------------------------------------------------ *
  * Schedule partition — splits the calendar into "다가오는 일정" (예정)
  * and "지난 일정" (결과). The temporal axis is the page's primary
- * structure, so the split must be self-correcting: it is driven by the
- * event DATE versus today, with terminal STATUS as an override. Pure
- * and side-effect free so it can be unit-tested and run on the server.
+ * structure, so the split is self-correcting: it reads the DERIVED status
+ * (lib/event-status), which is itself driven by the event's date + times
+ * in KST. Pure & side-effect free so it can be unit-tested and run on the
+ * server.
  * ------------------------------------------------------------------ */
-
-// Human-asserted terminal states win over the clock (an event finished
-// early, or a placeholder date, still belongs in the archive).
-const TERMINAL = new Set(["completed", "canceled"]);
 
 const DATE_PREFIX = /^(\d{4}-\d{2}-\d{2})/;
 
@@ -27,16 +25,17 @@ export function weekdayKO(date: string | null): string | null {
 }
 
 /**
- * Whether an event belongs in the past/archive bucket.
- * Precedence: terminal status → live status → undated → date vs today.
- * `today` is a "YYYY-MM-DD" string (see todayKST) compared lexically.
+ * Whether an event belongs in the past/archive bucket. An event is archived
+ * once its DERIVED status is terminal (completed / canceled); everything else
+ * — scheduled, running, reg_closed, hidden — leads the live season. Undated
+ * and today/future events derive to non-terminal, so they stay upcoming.
  */
-export function isPast(event: Pick<Event, "status" | "date">, today: string): boolean {
-  if (TERMINAL.has(event.status)) return true; // completed / canceled → past
-  if (event.status === "running") return false; // live → lead with it
-  const m = DATE_PREFIX.exec(event.date ?? "");
-  if (!m) return false; // undated ("미정") → upcoming intent, never archive
-  return m[1] < today; // strictly before today is past; today is still upcoming
+export function isPast(
+  event: Pick<Event, "status" | "date" | "start_time" | "reg_close_time">,
+  now: Date = new Date(),
+): boolean {
+  const d = deriveEventStatus(event, now);
+  return d === "completed" || d === "canceled";
 }
 
 /** Today's date in the club's timezone (Asia/Seoul) as "YYYY-MM-DD". */
@@ -58,12 +57,12 @@ export function todayKST(now: Date = new Date()): string {
  */
 export function partitionEvents(
   events: Event[],
-  today: string
+  now: Date = new Date()
 ): { upcoming: Event[]; past: Event[] } {
   const upcoming: Event[] = [];
   const past: Event[] = [];
   for (const event of events) {
-    (isPast(event, today) ? past : upcoming).push(event);
+    (isPast(event, now) ? past : upcoming).push(event);
   }
   past.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
   return { upcoming, past };
