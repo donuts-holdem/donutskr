@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Popover } from "radix-ui";
+import { Dialog, Popover } from "radix-ui";
 import type { Event } from "@/lib/types";
 import { isPast } from "@/lib/schedule";
 import { deriveEventStatus } from "@/lib/event-status";
@@ -69,7 +69,7 @@ function OrganizerTitle({ event, active = true }: { event: Event; active?: boole
 // 구글 캘린더식 퀵뷰: 셀이 좁아 한 줄에 담지 못한 정보(상태·일시·레지 마감·
 // 장소·참가비·참가 링크)를 칩 클릭 시 옆에 뜨는 팝오버로 보여준다. 상세 페이지
 // 이동은 팝오버 안의 "자세히 보기"로 옮겨졌다.
-function EventQuickView({ event }: { event: Event }) {
+function EventQuickView({ event, closeAs = "popover" }: { event: Event; closeAs?: "popover" | "dialog" }) {
   const past = isPast(event);
   const derivedStatus = deriveEventStatus(event, new Date());
   const time = eventTime(event);
@@ -83,6 +83,8 @@ function EventQuickView({ event }: { event: Event }) {
   const entryLabel = event.button_label?.trim() || "참가 신청";
   const entryCls =
     "shrink-0 rounded-pill bg-coral-cta px-4 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70";
+  // 팝오버/다이얼로그 양쪽에서 재사용되므로 닫기 버튼만 호스트에 맞게 감싼다.
+  const Close = closeAs === "dialog" ? Dialog.Close : Popover.Close;
   return (
     <div className="flex flex-col">
       <div className="flex items-start justify-between gap-2 p-5 pb-4">
@@ -101,7 +103,7 @@ function EventQuickView({ event }: { event: Event }) {
             )}
           </p>
         </div>
-        <Popover.Close asChild>
+        <Close asChild>
           <button
             type="button"
             aria-label="닫기"
@@ -111,7 +113,7 @@ function EventQuickView({ event }: { event: Event }) {
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
-        </Popover.Close>
+        </Close>
       </div>
       {(event.organizer || showRegClose || event.location || event.buy_in) && (
         <dl className="flex flex-col gap-2 border-t border-white/[0.08] px-5 py-4 text-sm">
@@ -203,29 +205,54 @@ function EventChip({ event }: { event: Event }) {
   );
 }
 
+// 데스크탑 칩 퀵뷰의 모바일 대응: 행 탭 시 같은 EventQuickView를 바텀 시트로
+// 띄운다 (sm 이상에서는 중앙 카드 — 데스크탑 "+N 더 보기" 행에서도 일관 동작).
+function EventQuickViewSheet({ event, children }: { event: Event; children: React.ReactNode }) {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className="fixed inset-x-0 bottom-0 z-50 rounded-t-card border-t border-white/[0.14] bg-surface-raised pb-4 shadow-2xl shadow-black/60 focus-visible:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-200 sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-112 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-card sm:border sm:pb-0"
+          style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
+        >
+          <Dialog.Title className="sr-only">{event.title}</Dialog.Title>
+          {/* 시트 그립 (모바일 전용 어포던스) */}
+          <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-pill bg-white/20 sm:hidden" />
+          <EventQuickView event={event} closeAs="dialog" />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
 function DayEventRow({ event }: { event: Event }) {
   const past = isPast(event);
   const time = eventTime(event);
   const derivedStatus = deriveEventStatus(event, new Date());
   return (
     <li className="border-t border-white/[0.08] first:border-t-0">
-      <Link
-        href={`/schedule/${event.id}`}
-        className="flex items-start gap-2.5 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
-      >
-        <span className={`${display.className} w-11 shrink-0 pt-0.5 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
-          {time ?? "—"}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm text-white/90">
-            <OrganizerTitle event={event} active={!past} />
+      <EventQuickViewSheet event={event}>
+        <button
+          type="button"
+          className="flex w-full items-start gap-2.5 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-white/[0.04] data-[state=open]:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+        >
+          <span className={`${display.className} w-11 shrink-0 pt-0.5 text-xs tabular-nums ${past ? "text-white/40" : "text-gold/90"}`}>
+            {time ?? "—"}
           </span>
-          {event.location && (
-            <span className="mt-0.5 block truncate text-2xs text-white/50">{event.location}</span>
-          )}
-        </span>
-        <EventStatusTag status={derivedStatus} muted={past} />
-      </Link>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm text-white/90">
+              <OrganizerTitle event={event} active={!past} />
+            </span>
+            {event.location && (
+              <span className="mt-0.5 block truncate text-2xs text-white/50">{event.location}</span>
+            )}
+          </span>
+          <EventStatusTag status={derivedStatus} muted={past} />
+        </button>
+      </EventQuickViewSheet>
     </li>
   );
 }

@@ -112,6 +112,21 @@ describe("CalendarView", () => {
     expect(screen.getAllByText("챔스홀덤").length).toBeGreaterThan(0);
   });
 
+  it("opens the quick-view sheet from a selected-day list row", () => {
+    render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
+    // the mobile selected-day list row is a dialog trigger (not a link)
+    const rows = screen.getAllByRole("button", { name: /도너츠 토너먼트/ });
+    const listRow = rows.find((r) => r.textContent?.includes("챔스홀덤"));
+    expect(listRow).toBeDefined();
+    fireEvent.click(listRow!);
+    const sheet = screen.getByRole("dialog");
+    expect(within(sheet).getByRole("link", { name: /자세히 보기/ })).toHaveAttribute(
+      "href",
+      "/schedule/e1"
+    );
+    expect(within(sheet).getByText("50,000 Pt")).toBeInTheDocument();
+  });
+
   it("renders an undated strip for events without a date", () => {
     render(
       <CalendarView
