@@ -32,6 +32,24 @@ describe("CalendarView", () => {
     expect(within(link).queryByText("50K")).not.toBeInTheDocument();
   });
 
+  it("prefixes the chip with the gold start time when one is set", () => {
+    render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /14:00.*도너츠 토너먼트/ });
+    expect(within(link).getByText("14:00", { exact: false })).toBeInTheDocument();
+  });
+
+  it("omits the time prefix when start_time is undecided", () => {
+    render(
+      <CalendarView
+        events={[ev({ id: "e5", start_time: "미정" })]}
+        today={today}
+        initialMonth="2026-07"
+      />
+    );
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
+    expect(within(link).queryByText(/미정/)).not.toBeInTheDocument();
+  });
+
   it("highlights the organizer token inside the title in the grid", () => {
     render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
     const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
@@ -61,7 +79,7 @@ describe("CalendarView", () => {
       />
     );
     const link = within(screen.getByRole("grid")).getByRole("link", {
-      name: /^챔피언십 토너먼트 with ONEPAIR$/,
+      name: /챔피언십 토너먼트 with ONEPAIR$/,
     });
     expect(within(link).getByText("ONEPAIR", { selector: "span.font-semibold" })).toBeInTheDocument();
   });

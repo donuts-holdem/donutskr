@@ -66,10 +66,11 @@ function OrganizerTitle({ event, active = true }: { event: Event; active?: boole
   );
 }
 
-// In-cell chip: organizer-highlighted title (buy-in moved off the calendar).
-// The active-status tint still dims past events.
+// In-cell chip: gold start time (when set) + organizer-highlighted title
+// (buy-in moved off the calendar). The active-status tint still dims past events.
 function EventChip({ event }: { event: Event }) {
   const gold = isEventGold(event);
+  const time = eventTime(event);
   return (
     <Link
       href={`/schedule/${event.id}`}
@@ -78,6 +79,9 @@ function EventChip({ event }: { event: Event }) {
       }`}
     >
       <span className="block truncate text-xs text-white/90">
+        {time && (
+          <span className={`tabular-nums ${gold ? "text-gold" : "text-gold/70"}`}>{time} </span>
+        )}
         <OrganizerTitle event={event} active={gold} />
       </span>
     </Link>
