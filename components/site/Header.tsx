@@ -14,12 +14,12 @@ export async function Header() {
         {/* Logo */}
         <Link href="/" aria-label="DO:NUTS 홈" className="shrink-0">
           <Image
-            src="/logo-v2.webp"
+            src="/logo-v3.png"
             alt="DO:NUTS"
-            width={40}
-            height={40}
+            width={497}
+            height={118}
             priority
-            className="h-10 w-auto"
+            className="h-8 w-auto"
           />
         </Link>
 
