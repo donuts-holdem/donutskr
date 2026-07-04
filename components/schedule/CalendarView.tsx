@@ -192,7 +192,7 @@ function EventChip({ event }: { event: Event }) {
           align="start"
           sideOffset={8}
           collisionPadding={12}
-          className="z-50 w-96 rounded-card border border-white/[0.14] bg-surface-raised shadow-2xl shadow-black/60 focus-visible:outline-none"
+          className="z-50 w-112 rounded-card border border-white/[0.14] bg-surface-raised shadow-2xl shadow-black/60 focus-visible:outline-none"
           style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
         >
           <EventQuickView event={event} />
