@@ -66,25 +66,134 @@ function OrganizerTitle({ event, active = true }: { event: Event; active?: boole
   );
 }
 
+// 구글 캘린더식 퀵뷰: 셀이 좁아 한 줄에 담지 못한 정보(상태·일시·레지 마감·
+// 장소·참가비·참가 링크)를 칩 클릭 시 옆에 뜨는 팝오버로 보여준다. 상세 페이지
+// 이동은 팝오버 안의 "자세히 보기"로 옮겨졌다.
+function EventQuickView({ event }: { event: Event }) {
+  const past = isPast(event);
+  const derivedStatus = deriveEventStatus(event, new Date());
+  const time = eventTime(event);
+  const regClose = event.reg_close_time?.trim();
+  const showRegClose = regClose && regClose !== "미정";
+  const d = event.date?.slice(0, 10) ?? null;
+  const dateLabel = d
+    ? `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일 (${koWeekday(d)})`
+    : "날짜 미정";
+  const entry = event.entry_link;
+  const entryLabel = event.button_label?.trim() || "참가 신청";
+  const entryCls =
+    "shrink-0 rounded-pill bg-coral-cta px-4 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70";
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-start justify-between gap-2 p-4 pb-3">
+        <div className="min-w-0">
+          <EventStatusTag status={derivedStatus} muted={past} />
+          <h4 className="mt-2 text-sm font-semibold leading-snug text-white">
+            <OrganizerTitle event={event} active={!past} />
+          </h4>
+          <p className="mt-1 text-xs text-white/50">
+            {dateLabel}
+            {time && (
+              <>
+                {" · "}
+                <span className="tabular-nums">{time}</span>
+              </>
+            )}
+          </p>
+        </div>
+        <Popover.Close asChild>
+          <button
+            type="button"
+            aria-label="닫기"
+            className="-m-1 shrink-0 rounded-md p-1 text-white/40 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+          >
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </Popover.Close>
+      </div>
+      {(showRegClose || event.location || event.buy_in) && (
+        <dl className="flex flex-col gap-1.5 border-t border-white/[0.08] px-4 py-3 text-xs">
+          {showRegClose && (
+            <div className="flex gap-3">
+              <dt className="w-14 shrink-0 text-white/40">레지 마감</dt>
+              <dd className="tabular-nums text-white/85">{regClose}</dd>
+            </div>
+          )}
+          {event.location && (
+            <div className="flex gap-3">
+              <dt className="w-14 shrink-0 text-white/40">장소</dt>
+              <dd className="min-w-0 text-white/85">{event.location}</dd>
+            </div>
+          )}
+          {event.buy_in && (
+            <div className="flex gap-3">
+              <dt className="w-14 shrink-0 text-white/40">참가비</dt>
+              <dd className="font-semibold text-gold">{event.buy_in}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      <div className="flex items-center justify-between gap-2 border-t border-white/[0.08] p-3">
+        <Link
+          href={`/schedule/${event.id}`}
+          className="rounded-md px-1.5 py-1 text-xs text-white/60 transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+        >
+          자세히 보기 →
+        </Link>
+        {entry &&
+          (/^https?:/i.test(entry) ? (
+            <a href={entry} target="_blank" rel="noopener noreferrer" className={entryCls}>
+              {entryLabel}
+            </a>
+          ) : (
+            <Link href={entry} className={entryCls}>
+              {entryLabel}
+            </Link>
+          ))}
+      </div>
+    </div>
+  );
+}
+
 // In-cell chip: gold start time (when set) + organizer-highlighted title
-// (buy-in moved off the calendar). The active-status tint still dims past events.
+// (buy-in moved off the calendar). Click opens the quick-view popover beside
+// the chip. The active-status tint still dims past events.
 function EventChip({ event }: { event: Event }) {
   const gold = isEventGold(event);
   const time = eventTime(event);
   return (
-    <Link
-      href={`/schedule/${event.id}`}
-      className={`block overflow-hidden rounded-md px-1.5 py-1 transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
-        gold ? "" : "opacity-80"
-      }`}
-    >
-      <span className="block truncate text-xs text-white/90">
-        {time && (
-          <span className={`tabular-nums ${gold ? "text-gold" : "text-gold/70"}`}>{time} </span>
-        )}
-        <OrganizerTitle event={event} active={gold} />
-      </span>
-    </Link>
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          className={`block w-full overflow-hidden rounded-md px-1.5 py-1 text-left transition-colors hover:bg-white/[0.06] data-[state=open]:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
+            gold ? "" : "opacity-80"
+          }`}
+        >
+          <span className="block truncate text-xs text-white/90">
+            {time && (
+              <span className={`tabular-nums ${gold ? "text-gold" : "text-gold/70"}`}>{time} </span>
+            )}
+            <OrganizerTitle event={event} active={gold} />
+          </span>
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="right"
+          align="start"
+          sideOffset={8}
+          collisionPadding={12}
+          className="z-50 w-72 rounded-card border border-white/[0.10] bg-surface shadow-xl focus-visible:outline-none"
+          style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
+        >
+          <EventQuickView event={event} />
+          <Popover.Arrow className="fill-surface" />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
