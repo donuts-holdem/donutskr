@@ -209,13 +209,13 @@ export function SeriesBoard({
       style={{ fontFamily: PRETENDARD }}
     >
       {/* ---------------------------- HERO ---------------------------- */}
-      <section className="relative ml-[calc(50%-50vw)] w-screen overflow-hidden">
+      <section className="relative overflow-hidden">
         {/* Ambient gold bloom anchoring the masthead. */}
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <div className="absolute right-0 top-1/2 h-[560px] w-[560px] -translate-y-1/2 translate-x-1/3 rounded-full bg-gold/[0.06] blur-3xl" />
         </div>
 
-        {/* Champion bracelet, bleeding off the right edge on wide screens. */}
+        {/* Champion bracelet, anchored to the layout's right edge with faded sides. */}
         {heroImage && (
           <div
             className="pointer-events-none absolute inset-y-0 right-0 hidden w-[58%] lg:block"
@@ -232,10 +232,11 @@ export function SeriesBoard({
             <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/60 to-transparent" />
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-bg to-transparent" />
           </div>
         )}
 
-        <div className="relative mx-auto w-full max-w-7xl px-4">
+        <div className="relative">
           <div className="flex max-w-2xl flex-col items-start py-20 sm:py-28 lg:max-w-3xl lg:py-32">
             <Reveal immediate className="flex flex-col items-start gap-6 sm:gap-7">
               {season?.badge_text && (
