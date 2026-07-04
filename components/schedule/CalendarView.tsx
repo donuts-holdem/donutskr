@@ -349,7 +349,7 @@ function DayCell({
         aria-pressed={selected}
         aria-label={`${Number(cell.date.slice(5, 7))}월 ${cell.day}일`}
         onClick={() => onSelect(cell.date)}
-        className={`flex w-full flex-col items-start gap-1 rounded-md p-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:hidden ${
+        className={`flex w-full flex-col items-start gap-2 rounded-md p-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:hidden ${
           selected ? "bg-white/[0.06]" : ""
         }`}
       >
