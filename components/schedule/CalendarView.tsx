@@ -113,8 +113,14 @@ function EventQuickView({ event }: { event: Event }) {
           </button>
         </Popover.Close>
       </div>
-      {(showRegClose || event.location || event.buy_in) && (
+      {(event.organizer || showRegClose || event.location || event.buy_in) && (
         <dl className="flex flex-col gap-2 border-t border-white/[0.08] px-5 py-4 text-sm">
+          {event.organizer && (
+            <div className="flex gap-4">
+              <dt className="w-16 shrink-0 text-white/40">기획 단체</dt>
+              <dd className="text-white/85">{event.organizer}</dd>
+            </div>
+          )}
           {showRegClose && (
             <div className="flex gap-4">
               <dt className="w-16 shrink-0 text-white/40">레지 마감</dt>

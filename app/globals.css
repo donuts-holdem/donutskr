@@ -28,8 +28,9 @@ layer(base);
 
   --color-surface: #141211;
   --color-surface-hover: #1a1715;
-  /* 팝오버/플로팅 레이어 — surface 위에 떠 보이도록 한 단계 밝은 표면 */
-  --color-surface-raised: #221e1b;
+  /* 팝오버/플로팅 레이어 — surface와 같은 웜 뉴트럴 계열에서 반 단계만 밝게.
+     분리감은 주로 그림자·테두리가 담당한다. */
+  --color-surface-raised: #181614;
   --color-gold-deep: #e7b45a;
   --color-cream: #f7f6f3;
 
