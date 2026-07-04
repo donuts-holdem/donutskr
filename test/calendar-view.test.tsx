@@ -32,15 +32,15 @@ describe("CalendarView", () => {
     expect(within(link).queryByText("50K")).not.toBeInTheDocument();
   });
 
-  it("splits the organizer out of the title as a highlighted token in the grid", () => {
+  it("highlights the organizer token inside the title in the grid", () => {
     render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
     const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
-    // organizer token rendered separately from the remaining title
-    expect(within(link).getByText("도너츠")).toBeInTheDocument();
-    expect(within(link).getByText("토너먼트")).toBeInTheDocument();
+    // organizer portion is its own highlighted span; the rest flows around it
+    const token = within(link).getByText("도너츠", { selector: "span.font-semibold" });
+    expect(token).toBeInTheDocument();
   });
 
-  it("prefixes the organizer token when the title does not start with it", () => {
+  it("prefixes the organizer token when the title does not contain it", () => {
     render(
       <CalendarView
         events={[ev({ id: "e2", title: "여름 특별전", organizer: "포커루루" })]}
@@ -49,8 +49,21 @@ describe("CalendarView", () => {
       />
     );
     const link = within(screen.getByRole("grid")).getByRole("link", { name: /포커루루 여름 특별전/ });
-    expect(within(link).getByText("포커루루")).toBeInTheDocument();
-    expect(within(link).getByText("여름 특별전")).toBeInTheDocument();
+    expect(within(link).getByText("포커루루", { selector: "span.font-semibold" })).toBeInTheDocument();
+  });
+
+  it("highlights a mid-title organizer without duplicating it", () => {
+    render(
+      <CalendarView
+        events={[ev({ id: "e4", title: "챔피언십 토너먼트 with ONEPAIR", organizer: "ONEPAIR" })]}
+        today={today}
+        initialMonth="2026-07"
+      />
+    );
+    const link = within(screen.getByRole("grid")).getByRole("link", {
+      name: /^챔피언십 토너먼트 with ONEPAIR$/,
+    });
+    expect(within(link).getByText("ONEPAIR", { selector: "span.font-semibold" })).toBeInTheDocument();
   });
 
   it("renders the plain title when no organizer is set", () => {
@@ -62,8 +75,7 @@ describe("CalendarView", () => {
       />
     );
     const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
-    // no separated token — the full title renders as one text node
-    expect(within(link).getByText("도너츠 토너먼트")).toBeInTheDocument();
+    expect(within(link).queryByText("도너츠", { selector: "span.font-semibold" })).not.toBeInTheDocument();
   });
 
   it("shows the venue on its own line in the selected-day list", () => {

@@ -61,17 +61,23 @@ export function monthLabel(ym: string): string {
 
 // 기획단체(organizer) 표기 분리. 캘린더는 참가비 대신 기획단체명을 하이라이트해
 // 표기한다 (클라이언트 예시: "도너츠 P.K.O 이벤트"에서 '도너츠'만 강조).
-// 제목이 기획단체명으로 시작하면 그 부분을 잘라 하이라이트 토큰으로 쓰고(중복
-// 표기 방지), 아니면 단체명을 접두 토큰으로 붙인다.
+// 제목 안에 단체명이 있으면(위치 무관) 그 첫 등장 부분을 토큰으로 분리해
+// 하이라이트하고 — "챔피언십 with ONEPAIR"처럼 중간에 있어도 중복 표기가
+// 생기지 않는다 — 없으면 단체명을 골드 접두 토큰으로 붙인다.
 export function splitOrganizerLabel(
   title: string,
   organizer: string | null | undefined,
-): { organizer: string | null; title: string } {
+): { pre: string; token: string | null; post: string } {
   const org = organizer?.trim();
   const t = title.trim();
-  if (!org) return { organizer: null, title: t };
-  if (t.toLowerCase().startsWith(org.toLowerCase())) {
-    return { organizer: t.slice(0, org.length), title: t.slice(org.length).trim() };
+  if (!org) return { pre: t, token: null, post: "" };
+  const idx = t.toLowerCase().indexOf(org.toLowerCase());
+  if (idx >= 0) {
+    return {
+      pre: t.slice(0, idx),
+      token: t.slice(idx, idx + org.length),
+      post: t.slice(idx + org.length),
+    };
   }
-  return { organizer: org, title: t };
+  return { pre: "", token: org, post: ` ${t}` };
 }

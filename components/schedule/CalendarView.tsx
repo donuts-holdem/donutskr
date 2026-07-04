@@ -50,32 +50,36 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
   );
 }
 
-// 기획단체 토큰: 제목 앞(또는 제목의 선두 부분)에서 단체명만 골드로 강조한다.
-// 강조는 색+굵기 차이가 같은 텍스트 토큰에 실리므로 색상 단독 구분이 아니다.
-function OrganizerToken({ label, active = true }: { label: string; active?: boolean }) {
+// 기획단체 토큰이 포함된 제목: 제목 안의 단체명(위치 무관, 없으면 접두)을 골드로
+// 강조하고 나머지는 일반 표기한다. 강조는 색+굵기 차이가 같은 텍스트 토큰에
+// 실리므로 색상 단독 구분이 아니다. 한 줄 truncate를 위해 단일 span 안에서 흐른다.
+function OrganizerTitle({ event, active = true }: { event: Event; active?: boolean }) {
+  const { pre, token, post } = splitOrganizerLabel(event.title, event.organizer);
   return (
-    <span
-      className={`shrink-0 font-semibold ${active ? "text-gold" : "text-gold/70"}`}
-    >
-      {label}
-    </span>
+    <>
+      {pre}
+      {token && (
+        <span className={`font-semibold ${active ? "text-gold" : "text-gold/70"}`}>{token}</span>
+      )}
+      {post}
+    </>
   );
 }
 
-// In-cell chip: organizer token + title (buy-in moved off the calendar).
+// In-cell chip: organizer-highlighted title (buy-in moved off the calendar).
 // The active-status tint still dims past events.
 function EventChip({ event }: { event: Event }) {
   const gold = isEventGold(event);
-  const { organizer, title } = splitOrganizerLabel(event.title, event.organizer);
   return (
     <Link
       href={`/schedule/${event.id}`}
-      className={`flex items-center gap-1 overflow-hidden rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
+      className={`block overflow-hidden rounded-md px-1.5 py-1 transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
         gold ? "" : "opacity-80"
       }`}
     >
-      {organizer && <OrganizerToken label={organizer} active={gold} />}
-      <span className="truncate text-white/90">{title}</span>
+      <span className="block truncate text-xs text-white/90">
+        <OrganizerTitle event={event} active={gold} />
+      </span>
     </Link>
   );
 }
@@ -83,7 +87,6 @@ function EventChip({ event }: { event: Event }) {
 function DayEventRow({ event }: { event: Event }) {
   const past = isPast(event);
   const time = eventTime(event);
-  const { organizer, title } = splitOrganizerLabel(event.title, event.organizer);
   const derivedStatus = deriveEventStatus(event, new Date());
   return (
     <li className="border-t border-white/[0.08] first:border-t-0">
@@ -95,9 +98,8 @@ function DayEventRow({ event }: { event: Event }) {
           {time ?? "—"}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-1.5 text-sm">
-            {organizer && <OrganizerToken label={organizer} active={!past} />}
-            <span className="min-w-0 flex-1 truncate text-white/90">{title}</span>
+          <span className="block truncate text-sm text-white/90">
+            <OrganizerTitle event={event} active={!past} />
           </span>
           {event.location && (
             <span className="mt-0.5 block truncate text-2xs text-white/50">{event.location}</span>

@@ -77,42 +77,51 @@ describe("monthLabel", () => {
 });
 
 describe("splitOrganizerLabel", () => {
-  it("splits the organizer off a title that starts with it (no duplicate display)", () => {
+  it("tokenizes the organizer at the start of the title (client example)", () => {
     expect(splitOrganizerLabel("도너츠 P.K.O 이벤트", "도너츠")).toEqual({
-      organizer: "도너츠",
-      title: "P.K.O 이벤트",
-    });
-    expect(splitOrganizerLabel("도너츠 토너먼트", "도너츠")).toEqual({
-      organizer: "도너츠",
-      title: "토너먼트",
+      pre: "",
+      token: "도너츠",
+      post: " P.K.O 이벤트",
     });
   });
-  it("matches the leading organizer case-insensitively, preserving the title's casing", () => {
+  it("tokenizes the organizer mid-title without duplicating it", () => {
+    expect(splitOrganizerLabel("챔피언십 토너먼트 with ONEPAIR", "ONEPAIR")).toEqual({
+      pre: "챔피언십 토너먼트 with ",
+      token: "ONEPAIR",
+      post: "",
+    });
+  });
+  it("matches case-insensitively, preserving the title's casing", () => {
     expect(splitOrganizerLabel("DONUTS Summer Open", "donuts")).toEqual({
-      organizer: "DONUTS",
-      title: "Summer Open",
+      pre: "",
+      token: "DONUTS",
+      post: " Summer Open",
     });
   });
-  it("prefixes the organizer when the title does not start with it", () => {
+  it("prefixes the organizer when the title does not contain it", () => {
     expect(splitOrganizerLabel("여름 특별전", "포커루루")).toEqual({
-      organizer: "포커루루",
-      title: "여름 특별전",
+      pre: "",
+      token: "포커루루",
+      post: " 여름 특별전",
     });
   });
   it("returns the plain title when no organizer is set", () => {
     expect(splitOrganizerLabel("도너츠 토너먼트", null)).toEqual({
-      organizer: null,
-      title: "도너츠 토너먼트",
+      pre: "도너츠 토너먼트",
+      token: null,
+      post: "",
     });
     expect(splitOrganizerLabel("도너츠 토너먼트", "  ")).toEqual({
-      organizer: null,
-      title: "도너츠 토너먼트",
+      pre: "도너츠 토너먼트",
+      token: null,
+      post: "",
     });
   });
   it("handles a title that is exactly the organizer", () => {
     expect(splitOrganizerLabel("도너츠", "도너츠")).toEqual({
-      organizer: "도너츠",
-      title: "",
+      pre: "",
+      token: "도너츠",
+      post: "",
     });
   });
 });
