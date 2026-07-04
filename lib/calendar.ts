@@ -59,13 +59,19 @@ export function monthLabel(ym: string): string {
   return `${y}년 ${m}월`;
 }
 
-// Events planned/hosted by the DO:NUTS club get a gold highlight in the
-// calendar (buy-in no longer prefixes the title — see CalendarView). Match is a
-// case-insensitive substring against the known spellings the operators type.
-export const DONUTS_ORGANIZER_MATCH = ["도너츠", "donuts", "do:nuts"] as const;
-
-export function isDonutsOrganized(organizer: string | null | undefined): boolean {
-  if (!organizer) return false;
-  const v = organizer.toLowerCase();
-  return DONUTS_ORGANIZER_MATCH.some((m) => v.includes(m));
+// 기획단체(organizer) 표기 분리. 캘린더는 참가비 대신 기획단체명을 하이라이트해
+// 표기한다 (클라이언트 예시: "도너츠 P.K.O 이벤트"에서 '도너츠'만 강조).
+// 제목이 기획단체명으로 시작하면 그 부분을 잘라 하이라이트 토큰으로 쓰고(중복
+// 표기 방지), 아니면 단체명을 접두 토큰으로 붙인다.
+export function splitOrganizerLabel(
+  title: string,
+  organizer: string | null | undefined,
+): { organizer: string | null; title: string } {
+  const org = organizer?.trim();
+  const t = title.trim();
+  if (!org) return { organizer: null, title: t };
+  if (t.toLowerCase().startsWith(org.toLowerCase())) {
+    return { organizer: t.slice(0, org.length), title: t.slice(org.length).trim() };
+  }
+  return { organizer: org, title: t };
 }

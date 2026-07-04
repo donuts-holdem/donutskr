@@ -32,23 +32,38 @@ describe("CalendarView", () => {
     expect(within(link).queryByText("50K")).not.toBeInTheDocument();
   });
 
-  it("highlights DO:NUTS-organized events with a non-color marker in the grid", () => {
+  it("splits the organizer out of the title as a highlighted token in the grid", () => {
     render(<CalendarView events={[ev({})]} today={today} initialMonth="2026-07" />);
-    const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 기획.*도너츠 토너먼트/ });
-    expect(link).toBeInTheDocument();
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
+    // organizer token rendered separately from the remaining title
+    expect(within(link).getByText("도너츠")).toBeInTheDocument();
+    expect(within(link).getByText("토너먼트")).toBeInTheDocument();
   });
 
-  it("does not mark events organized by other groups", () => {
+  it("prefixes the organizer token when the title does not start with it", () => {
     render(
       <CalendarView
-        events={[ev({ id: "e2", organizer: "파이널나인" })]}
+        events={[ev({ id: "e2", title: "여름 특별전", organizer: "포커루루" })]}
         today={today}
         initialMonth="2026-07"
       />
     );
-    const grid = screen.getByRole("grid");
-    expect(within(grid).queryByText("도너츠 기획", { exact: false })).not.toBeInTheDocument();
-    expect(within(grid).getByRole("link", { name: /도너츠 토너먼트/ })).toBeInTheDocument();
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /포커루루 여름 특별전/ });
+    expect(within(link).getByText("포커루루")).toBeInTheDocument();
+    expect(within(link).getByText("여름 특별전")).toBeInTheDocument();
+  });
+
+  it("renders the plain title when no organizer is set", () => {
+    render(
+      <CalendarView
+        events={[ev({ id: "e3", organizer: null })]}
+        today={today}
+        initialMonth="2026-07"
+      />
+    );
+    const link = within(screen.getByRole("grid")).getByRole("link", { name: /도너츠 토너먼트/ });
+    // no separated token — the full title renders as one text node
+    expect(within(link).getByText("도너츠 토너먼트")).toBeInTheDocument();
   });
 
   it("shows the venue on its own line in the selected-day list", () => {

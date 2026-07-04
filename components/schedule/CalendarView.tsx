@@ -20,7 +20,7 @@ import {
   groupEventsByDate,
   addMonths,
   monthLabel,
-  isDonutsOrganized,
+  splitOrganizerLabel,
   type DayCell as DayCellT,
 } from "@/lib/calendar";
 
@@ -50,43 +50,32 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
   );
 }
 
-// Non-color marker for DO:NUTS-organized events: a small gold diamond plus an
-// sr-only label so the highlight never rides on color alone.
-function OrganizerMark({ active = true }: { active?: boolean }) {
+// 기획단체 토큰: 제목 앞(또는 제목의 선두 부분)에서 단체명만 골드로 강조한다.
+// 강조는 색+굵기 차이가 같은 텍스트 토큰에 실리므로 색상 단독 구분이 아니다.
+function OrganizerToken({ label, active = true }: { label: string; active?: boolean }) {
   return (
-    <>
-      <span className="sr-only">도너츠 기획 </span>
-      <span
-        aria-hidden="true"
-        className={`shrink-0 text-2xs leading-none ${active ? "text-gold" : "text-gold/60"}`}
-      >
-        ◆
-      </span>
-    </>
+    <span
+      className={`shrink-0 font-semibold ${active ? "text-gold" : "text-gold/70"}`}
+    >
+      {label}
+    </span>
   );
 }
 
-// In-cell chip: title only (buy-in moved off the calendar). DO:NUTS-organized
-// events lead with the gold diamond + gold title; the active-status tint still
-// dims past events.
+// In-cell chip: organizer token + title (buy-in moved off the calendar).
+// The active-status tint still dims past events.
 function EventChip({ event }: { event: Event }) {
   const gold = isEventGold(event);
-  const donuts = isDonutsOrganized(event.organizer);
+  const { organizer, title } = splitOrganizerLabel(event.title, event.organizer);
   return (
     <Link
       href={`/schedule/${event.id}`}
-      className={`flex items-center gap-1.5 overflow-hidden rounded-md px-1.5 py-1 transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
+      className={`flex items-center gap-1 overflow-hidden rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 ${
         gold ? "" : "opacity-80"
       }`}
     >
-      {donuts && <OrganizerMark active={gold} />}
-      <span
-        className={`truncate text-xs ${
-          donuts ? `font-semibold ${gold ? "text-gold" : "text-gold/70"}` : "text-white/90"
-        }`}
-      >
-        {event.title}
-      </span>
+      {organizer && <OrganizerToken label={organizer} active={gold} />}
+      <span className="truncate text-white/90">{title}</span>
     </Link>
   );
 }
@@ -94,7 +83,7 @@ function EventChip({ event }: { event: Event }) {
 function DayEventRow({ event }: { event: Event }) {
   const past = isPast(event);
   const time = eventTime(event);
-  const donuts = isDonutsOrganized(event.organizer);
+  const { organizer, title } = splitOrganizerLabel(event.title, event.organizer);
   const derivedStatus = deriveEventStatus(event, new Date());
   return (
     <li className="border-t border-white/[0.08] first:border-t-0">
@@ -106,15 +95,9 @@ function DayEventRow({ event }: { event: Event }) {
           {time ?? "—"}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-1.5">
-            {donuts && <OrganizerMark active={!past} />}
-            <span
-              className={`min-w-0 flex-1 truncate text-sm ${
-                donuts ? `font-semibold ${past ? "text-gold/70" : "text-gold"}` : "text-white/90"
-              }`}
-            >
-              {event.title}
-            </span>
+          <span className="flex items-center gap-1.5 text-sm">
+            {organizer && <OrganizerToken label={organizer} active={!past} />}
+            <span className="min-w-0 flex-1 truncate text-white/90">{title}</span>
           </span>
           {event.location && (
             <span className="mt-0.5 block truncate text-2xs text-white/50">{event.location}</span>

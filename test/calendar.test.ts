@@ -5,7 +5,7 @@ import {
   groupEventsByDate,
   addMonths,
   monthLabel,
-  isDonutsOrganized,
+  splitOrganizerLabel,
   WEEKDAYS,
 } from "@/lib/calendar";
 
@@ -76,17 +76,43 @@ describe("monthLabel", () => {
   });
 });
 
-describe("isDonutsOrganized", () => {
-  it("matches known DO:NUTS spellings case-insensitively as a substring", () => {
-    expect(isDonutsOrganized("도너츠")).toBe(true);
-    expect(isDonutsOrganized("도너츠 P.K.O")).toBe(true);
-    expect(isDonutsOrganized("DONUTS")).toBe(true);
-    expect(isDonutsOrganized("Do:Nuts Club")).toBe(true);
+describe("splitOrganizerLabel", () => {
+  it("splits the organizer off a title that starts with it (no duplicate display)", () => {
+    expect(splitOrganizerLabel("도너츠 P.K.O 이벤트", "도너츠")).toEqual({
+      organizer: "도너츠",
+      title: "P.K.O 이벤트",
+    });
+    expect(splitOrganizerLabel("도너츠 토너먼트", "도너츠")).toEqual({
+      organizer: "도너츠",
+      title: "토너먼트",
+    });
   });
-  it("is false for other organizers or empty values", () => {
-    expect(isDonutsOrganized("파이널나인")).toBe(false);
-    expect(isDonutsOrganized("")).toBe(false);
-    expect(isDonutsOrganized(null)).toBe(false);
-    expect(isDonutsOrganized(undefined)).toBe(false);
+  it("matches the leading organizer case-insensitively, preserving the title's casing", () => {
+    expect(splitOrganizerLabel("DONUTS Summer Open", "donuts")).toEqual({
+      organizer: "DONUTS",
+      title: "Summer Open",
+    });
+  });
+  it("prefixes the organizer when the title does not start with it", () => {
+    expect(splitOrganizerLabel("여름 특별전", "포커루루")).toEqual({
+      organizer: "포커루루",
+      title: "여름 특별전",
+    });
+  });
+  it("returns the plain title when no organizer is set", () => {
+    expect(splitOrganizerLabel("도너츠 토너먼트", null)).toEqual({
+      organizer: null,
+      title: "도너츠 토너먼트",
+    });
+    expect(splitOrganizerLabel("도너츠 토너먼트", "  ")).toEqual({
+      organizer: null,
+      title: "도너츠 토너먼트",
+    });
+  });
+  it("handles a title that is exactly the organizer", () => {
+    expect(splitOrganizerLabel("도너츠", "도너츠")).toEqual({
+      organizer: "도너츠",
+      title: "",
+    });
   });
 });

@@ -136,7 +136,7 @@ export function EventForm({ event, structures, seasons = [], derivedStatus, acti
           <div className="flex flex-col gap-2 md:col-span-12">
             <Label htmlFor="organizer">기획 단체</Label>
             <Input id="organizer" name="organizer" defaultValue={event?.organizer ?? ""} placeholder="예: 도너츠" />
-            <p className="text-muted-foreground text-xs">이벤트를 주최·기획한 단체 (예: 도너츠). &lsquo;도너츠&rsquo; 기획 이벤트는 캘린더에서 강조됩니다.</p>
+            <p className="text-muted-foreground text-xs">이벤트를 주최·기획한 단체 (예: 도너츠). 캘린더에서 단체명이 골드로 강조 표기됩니다.</p>
           </div>
         </CardContent>
       </Card>
