@@ -5,7 +5,7 @@ import type { NavTab } from "@/lib/types";
 function makeTab(overrides: Partial<NavTab>): NavTab {
   return {
     id: "t", name: "탭", key: "k", type: "internal", slug: null, external_url: null,
-    is_visible: true, sort_order: 0, mobile_visible: true, header_visible: true,
+    is_visible: true, sort_order: 0, mobile_visible: true,
     start_show_date: null, end_show_date: null,
     home_card_visible: false, home_card_title: null, home_card_desc: null, home_card_cta: null,
     ...overrides,

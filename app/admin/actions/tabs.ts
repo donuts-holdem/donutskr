@@ -14,7 +14,6 @@ function parseTabForm(fd: FormData) {
     external_url: s("external_url"),
     is_visible: fd.get("is_visible") === "on",
     mobile_visible: fd.get("mobile_visible") === "on",
-    header_visible: fd.get("header_visible") === "on",
     sort_order: Number(fd.get("sort_order") || 0),
     start_show_date: s("start_show_date"),
     end_show_date: s("end_show_date"),

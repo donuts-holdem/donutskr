@@ -82,16 +82,12 @@ export function TabForm({ tab, action }: TabFormProps) {
               <Label htmlFor="mobile_visible">모바일 노출</Label>
             </div>
             <div className="flex items-center gap-2">
-              <Checkbox id="header_visible" name="header_visible" defaultChecked={tab?.header_visible ?? false} />
-              <Label htmlFor="header_visible">헤더 노출</Label>
-            </div>
-            <div className="flex items-center gap-2">
               <Checkbox id="home_card_visible" name="home_card_visible" defaultChecked={tab?.home_card_visible ?? false} />
               <Label htmlFor="home_card_visible">홈카드 노출</Label>
             </div>
           </div>
           <p className="text-muted-foreground -mt-2 text-xs md:col-span-12">
-            헤더 노출은 공개 사이트 상단 메뉴에 표시할지 여부입니다. 홈카드 노출은 홈 화면에 이 탭을 카드로
+            노출을 체크하면 공개 사이트 상단 메뉴에 표시됩니다. 홈카드 노출은 홈 화면에 이 탭을 카드로
             보여줄지 여부입니다. (아래 홈카드 내용 사용)
           </p>
           <div className="flex flex-col gap-2 md:col-span-4">

@@ -7,7 +7,6 @@ export function mapTab(r: any): NavTab {
     id: String(r.id ?? ""), name: String(r.name ?? ""), key: String(r.key ?? ""),
     type: (r.type ?? "internal") as TabType, slug: r.slug ?? null, external_url: r.external_url ?? null,
     is_visible: r.is_visible ?? true, sort_order: Number(r.sort_order ?? 0), mobile_visible: r.mobile_visible ?? true,
-    header_visible: Boolean(r.header_visible),
     start_show_date: r.start_show_date ?? null, end_show_date: r.end_show_date ?? null,
     home_card_visible: Boolean(r.home_card_visible), home_card_title: r.home_card_title ?? null,
     home_card_desc: r.home_card_desc ?? null, home_card_cta: r.home_card_cta ?? null,
@@ -76,12 +75,12 @@ export async function getVisibleTabs(today: string): Promise<NavTab[]> {
 }
 
 /**
- * Public-header nav entries: visible (date-windowed) tabs flagged `header_visible`,
- * ordered by sort_order, with `special` tabs cross-checked against currently-public
- * special pages. Returns resolved {label, href, external, mobileHidden} entries.
+ * Public-header nav entries: visible (date-windowed) tabs ordered by sort_order,
+ * with `special` tabs cross-checked against currently-public special pages.
+ * Returns resolved {label, href, external, mobileHidden} entries.
  */
 export async function getHeaderTabs(today: string): Promise<HeaderTab[]> {
-  const tabs = (await getAllTabs()).filter((t) => t.header_visible && isTabActive(t, today));
+  const tabs = (await getAllTabs()).filter((t) => isTabActive(t, today));
   const publicSpecialSlugs = tabs.some((t) => t.type === "special")
     ? await getPublicSpecialPageSlugs(today)
     : new Set<string>();

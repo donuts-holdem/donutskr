@@ -30,7 +30,6 @@ export default async function TabsPage() {
             <TableHead>키</TableHead>
             <TableHead>순서</TableHead>
             <TableHead>노출</TableHead>
-            <TableHead>헤더 노출</TableHead>
             <TableHead>기간 노출</TableHead>
             <TableHead>작업</TableHead>
           </TableRow>
@@ -43,9 +42,6 @@ export default async function TabsPage() {
               <TableCell className="text-muted-foreground">{tab.sort_order}</TableCell>
               <TableCell className={tab.is_visible ? "text-gold" : "text-muted-foreground/50"}>
                 {tab.is_visible ? "●" : "○"}
-              </TableCell>
-              <TableCell className={tab.header_visible ? "text-gold" : "text-muted-foreground/50"}>
-                {tab.header_visible ? "●" : "○"}
               </TableCell>
               <TableCell className="text-muted-foreground text-xs">
                 {tab.start_show_date || tab.end_show_date
@@ -64,7 +60,7 @@ export default async function TabsPage() {
           ))}
           {tabs.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="text-muted-foreground py-8 text-center">
+              <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
                 탭이 없습니다.
               </TableCell>
             </TableRow>
