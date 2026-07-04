@@ -85,13 +85,13 @@ function EventQuickView({ event }: { event: Event }) {
     "shrink-0 rounded-pill bg-coral-cta px-4 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70";
   return (
     <div className="flex flex-col">
-      <div className="flex items-start justify-between gap-2 p-4 pb-3">
+      <div className="flex items-start justify-between gap-2 p-5 pb-4">
         <div className="min-w-0">
           <EventStatusTag status={derivedStatus} muted={past} />
-          <h4 className="mt-2 text-sm font-semibold leading-snug text-white">
+          <h4 className="mt-2.5 text-base font-semibold leading-snug text-white">
             <OrganizerTitle event={event} active={!past} />
           </h4>
-          <p className="mt-1 text-xs text-white/50">
+          <p className="mt-1.5 text-sm text-white/50">
             {dateLabel}
             {time && (
               <>
@@ -114,31 +114,31 @@ function EventQuickView({ event }: { event: Event }) {
         </Popover.Close>
       </div>
       {(showRegClose || event.location || event.buy_in) && (
-        <dl className="flex flex-col gap-1.5 border-t border-white/[0.08] px-4 py-3 text-xs">
+        <dl className="flex flex-col gap-2 border-t border-white/[0.08] px-5 py-4 text-sm">
           {showRegClose && (
-            <div className="flex gap-3">
-              <dt className="w-14 shrink-0 text-white/40">레지 마감</dt>
+            <div className="flex gap-4">
+              <dt className="w-16 shrink-0 text-white/40">레지 마감</dt>
               <dd className="tabular-nums text-white/85">{regClose}</dd>
             </div>
           )}
           {event.location && (
-            <div className="flex gap-3">
-              <dt className="w-14 shrink-0 text-white/40">장소</dt>
+            <div className="flex gap-4">
+              <dt className="w-16 shrink-0 text-white/40">장소</dt>
               <dd className="min-w-0 text-white/85">{event.location}</dd>
             </div>
           )}
           {event.buy_in && (
-            <div className="flex gap-3">
-              <dt className="w-14 shrink-0 text-white/40">참가비</dt>
+            <div className="flex gap-4">
+              <dt className="w-16 shrink-0 text-white/40">참가비</dt>
               <dd className="font-semibold text-gold">{event.buy_in}</dd>
             </div>
           )}
         </dl>
       )}
-      <div className="flex items-center justify-between gap-2 border-t border-white/[0.08] p-3">
+      <div className="flex items-center justify-between gap-2 border-t border-white/[0.08] px-4 py-3.5">
         <Link
           href={`/schedule/${event.id}`}
-          className="rounded-md px-1.5 py-1 text-xs text-white/60 transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+          className="rounded-md px-1.5 py-1 text-sm text-white/60 transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
         >
           자세히 보기 →
         </Link>
@@ -186,11 +186,11 @@ function EventChip({ event }: { event: Event }) {
           align="start"
           sideOffset={8}
           collisionPadding={12}
-          className="z-50 w-72 rounded-card border border-white/[0.10] bg-surface shadow-xl focus-visible:outline-none"
+          className="z-50 w-96 rounded-card border border-white/[0.14] bg-surface-raised shadow-2xl shadow-black/60 focus-visible:outline-none"
           style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
         >
           <EventQuickView event={event} />
-          <Popover.Arrow className="fill-surface" />
+          <Popover.Arrow className="fill-surface-raised" />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
@@ -248,7 +248,7 @@ function OverflowPopover({
         <Popover.Content
           align="start"
           sideOffset={6}
-          className="z-50 w-80 rounded-card border border-white/[0.10] bg-surface p-2 shadow-xl focus-visible:outline-none"
+          className="z-50 w-80 rounded-card border border-white/[0.14] bg-surface-raised p-2 shadow-2xl shadow-black/60 focus-visible:outline-none"
           style={{ fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}
         >
           <p className={`${display.className} px-2 py-1.5 text-2xs font-medium uppercase tracking-[0.12em] text-white/40`}>
@@ -259,7 +259,7 @@ function OverflowPopover({
               <DayEventRow key={e.id} event={e} />
             ))}
           </ul>
-          <Popover.Arrow className="fill-surface" />
+          <Popover.Arrow className="fill-surface-raised" />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

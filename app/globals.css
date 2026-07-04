@@ -28,6 +28,8 @@ layer(base);
 
   --color-surface: #141211;
   --color-surface-hover: #1a1715;
+  /* 팝오버/플로팅 레이어 — surface 위에 떠 보이도록 한 단계 밝은 표면 */
+  --color-surface-raised: #221e1b;
   --color-gold-deep: #e7b45a;
   --color-cream: #f7f6f3;
 
