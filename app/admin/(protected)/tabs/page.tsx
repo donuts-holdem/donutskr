@@ -1,19 +1,23 @@
 import Link from "next/link";
-import { getAllTabs } from "@/lib/data/tabs";
-import { deleteTab } from "@/app/admin/actions/tabs";
-import { DeleteButton } from "@/components/admin/DeleteButton";
+import { getAllTabs, resolveTabHref } from "@/lib/data/tabs";
+import { deleteTab, reorderTabs } from "@/app/admin/actions/tabs";
+import { TabOrderList, type TabOrderItem } from "@/components/admin/TabOrderList";
+import { TAB_TYPE_OPTIONS } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 export default async function TabsPage() {
   const tabs = await getAllTabs();
+  const typeLabels = new Map(TAB_TYPE_OPTIONS.map((o) => [o.value, o.label]));
+
+  const items: TabOrderItem[] = tabs.map((tab) => ({
+    id: tab.id,
+    name: tab.name,
+    dest: resolveTabHref(tab) ?? "연결 안 됨",
+    typeLabel: typeLabels.get(tab.type) ?? tab.type,
+    is_visible: tab.is_visible,
+    mobile_visible: tab.mobile_visible,
+  }));
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -22,51 +26,11 @@ export default async function TabsPage() {
           <Link href="/admin/tabs/new">+ 새 탭</Link>
         </Button>
       </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>이름</TableHead>
-            <TableHead>키</TableHead>
-            <TableHead>순서</TableHead>
-            <TableHead>노출</TableHead>
-            <TableHead>기간 노출</TableHead>
-            <TableHead>작업</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tabs.map((tab) => (
-            <TableRow key={tab.id}>
-              <TableCell className="text-foreground">{tab.name}</TableCell>
-              <TableCell className="text-muted-foreground">{tab.key}</TableCell>
-              <TableCell className="text-muted-foreground">{tab.sort_order}</TableCell>
-              <TableCell className={tab.is_visible ? "text-gold" : "text-muted-foreground/50"}>
-                {tab.is_visible ? "●" : "○"}
-              </TableCell>
-              <TableCell className="text-muted-foreground text-xs">
-                {tab.start_show_date || tab.end_show_date
-                  ? `${tab.start_show_date ?? "∞"} ~ ${tab.end_show_date ?? "∞"}`
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button asChild variant="link" size="sm" className="h-auto p-0">
-                    <Link href={`/admin/tabs/${tab.id}/edit`}>수정</Link>
-                  </Button>
-                  <DeleteButton onDelete={async () => { "use server"; await deleteTab(tab.id); }} />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {tabs.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
-                탭이 없습니다.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <p className="text-muted-foreground mb-6 max-w-2xl text-sm">
+        여기 보이는 순서가 그대로 사이트 상단 메뉴의 순서입니다. 핸들을 드래그하거나
+        방향키(위/아래)로 옮긴 뒤 순서 저장을 누르세요.
+      </p>
+      <TabOrderList initialItems={items} reorderAction={reorderTabs} deleteAction={deleteTab} />
     </div>
   );
 }

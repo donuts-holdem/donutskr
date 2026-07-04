@@ -35,10 +35,8 @@ export interface BlindRow {
   break_name: string | null; break_minutes: number | null; stage_note: string | null; sort_order: number;
 }
 export interface NavTab {
-  id: string; name: string; key: string; type: TabType; slug: string | null; external_url: string | null;
+  id: string; name: string; type: TabType; slug: string | null; external_url: string | null;
   is_visible: boolean; sort_order: number; mobile_visible: boolean;
-  start_show_date: string | null; end_show_date: string | null;
-  home_card_visible: boolean; home_card_title: string | null; home_card_desc: string | null; home_card_cta: string | null;
 }
 /** A resolved public-header nav entry (label + destination), computed from a NavTab. */
 export interface HeaderTab { label: string; href: string; external: boolean; mobileHidden: boolean; }

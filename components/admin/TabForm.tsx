@@ -33,12 +33,9 @@ export function TabForm({ tab, action }: TabFormProps) {
           <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="name">이름</Label>
             <Input id="name" name="name" defaultValue={tab?.name ?? ""} required />
+            <p className="text-muted-foreground text-xs">상단 메뉴에 표시되는 이름입니다.</p>
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="key">키 (key)</Label>
-            <Input id="key" name="key" defaultValue={tab?.key ?? ""} required />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
             <Label htmlFor="type">타입</Label>
             <Select name="type" defaultValue={tab?.type ?? "internal"}>
               <SelectTrigger id="type" className="w-full">
@@ -53,13 +50,17 @@ export function TabForm({ tab, action }: TabFormProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2 md:col-span-8">
-            <Label htmlFor="slug">슬러그 (slug)</Label>
-            <Input id="slug" name="slug" defaultValue={tab?.slug ?? ""} />
+          <div className="flex flex-col gap-2 md:col-span-6">
+            <Label htmlFor="slug">연결 경로</Label>
+            <Input id="slug" name="slug" defaultValue={tab?.slug ?? ""} placeholder="/schedule" />
+            <p className="text-muted-foreground text-xs">
+              내부 링크·특수 페이지 타입일 때 이동할 사이트 내 주소 (예: /schedule, 특수페이지의 슬러그)
+            </p>
           </div>
-          <div className="flex flex-col gap-2 md:col-span-12">
+          <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="external_url">외부 URL</Label>
-            <Input id="external_url" name="external_url" type="url" defaultValue={tab?.external_url ?? ""} />
+            <Input id="external_url" name="external_url" type="url" defaultValue={tab?.external_url ?? ""} placeholder="https://..." />
+            <p className="text-muted-foreground text-xs">외부 링크 타입일 때 이동할 주소 (새 탭으로 열립니다)</p>
           </div>
         </CardContent>
       </Card>
@@ -71,8 +72,8 @@ export function TabForm({ tab, action }: TabFormProps) {
             <h2>노출 설정</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-wrap gap-6 md:col-span-12">
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-6">
             <div className="flex items-center gap-2">
               <Checkbox id="is_visible" name="is_visible" defaultChecked={tab?.is_visible ?? true} />
               <Label htmlFor="is_visible">노출</Label>
@@ -81,50 +82,11 @@ export function TabForm({ tab, action }: TabFormProps) {
               <Checkbox id="mobile_visible" name="mobile_visible" defaultChecked={tab?.mobile_visible ?? true} />
               <Label htmlFor="mobile_visible">모바일 노출</Label>
             </div>
-            <div className="flex items-center gap-2">
-              <Checkbox id="home_card_visible" name="home_card_visible" defaultChecked={tab?.home_card_visible ?? false} />
-              <Label htmlFor="home_card_visible">홈카드 노출</Label>
-            </div>
           </div>
-          <p className="text-muted-foreground -mt-2 text-xs md:col-span-12">
-            노출을 체크하면 공개 사이트 상단 메뉴에 표시됩니다. 홈카드 노출은 홈 화면에 이 탭을 카드로
-            보여줄지 여부입니다. (아래 홈카드 내용 사용)
+          <p className="text-muted-foreground text-xs">
+            노출을 체크하면 공개 사이트 상단 메뉴에 표시됩니다. 모바일 노출을 끄면 데스크톱 메뉴에만 보입니다.
+            메뉴에서의 순서는 탭 관리 목록에서 드래그로 바꿉니다.
           </p>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="start_show_date">기간 노출 시작일</Label>
-            <Input id="start_show_date" name="start_show_date" type="date" defaultValue={tab?.start_show_date ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-4">
-            <Label htmlFor="end_show_date">기간 노출 종료일</Label>
-            <Input id="end_show_date" name="end_show_date" type="date" defaultValue={tab?.end_show_date ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-3">
-            <Label htmlFor="sort_order">순서</Label>
-            <Input id="sort_order" name="sort_order" type="number" defaultValue={tab?.sort_order ?? 0} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 홈카드 */}
-      <Card>
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>홈카드</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-12">
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="home_card_title">홈카드 제목</Label>
-            <Input id="home_card_title" name="home_card_title" defaultValue={tab?.home_card_title ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="home_card_cta">홈카드 CTA</Label>
-            <Input id="home_card_cta" name="home_card_cta" defaultValue={tab?.home_card_cta ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="home_card_desc">홈카드 설명</Label>
-            <Input id="home_card_desc" name="home_card_desc" defaultValue={tab?.home_card_desc ?? ""} />
-          </div>
         </CardContent>
       </Card>
 
