@@ -48,6 +48,11 @@ layer(base);
   --text-display-3xl: 5.5rem; /* 88px */
   --text-hero: clamp(2.75rem, 6.5vw, 5.5rem);
 
+  /* Tournament-clock display sizes — viewport-scaled so the countdown stays
+     dominant on a venue TV yet degrades onto a tablet. */
+  --text-clock: clamp(4.5rem, 19vw, 17rem); /* the huge MM:SS countdown */
+  --text-blind: clamp(2.25rem, 5.5vw, 5rem); /* current blind values */
+
   --font-sans:
     var(--font-inter), Wanted Sans, Pretendard, system-ui, sans-serif;
 

@@ -25,6 +25,7 @@ export interface Event {
   start_time: string | null; reg_close_time: string | null;
   buy_in: string | null; entry_link: string | null; button_label: string | null;
   description: string | null; poster_image: string | null;
+  starting_stack: number | null;
   status: StoredEventStatus; is_visible: boolean;
   blind_structure_id: string | null; timer_event_id: string | null; timer_event_url: string | null;
 }
@@ -58,6 +59,29 @@ export interface SiteConfig {
   signup_button_label: string | null; signup_closed: boolean; signup_closed_text: string | null;
   leaderboard_tab_visible: boolean; leaderboard_api_url: string | null; leaderboard_personal_rank_visible: boolean;
   footer_sponsors: { name: string; logo?: string; url?: string }[];
+}
+
+// Tournament timer — a live clock session derived from an anchor model
+// (see lib/timer/state.ts). `structure` is the flattened level/break list.
+export type TimerRowType = "level" | "break";
+export interface TimerLevel {
+  type: TimerRowType;
+  level_no: number | null;
+  name: string | null;
+  sb: number;
+  bb: number;
+  ante: number;
+  duration_min: number;
+}
+export type TimerStatus = "running" | "paused" | "finished";
+export interface TimerPrize { place: number; amount: string; }
+export interface TimerSession {
+  id: string; event_id: string | null; title: string; buy_in: string | null;
+  starting_stack: number | null; structure: TimerLevel[]; status: TimerStatus;
+  started_at: string | null; elapsed_offset_sec: number; level_index: number;
+  entries: number; players: number; reg_close_level: number | null;
+  prizes: TimerPrize[]; finished_at: string | null; version: number;
+  created_at: string; updated_at: string;
 }
 
 // program_group is admin-managed (see program_options); values are open strings,

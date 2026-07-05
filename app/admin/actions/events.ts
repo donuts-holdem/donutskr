@@ -8,6 +8,7 @@ import { assertRowsAffected } from "@/lib/admin/assert-rows";
 function parse(fd: FormData) {
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
   const fk = (k: string) => { const v = s(k); return v === "none" ? null : v; };
+  const int = (k: string) => { const v = s(k); return v != null && /^\d+$/.test(v) ? parseInt(v, 10) : null; };
   return {
     season_id: fk("season_id"), title: String(fd.get("title")),
     date: s("date"),
@@ -15,6 +16,7 @@ function parse(fd: FormData) {
     start_time: s("start_time"), reg_close_time: s("reg_close_time"),
     buy_in: s("buy_in"), entry_link: s("entry_link"), button_label: s("button_label"),
     description: s("description"),
+    starting_stack: int("starting_stack"),
     status: String(fd.get("status") || "auto"), is_visible: fd.get("is_visible") === "on",
     blind_structure_id: fk("blind_structure_id"),
     timer_event_id: s("timer_event_id"), timer_event_url: s("timer_event_url"),

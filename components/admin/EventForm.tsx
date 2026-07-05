@@ -189,6 +189,19 @@ export function EventForm({ event, structures, seasons = [], derivedStatus, acti
             </Select>
           </div>
           <div className="flex flex-col gap-2 md:col-span-6">
+            <Label htmlFor="starting_stack">스타팅 스택</Label>
+            <Input
+              id="starting_stack"
+              name="starting_stack"
+              type="number"
+              min={0}
+              inputMode="numeric"
+              defaultValue={event?.starting_stack ?? ""}
+              placeholder="예: 30000"
+            />
+            <p className="text-muted-foreground text-xs">타이머의 평균 스택(총 칩 ÷ 인원) 계산에 사용됩니다.</p>
+          </div>
+          <div className="flex flex-col gap-2 md:col-span-6">
             <Label htmlFor="timer_event_id">타이머 이벤트 ID</Label>
             <Input id="timer_event_id" name="timer_event_id" defaultValue={event?.timer_event_id ?? ""} />
           </div>

@@ -14,6 +14,7 @@ export function mapEvent(r: any): Event {
     start_time: r.start_time ?? null, reg_close_time: r.reg_close_time ?? null,
     buy_in: r.buy_in ?? null, entry_link: r.entry_link ?? null, button_label: r.button_label ?? null,
     description: r.description ?? null, poster_image: r.poster_image ?? null,
+    starting_stack: r.starting_stack ?? null,
     status: toStoredStatus(r.status),
     is_visible: r.is_visible ?? true,
     blind_structure_id: r.blind_structure_id ?? null,

@@ -13,6 +13,7 @@ const NAV_GROUPS = [
   { label: "운영", links: [
     { href: "/admin/seasons", label: "시즌" },
     { href: "/admin/blind-structures", label: "블라인드 스트럭처" },
+    { href: "/admin/timers", label: "타이머" },
   ]},
   { label: "사이트 설정", links: [
     { href: "/admin/online-league", label: "온라인 리그" },
