@@ -90,9 +90,12 @@ export function useTimerSession(id: string): UseTimerSessionResult {
     };
 
     const refetch = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("timer_sessions").select("*").eq("id", id).is("deleted_at", null).maybeSingle();
       if (!active) return;
+      // A transient fetch failure must NOT read as "row deleted" — only a
+      // successful query with no row means the timer is actually gone.
+      if (error) return;
       if (data) apply(rowToSession(data));
       else if (seenRef.current) markGone(); // row vanished (soft-deleted)
     };

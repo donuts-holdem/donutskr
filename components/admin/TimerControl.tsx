@@ -114,7 +114,19 @@ function blindsLabel(row: TimerLevel): string {
 // --------------------------------------------------------------------------
 export function TimerControl({ initial }: { initial: TimerSession }) {
   const { session: live, now, connectionState, refresh } = useTimerSession(initial.id);
-  const session = live ?? initial;
+  const server = live ?? initial;
+
+  // Optimistic overlay: the moment a clock action is pressed, the expected
+  // result (mirroring the server action's math) is painted locally, so the
+  // operator sees the flip instantly instead of after a network round-trip.
+  // The overlay auto-drops as soon as any newer server row arrives (version
+  // above the press-time base) and is cleared explicitly on failure, so the
+  // server remains the single source of truth.
+  const [override, setOverride] = useState<{ baseVersion: number; patch: Partial<TimerSession> } | null>(null);
+  const session =
+    override != null && server.version <= override.baseVersion
+      ? { ...server, ...override.patch }
+      : server;
 
   // Re-render on a fixed cadence; the clock is always DERIVED from timestamps,
   // never decremented, so a missed tick self-corrects on the next one.
@@ -170,35 +182,82 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
   // version between clicks. busyRef guards re-entry without a stale closure.
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
-  async function run(fn: () => Promise<TimerActionResult>) {
+  async function run(fn: () => Promise<TimerActionResult>, patch?: Partial<TimerSession>) {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
+    // Paint the expected result before the round-trip.
+    if (patch) setOverride({ baseVersion: versionRef.current, patch });
     try {
       const res = await fn();
       if (reportError(res) && res.ok) adopt(res.version);
-      // Reflect the action immediately — never depend on the realtime echo
-      // (a still-connecting or dropped socket would leave the UI stale until
-      // the next poll). Also resyncs after a conflict.
+      if (!res.ok) setOverride(null); // revert the optimistic paint
+      // Confirm with the server row immediately — never depend on the
+      // realtime echo (a still-connecting or dropped socket would leave the
+      // UI stale until the next poll). Also resyncs after a conflict.
       void refresh();
     } finally {
       busyRef.current = false;
       setBusy(false);
     }
   }
+
+  // Seconds the current run segment has been live — mirrors the server's fold.
+  function ranSec(): number {
+    return session.status === "running" && session.started_at != null
+      ? Math.max(0, Math.floor((now() - Date.parse(session.started_at)) / 1000))
+      : 0;
+  }
+  const nowIsoLocal = () => new Date(now()).toISOString();
+
   function toggleClock() {
-    void run(() =>
-      isRunning ? pauseTimer(session.id, versionRef.current) : startTimer(session.id, versionRef.current),
-    );
+    if (isRunning) {
+      void run(() => pauseTimer(session.id, versionRef.current), {
+        status: "paused",
+        started_at: null,
+        elapsed_offset_sec: session.elapsed_offset_sec + ranSec(),
+      });
+    } else {
+      void run(() => startTimer(session.id, versionRef.current), {
+        status: "running",
+        started_at: nowIsoLocal(),
+      });
+    }
   }
   function nudge(deltaSec: number) {
-    void run(() => adjustTime(session.id, versionRef.current, deltaSec));
+    const running = session.status === "running" && session.started_at != null;
+    let newOffset = Math.max(0, session.elapsed_offset_sec + ranSec() - Math.round(deltaSec));
+    if (deltaSec < 0) {
+      const durationSec = (session.structure[session.level_index]?.duration_min ?? 0) * 60;
+      if (durationSec > 0) newOffset = Math.min(newOffset, durationSec);
+    }
+    void run(() => adjustTime(session.id, versionRef.current, deltaSec), {
+      elapsed_offset_sec: newOffset,
+      started_at: running ? nowIsoLocal() : session.started_at,
+    });
+  }
+  function submitRemaining(sec: number) {
+    const durationSec = (session.structure[session.level_index]?.duration_min ?? 0) * 60;
+    const valid = durationSec > 0 && sec <= durationSec;
+    void run(
+      () => setRemaining(session.id, versionRef.current, sec),
+      valid
+        ? {
+            elapsed_offset_sec: durationSec - sec,
+            started_at: session.status === "running" ? nowIsoLocal() : null,
+          }
+        : undefined, // let the server produce the validation error
+    );
   }
   async function confirmJump() {
     if (jumpTarget == null) return;
     const target = jumpTarget;
     setJumpTarget(null);
-    await run(() => jumpToLevel(session.id, versionRef.current, target));
+    await run(() => jumpToLevel(session.id, versionRef.current, target), {
+      level_index: target,
+      elapsed_offset_sec: 0,
+      started_at: session.status === "running" ? nowIsoLocal() : null,
+    });
   }
 
   const canPrev = !isFinished && derived.levelIndex > 0;
@@ -296,7 +355,7 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
             <SetRemainingForm
               disabled={isFinished || busy}
               maxSec={derived.row.duration_min * 60}
-              onSubmit={(sec) => run(() => setRemaining(session.id, versionRef.current, sec))}
+              onSubmit={submitRemaining}
             />
             <Separator orientation="vertical" className="mx-1 h-8" />
             <Button
