@@ -207,9 +207,15 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
     // peer (venue display) via broadcast, so the room's clock reacts to the
     // click in ~100-300ms instead of after the full server round-trip.
     if (patch) {
-      const mine = { baseVersion: versionRef.current, patch, snapshot: clockSnapshot(server) };
+      // Self-contained overlays: carry the FULL clock from the current merged
+      // view, not just the changed fields. A new action REPLACES the previous
+      // overlay wholesale — if a jump right after a pause carried only
+      // level/offset and the pause's authoritative row hadn't landed yet, the
+      // stale pre-pause status would resurface from underneath.
+      const full = { ...clockSnapshot(session), ...patch };
+      const mine = { baseVersion: versionRef.current, patch: full, snapshot: clockSnapshot(server) };
       setOverride(mine);
-      sendIntent(patch, versionRef.current);
+      sendIntent(full, versionRef.current);
       // TTL backstop: if neither success-row nor failure path clears it
       // (e.g. an action hanging past all retries), don't stay wrong forever.
       window.setTimeout(() => setOverride((cur) => (cur === mine ? null : cur)), OVERRIDE_TTL_MS);
