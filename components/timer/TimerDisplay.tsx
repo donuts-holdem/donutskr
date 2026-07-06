@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { Maximize, Volume2, VolumeX } from "lucide-react";
 import { useTimerSession } from "@/lib/timer/useTimerSession";
 import { deriveTimerState, avgStack, avgStackBB } from "@/lib/timer/state";
@@ -283,24 +283,16 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
         {/* Left — players & average stack */}
         <section className="order-2 flex flex-row flex-wrap justify-center gap-x-12 gap-y-8 lg:order-1 lg:flex-col lg:justify-start">
           <Stat label="Players">
-            <span
-              className="whitespace-nowrap text-stat font-bold leading-none tabular-nums"
-              style={statStyle(`${session.players}/${session.entries}`)}
-            >
+            <FitText fitKey={`${session.players}/${session.entries}`}>
               {session.players}
               <span className="text-ink/45">/{session.entries}</span>
-            </span>
+            </FitText>
           </Stat>
           <Stat label="Average Stack">
-            <span
-              className="whitespace-nowrap text-stat font-bold leading-none tabular-nums"
-              style={statStyle(
-                `${avg != null ? fmtChips(avg) : "—"}${avgBB != null ? `/${avgBB}BB` : ""}`,
-              )}
-            >
+            <FitText fitKey={`${avg}/${avgBB}`}>
               {avg != null ? fmtChips(avg) : "—"}
               {avgBB != null && <span className="text-gold">/{avgBB}BB</span>}
-            </span>
+            </FitText>
           </Stat>
         </section>
 
@@ -392,21 +384,6 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
   );
 }
 
-/**
- * Side-stat values live in fixed-width grid tracks, so a long string
- * ("112,500/1,024BB") must scale its font down instead of widening the column.
- * ~9 digit-widths render at the full --text-stat size; beyond that the size
- * shrinks proportionally to the string's width in digit units (commas, slashes
- * and dots count as half a digit under tabular-nums).
- */
-const STAT_FIT_UNITS = 9;
-function statStyle(text: string): React.CSSProperties | undefined {
-  let units = 0;
-  for (const ch of text) units += ",./.".includes(ch) ? 0.5 : 1;
-  if (units <= STAT_FIT_UNITS) return undefined;
-  return { fontSize: `calc(var(--text-stat) * ${(STAT_FIT_UNITS / units).toFixed(3)})` };
-}
-
 // Text chip values ("PLO") render verbatim; 0 renders as an em-dash.
 // Blind amounts are written plain (no thousand separators) — "2000", not "2,000".
 function chip(val: number | string | null): string {
@@ -443,6 +420,54 @@ function BlindRow({
   );
 }
 
+/**
+ * Shrink-to-fit for the side-stat values. Their grid tracks are pinned to a
+ * fixed fr share so the clock stays dead-center — which means a long value
+ * ("439,285/14BB") must scale down or it overflows the track and collides
+ * with the clock column. Character-count heuristics under-estimate bold
+ * tabular digits, so this measures the rendered width and sets the exact
+ * ratio imperatively (no state → no re-render loop with the 4×/s tick).
+ */
+// Fit before paint on the client; plain effect during SSR hydration (no layout there).
+const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+function FitText({ fitKey, children }: { fitKey: string; children: React.ReactNode }) {
+  const outerRef = useRef<HTMLSpanElement>(null);
+  const innerRef = useRef<HTMLSpanElement>(null);
+
+  useIsoLayoutEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
+    const fit = () => {
+      inner.style.fontSize = ""; // measure at the token's natural size
+      const avail = outer.clientWidth;
+      const natural = inner.scrollWidth;
+      if (natural > avail && natural > 0 && avail > 0) {
+        const base = parseFloat(window.getComputedStyle(inner).fontSize);
+        inner.style.fontSize = `${(base * avail) / natural}px`;
+      }
+    };
+    fit();
+    // Track column resizes (viewport changes also move the clamp()ed base size).
+    const ro = new ResizeObserver(fit);
+    ro.observe(outer);
+    return () => ro.disconnect();
+  }, [fitKey]);
+
+  return (
+    <span ref={outerRef} className="block w-full min-w-0 text-center lg:text-left">
+      {/* inline-block: an inline span reports scrollWidth 0, breaking the measurement */}
+      <span
+        ref={innerRef}
+        className="inline-block max-w-none whitespace-nowrap text-stat font-bold leading-none tabular-nums"
+      >
+        {children}
+      </span>
+    </span>
+  );
+}
+
 function Stat({
   label,
   align = "start",
@@ -454,7 +479,7 @@ function Stat({
 }) {
   const itemAlign = align === "end" ? "items-center lg:items-end" : "items-center lg:items-start";
   return (
-    <div className={`flex flex-col gap-2 ${itemAlign}`}>
+    <div className={`flex min-w-0 max-w-full flex-col gap-2 ${itemAlign}`}>
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ink/60 sm:text-base">
         {label}
       </p>
