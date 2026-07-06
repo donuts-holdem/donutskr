@@ -45,13 +45,17 @@ function nowIso(): string {
 // window so a wrong client clock degrades to today's server-time behavior.
 // ---------------------------------------------------------------------------
 const CLIENT_AT_FUTURE_MS = 2_000; // skew-estimate error budget
-const CLIENT_AT_MAX_AGE_MS = 15_000; // slow-network / retried-request budget
+const CLIENT_AT_MAX_AGE_MS = 15_000; // slow-network / retried-request budget (folds)
+// Anchor-ESTABLISHING actions (start/jump/set-remaining) write started_at from
+// this timestamp: a 15s-past clamp there would make the fresh level show 15s
+// already consumed, so they get a much tighter budget than fold actions.
+const ANCHOR_MAX_AGE_MS = 2_000;
 
-function effectiveNowMs(clientAtMs: number | undefined, floorMs?: number): number {
+function effectiveNowMs(clientAtMs: number | undefined, floorMs?: number, maxAgeMs = CLIENT_AT_MAX_AGE_MS): number {
   const server = Date.now();
   let t = typeof clientAtMs === "number" && Number.isFinite(clientAtMs) ? clientAtMs : server;
   t = Math.min(t, server + CLIENT_AT_FUTURE_MS);
-  t = Math.max(t, server - CLIENT_AT_MAX_AGE_MS);
+  t = Math.max(t, server - maxAgeMs);
   if (floorMs != null) t = Math.max(t, floorMs); // e.g. never before started_at
   return t;
 }
@@ -62,6 +66,21 @@ function effectiveNowMs(clientAtMs: number | undefined, floorMs?: number): numbe
 function foldRanSec(startedAt: string | null, atMs: number): number {
   if (!startedAt) return 0;
   return Math.max(0, (atMs - Date.parse(startedAt)) / 1000);
+}
+
+// The committed (level_index, elapsed) can lag the level the room is actually
+// watching: the display auto-advances visually at a boundary while the
+// background commitAdvance is still in flight. Time adjustments must operate
+// on the EFFECTIVE level — the same forward walk deriveTimerState performs —
+// or "+1분" pressed just after a boundary rolls the blinds back a level.
+function walkToEffective(structure: TimerLevel[], levelIndex: number, elapsed: number): { index: number; elapsed: number } {
+  let i = Math.min(Math.max(0, levelIndex), Math.max(0, structure.length - 1));
+  let e = elapsed;
+  while (i < structure.length - 1 && e >= (structure[i]?.duration_min ?? 0) * 60) {
+    e -= (structure[i]?.duration_min ?? 0) * 60;
+    i += 1;
+  }
+  return { index: i, elapsed: e };
 }
 
 function revalidateTimer(id: string): void {
@@ -193,7 +212,11 @@ export async function startTimer(id: string, version: number, clientAtMs?: numbe
 
     const { data, error } = await supabase
       .from("timer_sessions")
-      .update({ status: "running", started_at: new Date(effectiveNowMs(clientAtMs)).toISOString(), version: v + 1 })
+      .update({
+        status: "running",
+        started_at: new Date(effectiveNowMs(clientAtMs, undefined, ANCHOR_MAX_AGE_MS)).toISOString(),
+        version: v + 1,
+      })
       .eq("id", id).eq("version", v).select("id");
     if (error) throw error;
     if (data && data.length > 0) {
@@ -260,22 +283,25 @@ export async function adjustTime(id: string, version: number, deltaSec: number, 
 
     const running = cur.status === "running" && cur.started_at != null;
     const atMs = effectiveNowMs(clientAtMs, cur.started_at ? Date.parse(cur.started_at) : undefined);
-    const folded = cur.elapsed_offset_sec + (running ? foldRanSec(cur.started_at, atMs) : 0);
-    let newOffset = Math.max(0, folded - Math.round(deltaSec));
+    const foldedTotal = cur.elapsed_offset_sec + (running ? foldRanSec(cur.started_at, atMs) : 0);
+
+    // Normalize onto the level the room is actually watching before applying
+    // the delta — the stored index can lag at a boundary (see walkToEffective).
+    const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
+    const eff = walkToEffective(structure, cur.level_index, foldedTotal);
+    const durationSec = (structure[eff.index]?.duration_min ?? 0) * 60;
+    let newElapsed = Math.max(0, eff.elapsed - Math.round(deltaSec));
 
     // A manual subtract must never roll the clock INTO the next level (a TD
     // hitting -1분 at 00:20 expects 00:00, not a level-up + blinds jump). Cap
-    // the elapsed at the current level's full duration.
-    if (deltaSec < 0) {
-      const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
-      const durationSec = (structure[cur.level_index]?.duration_min ?? 0) * 60;
-      if (durationSec > 0) newOffset = Math.min(newOffset, durationSec);
-    }
+    // the elapsed at the effective level's full duration.
+    if (deltaSec < 0 && durationSec > 0) newElapsed = Math.min(newElapsed, durationSec);
 
     const { data, error } = await supabase
       .from("timer_sessions")
       .update({
-        elapsed_offset_sec: newOffset,
+        level_index: eff.index,
+        elapsed_offset_sec: newElapsed,
         started_at: running ? new Date(atMs).toISOString() : cur.started_at,
         version: v + 1,
       })
@@ -300,7 +326,7 @@ export async function setRemaining(id: string, version: number, remainingSec: nu
   for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
     const { data: cur, error: curErr } = await supabase
       .from("timer_sessions")
-      .select("status, version, level_index, structure")
+      .select("status, version, started_at, elapsed_offset_sec, level_index, structure")
       .eq("id", id).is("deleted_at", null).maybeSingle();
     if (curErr) throw curErr;
     if (!cur) return CONFLICT;
@@ -308,19 +334,25 @@ export async function setRemaining(id: string, version: number, remainingSec: nu
     const v = attempt === 0 ? version : cur.version;
     if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
+    // Validate and set against the EFFECTIVE level (the one the operator is
+    // looking at), not the possibly-lagging stored index.
+    const running = cur.status === "running" && cur.started_at != null;
+    const atMs = effectiveNowMs(clientAtMs, undefined, ANCHOR_MAX_AGE_MS);
+    const foldedTotal = cur.elapsed_offset_sec + (running ? foldRanSec(cur.started_at, atMs) : 0);
     const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
-    const durationSec = (structure[cur.level_index]?.duration_min ?? 0) * 60;
+    const eff = walkToEffective(structure, cur.level_index, foldedTotal);
+    const durationSec = (structure[eff.index]?.duration_min ?? 0) * 60;
     if (durationSec <= 0) return { ok: false, error: "현재 레벨 정보를 찾을 수 없습니다" };
     if (remainingSec > durationSec) {
       return { ok: false, error: `이 레벨의 최대 시간은 ${Math.floor(durationSec / 60)}분입니다` };
     }
 
-    const running = cur.status === "running";
     const { data, error } = await supabase
       .from("timer_sessions")
       .update({
+        level_index: eff.index,
         elapsed_offset_sec: durationSec - remainingSec,
-        started_at: running ? new Date(effectiveNowMs(clientAtMs)).toISOString() : null,
+        started_at: running ? new Date(atMs).toISOString() : null,
         version: v + 1,
       })
       .eq("id", id).eq("version", v).select("id");
@@ -354,7 +386,7 @@ export async function jumpToLevel(id: string, version: number, index: number, cl
       .from("timer_sessions")
       .update({
         level_index: index, elapsed_offset_sec: 0,
-        started_at: running ? new Date(effectiveNowMs(clientAtMs)).toISOString() : null,
+        started_at: running ? new Date(effectiveNowMs(clientAtMs, undefined, ANCHOR_MAX_AGE_MS)).toISOString() : null,
         version: v + 1,
       })
       .eq("id", id).eq("version", v).select("id");
@@ -370,41 +402,49 @@ export async function jumpToLevel(id: string, version: number, index: number, cl
 
 // Persist a boundary the client already crossed visually. Idempotent: a no-op
 // (expectedIndex ≤ current) returns ok without a write. Carries the overflow
-// past the completed segments into elapsed_offset_sec.
+// past the completed segments into elapsed_offset_sec. Retries like the other
+// clock actions: without it, a counts-autosave landing at the boundary made
+// the advance silently drop and the stored level lag for the whole next level.
 export async function commitAdvance(id: string, version: number, expectedIndex: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
-  const { data: cur, error: curErr } = await supabase
-    .from("timer_sessions")
-    .select("status, started_at, elapsed_offset_sec, level_index, structure")
-    .eq("id", id).eq("version", version).maybeSingle();
-  if (curErr) throw curErr;
-  if (!cur) return CONFLICT;
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
+    const { data: cur, error: curErr } = await supabase
+      .from("timer_sessions")
+      .select("status, version, started_at, elapsed_offset_sec, level_index, structure")
+      .eq("id", id).is("deleted_at", null).maybeSingle();
+    if (curErr) throw curErr;
+    if (!cur) return CONFLICT;
+    const v = attempt === 0 ? version : cur.version;
+    if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-  if (expectedIndex <= cur.level_index) return { ok: true }; // already advanced
-  const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
-  if (expectedIndex >= structure.length) return { ok: false, error: "잘못된 레벨 번호입니다" };
+    if (expectedIndex <= cur.level_index) return { ok: true }; // already advanced
+    const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
+    if (expectedIndex >= structure.length) return { ok: false, error: "잘못된 레벨 번호입니다" };
 
-  const running = cur.status === "running" && cur.started_at != null;
-  // Exact (fractional) fold — truncation here made the venue clock stutter up
-  // by <1s at every level boundary.
-  const ranSec = running ? foldRanSec(cur.started_at, Date.now()) : 0;
-  let elapsed = cur.elapsed_offset_sec + ranSec;
-  for (let i = cur.level_index; i < expectedIndex; i++) {
-    elapsed -= (structure[i]?.duration_min ?? 0) * 60;
+    const running = cur.status === "running" && cur.started_at != null;
+    // Exact (fractional) fold — truncation here made the venue clock stutter up
+    // by <1s at every level boundary.
+    const ranSec = running ? foldRanSec(cur.started_at, Date.now()) : 0;
+    let elapsed = cur.elapsed_offset_sec + ranSec;
+    for (let i = cur.level_index; i < expectedIndex; i++) {
+      elapsed -= (structure[i]?.duration_min ?? 0) * 60;
+    }
+    const overflow = Math.max(0, elapsed);
+
+    const { data, error } = await supabase
+      .from("timer_sessions")
+      .update({ level_index: expectedIndex, elapsed_offset_sec: overflow, started_at: running ? nowIso() : cur.started_at, version: v + 1 })
+      .eq("id", id).eq("version", v).select("id");
+    if (error) throw error;
+    if (data && data.length > 0) {
+      // Multi-boundary catch-ups (e.g. admin reopened after 40min) log from→to
+      // so the audit trail shows the span, not just the destination.
+      await logAction(supabase, id, "advance", { from: cur.level_index, to: expectedIndex });
+      revalidateTimer(id);
+      return { ok: true, version: v + 1 };
+    }
   }
-  const overflow = Math.max(0, elapsed);
-
-  const { data, error } = await supabase
-    .from("timer_sessions")
-    .update({ level_index: expectedIndex, elapsed_offset_sec: overflow, started_at: running ? nowIso() : cur.started_at, version: version + 1 })
-    .eq("id", id).eq("version", version).select("id");
-  if (error) throw error;
-  if (!data || data.length === 0) return CONFLICT;
-  // Multi-boundary catch-ups (e.g. admin reopened after 40min) log from→to so
-  // the audit trail shows the span, not just the destination.
-  await logAction(supabase, id, "advance", { from: cur.level_index, to: expectedIndex });
-  revalidateTimer(id);
-  return { ok: true, version: version + 1 };
+  return CONFLICT;
 }
 
 // --------------------------------------------------------------------------
@@ -550,17 +590,6 @@ export async function finishTimer(id: string, version: number): Promise<TimerAct
     const v = attempt === 0 ? version : cur.version;
     if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-    // Snapshot the result onto the event BEFORE flipping status: if this write
-    // fails the timer stays finishable, so a retry can still record the result.
-    // Does NOT touch events.status.
-    if (cur.event_id) {
-      const { error: evErr } = await supabase
-        .from("events")
-        .update({ final_entries: cur.entries, final_players: cur.players, result_recorded_at: nowIso() })
-        .eq("id", cur.event_id);
-      if (evErr) throw evErr;
-    }
-
     // Fold the in-flight run into the offset so a later reopen resumes from
     // the actual tournament position instead of the last-committed one.
     const ranSec = cur.status === "running" ? foldRanSec(cur.started_at, Date.now()) : 0;
@@ -573,6 +602,16 @@ export async function finishTimer(id: string, version: number): Promise<TimerAct
       .eq("id", id).eq("version", v).neq("status", "finished").select("id");
     if (error) throw error;
     if (data && data.length > 0) {
+      // Snapshot the result onto the event only AFTER the flip actually won —
+      // writing it first left a "recorded" result on the event whenever the
+      // flip lost the version race. Does NOT touch events.status.
+      if (cur.event_id) {
+        const { error: evErr } = await supabase
+          .from("events")
+          .update({ final_entries: cur.entries, final_players: cur.players, result_recorded_at: nowIso() })
+          .eq("id", cur.event_id);
+        if (evErr) throw evErr;
+      }
       await logAction(supabase, id, "finish");
       revalidateTimer(id);
       return { ok: true, version: v + 1 };
@@ -586,7 +625,7 @@ export async function reopenTimer(id: string, version: number): Promise<TimerAct
   const { data, error } = await supabase
     .from("timer_sessions")
     .update({ status: "paused", finished_at: null, version: version + 1 })
-    .eq("id", id).eq("version", version).eq("status", "finished").select("id");
+    .eq("id", id).eq("version", version).eq("status", "finished").select("id, event_id");
   if (error) {
     // 23505: a newer live timer for the same event now holds the partial
     // unique index slot — reopening would create a second live timer.
@@ -596,6 +635,14 @@ export async function reopenTimer(id: string, version: number): Promise<TimerAct
     throw error;
   }
   if (!data || data.length === 0) return CONFLICT;
+  // The tournament is live again — its recorded result no longer stands.
+  const eventId = (data[0] as { event_id?: string | null }).event_id;
+  if (eventId) {
+    await supabase
+      .from("events")
+      .update({ final_entries: null, final_players: null, result_recorded_at: null })
+      .eq("id", eventId);
+  }
   await logAction(supabase, id, "reopen");
   revalidateTimer(id);
   return { ok: true, version: version + 1 };
@@ -603,17 +650,19 @@ export async function reopenTimer(id: string, version: number): Promise<TimerAct
 
 // Soft delete, blocked while a tournament is live (guards against losing an
 // in-progress timer). Allowed only when finished or when nothing has started.
-export async function deleteTimer(id: string): Promise<TimerActionResult> {
+export async function deleteTimer(id: string, version?: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
   // Guard inside the UPDATE itself (no TOCTOU): delete only when finished or
   // untouched. A live tournament that gains entries between render and click
-  // is still protected.
-  const { data, error } = await supabase
+  // is still protected. The version guard serializes with clock actions so a
+  // concurrent start can't leave a soft-deleted-but-running row.
+  let query = supabase
     .from("timer_sessions")
-    .update({ deleted_at: nowIso() })
+    .update(version != null ? { deleted_at: nowIso(), version: version + 1 } : { deleted_at: nowIso() })
     .eq("id", id).is("deleted_at", null)
-    .or("status.eq.finished,entries.eq.0")
-    .select("id");
+    .or("status.eq.finished,entries.eq.0");
+  if (version != null) query = query.eq("version", version);
+  const { data, error } = await query.select("id");
   if (error) throw error;
   if (!data || data.length === 0) {
     const { data: exists } = await supabase

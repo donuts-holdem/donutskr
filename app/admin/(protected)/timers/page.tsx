@@ -102,7 +102,7 @@ export default async function AdminTimersPage() {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <CopyTimerUrlButton id={t.id} />
-                    <TimerDeleteButton id={t.id} title={t.title} />
+                    <TimerDeleteButton id={t.id} title={t.title} version={t.version} />
                   </div>
                 </TableCell>
               </TableRow>

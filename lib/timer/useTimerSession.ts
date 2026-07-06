@@ -74,6 +74,19 @@ interface TimerIntent {
   patch: Partial<TimerSession>;
   /** Receiver's clock at arrival — a newer row that still matches it is an unrelated bump. */
   snapshot: ClockSnapshot | null;
+  /** Sender identity — a cancel ({} patch) may only clear its own sender's intent. */
+  sender: string | null;
+}
+
+// Intents may only touch the clock. Broadcast payloads arrive from any client
+// holding the anon key, so anything beyond the clock fields (title, prizes,
+// entries, …) is stripped before the overlay is applied.
+function sanitizeIntentPatch(patch: Partial<TimerSession>): Partial<TimerSession> {
+  const out: Partial<TimerSession> = {};
+  for (const k of CLOCK_KEYS) {
+    if (k in patch) (out as Record<string, unknown>)[k] = patch[k];
+  }
+  return out;
 }
 
 export interface UseTimerSessionResult {
@@ -127,12 +140,18 @@ export function useTimerSession(id: string): UseTimerSessionResult {
 
   const now = useCallback(() => Date.now() + offsetRef.current, []);
   const refresh = useCallback(() => refetchRef.current(), []);
+  const senderIdRef = useRef<string | null>(null);
   const sendIntent = useCallback((patch: Partial<TimerSession>, baseVersion?: number) => {
+    if (senderIdRef.current == null) senderIdRef.current = crypto.randomUUID();
     // Send the freshest version anyone involved knows: the hook's last seen
     // row, or the caller's adopted action result — whichever is newer.
     const base = Math.max(versionRef.current, baseVersion ?? -1);
     void channelRef.current
-      ?.send({ type: "broadcast", event: "intent", payload: { baseVersion: base, patch } })
+      ?.send({
+        type: "broadcast",
+        event: "intent",
+        payload: { baseVersion: base, patch, sender: senderIdRef.current },
+      })
       .catch(() => {});
   }, []);
 
@@ -157,6 +176,18 @@ export function useTimerSession(id: string): UseTimerSessionResult {
       seenRef.current = true;
       sessionRef.current = row;
       setSession(row);
+      // Latch supersession: once a newer row has actually CHANGED the clock,
+      // the intent is permanently retired. Without this, a later writer
+      // returning the clock to the snapshot value (e.g. jumping back to the
+      // same level) would re-activate the dead overlay via the sameClock
+      // fallback in the render predicate.
+      setIntent((cur) =>
+        cur != null &&
+        row.version > cur.baseVersion &&
+        (cur.snapshot == null || !sameClock(clockSnapshot(row), cur.snapshot))
+          ? null
+          : cur,
+      );
     };
 
     const refetch = async () => {
@@ -201,16 +232,31 @@ export function useTimerSession(id: string): UseTimerSessionResult {
       .channel(`timer:${id}`)
       .on("broadcast", { event: "intent" }, (msg) => {
         if (!active) return;
-        const p = msg.payload as { baseVersion?: number; patch?: Partial<TimerSession> } | undefined;
+        const p = msg.payload as
+          | { baseVersion?: number; patch?: Partial<TimerSession>; sender?: string }
+          | undefined;
         if (typeof p?.baseVersion !== "number" || p.patch == null || typeof p.patch !== "object") return;
+        const sender = typeof p.sender === "string" ? p.sender : null;
+        const patch = sanitizeIntentPatch(p.patch);
+
+        // Empty patch = the sender cancelling its own failed action. It may
+        // only clear that sender's intent — wiping whichever intent happens
+        // to be showing would drop a DIFFERENT control's still-valid paint.
+        if (Object.keys(patch).length === 0) {
+          setIntent((cur) => (cur && cur.sender != null && cur.sender === sender ? null : cur));
+          void refetch();
+          return;
+        }
+
         const mine: TimerIntent = {
           forId: id,
           // The sender's version can trail rows this receiver already saw
           // (its own hook lags its adopted action results) — take the max so
           // a rapid second action isn't discarded.
           baseVersion: Math.max(p.baseVersion, versionRef.current),
-          patch: p.patch,
+          patch,
           snapshot: sessionRef.current ? clockSnapshot(sessionRef.current) : null,
+          sender,
         };
         setIntent(mine);
         // Expire by identity after the TTL (a newer intent simply replaces

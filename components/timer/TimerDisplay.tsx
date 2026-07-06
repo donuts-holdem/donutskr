@@ -158,7 +158,10 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
       // Natural expiry only: the previous frame was in the final seconds of
       // the previous level and we advanced exactly one segment.
       const natural = derived.levelIndex === prevLevel + 1 && prevRemain !== null && prevRemain < 2;
-      if (natural && soundOnRef.current && running) {
+      // Never chime while disconnected: the clock is free-running off a
+      // possibly-stale anchor (a pause may be invisible), and a boundary
+      // crossed in that state can be snapped back by the next poll.
+      if (natural && soundOnRef.current && running && connectionState === "connected") {
         tone(660, 0, 0.18);
         tone(880, 0.16, 0.28);
       }
@@ -171,9 +174,9 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
       // Only when the clock TICKED across the line (small decrement), not
       // when an adjustment/overlay landed it below 10 in one hop.
       const ticked = prevRemain !== null && prevRemain > derived.remainingSec && prevRemain - derived.remainingSec < 2;
-      if (ticked && soundOnRef.current && running) tone(880, 0, 0.5);
+      if (ticked && soundOnRef.current && running && connectionState === "connected") tone(880, 0, 0.5);
     }
-  }, [derived.levelIndex, derived.isBreak, derived.remainingSec, secLeft, running, tone]);
+  }, [derived.levelIndex, derived.isBreak, derived.remainingSec, secLeft, running, connectionState, tone]);
 
   // ── Fullscreen ────────────────────────────────────────────────────────────
   const rootRef = useRef<HTMLDivElement>(null);

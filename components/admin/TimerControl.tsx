@@ -136,6 +136,22 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
     (server.version <= override.baseVersion || sameClock(clockSnapshot(server), override.snapshot));
   const session = overrideActive && override != null ? { ...server, ...override.patch } : server;
 
+  // Latch supersession: the sameClock fallback exists only to survive
+  // unrelated bumps BEFORE the action's own row lands. Once a newer row has
+  // actually changed the clock, retire the override for good — otherwise a
+  // later writer returning the clock to the snapshot value would resurrect
+  // the dead optimistic paint. The clear is deferred to a callback (the
+  // predicate is already inactive at this point, so nothing is painted from
+  // it in the meantime).
+  useEffect(() => {
+    const cur = override;
+    if (cur == null) return;
+    if (server.version > cur.baseVersion && !sameClock(clockSnapshot(server), cur.snapshot)) {
+      const t = window.setTimeout(() => setOverride((c) => (c === cur ? null : c)), 0);
+      return () => window.clearTimeout(t);
+    }
+  }, [server, override]);
+
   // Re-render on a fixed cadence; the clock is always DERIVED from timestamps,
   // never decremented, so a missed tick self-corrects on the next one.
   const [, tick] = useReducer((x: number) => x + 1, 0);
@@ -170,9 +186,11 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
     if (session.status !== "running") return;
     if (derived.levelIndex > session.level_index && derived.levelIndex > committedRef.current) {
       committedRef.current = derived.levelIndex;
-      // Background sync — realtime will refresh; conflicts self-heal, so ignore.
       void commitAdvance(session.id, versionRef.current, derived.levelIndex).then((res) => {
         if (res.ok) adopt(res.version);
+        // A dropped commit must re-arm the boundary — leaving committedRef
+        // advanced would freeze the stored level a full level behind the room.
+        else committedRef.current = session.level_index;
         void refresh();
       });
     }
@@ -266,27 +284,34 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
       });
     }
   }
+  // Time adjustments mirror the server: both operate on the EFFECTIVE level
+  // (the one the room is watching, via the same forward walk deriveTimerState
+  // does) — the stored level_index can lag at a boundary while commitAdvance
+  // is in flight, and anchoring there rolled the blinds back a level.
   function nudge(deltaSec: number) {
     const atMs = now();
+    const d = deriveTimerState(session, atMs);
     const running = session.status === "running" && session.started_at != null;
-    let newOffset = Math.max(0, session.elapsed_offset_sec + ranSecAt(atMs) - Math.round(deltaSec));
-    if (deltaSec < 0) {
-      const durationSec = (session.structure[session.level_index]?.duration_min ?? 0) * 60;
-      if (durationSec > 0) newOffset = Math.min(newOffset, durationSec);
-    }
+    const durationSec = d.row.duration_min * 60;
+    const elapsedInLevel = Math.max(0, durationSec - d.remainingSec);
+    let newElapsed = Math.max(0, elapsedInLevel - Math.round(deltaSec));
+    if (deltaSec < 0 && durationSec > 0) newElapsed = Math.min(newElapsed, durationSec);
     void run(() => adjustTime(session.id, versionRef.current, deltaSec, atMs), {
-      elapsed_offset_sec: newOffset,
+      level_index: d.levelIndex,
+      elapsed_offset_sec: newElapsed,
       started_at: running ? new Date(atMs).toISOString() : session.started_at,
     });
   }
   function submitRemaining(sec: number) {
     const atMs = now();
-    const durationSec = (session.structure[session.level_index]?.duration_min ?? 0) * 60;
+    const d = deriveTimerState(session, atMs);
+    const durationSec = d.row.duration_min * 60;
     const valid = durationSec > 0 && sec <= durationSec;
     void run(
       () => setRemaining(session.id, versionRef.current, sec, atMs),
       valid
         ? {
+            level_index: d.levelIndex,
             elapsed_offset_sec: durationSec - sec,
             started_at: session.status === "running" ? new Date(atMs).toISOString() : null,
           }
@@ -480,7 +505,7 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
       <CountersCard session={session} currentBB={derived.row.bb} versionRef={versionRef} adopt={adopt} refresh={refresh} />
       <MetaCard session={session} versionRef={versionRef} adopt={adopt} refresh={refresh} />
       <StructureCard session={session} versionRef={versionRef} adopt={adopt} refresh={refresh} />
-      <FinishCard session={session} versionRef={versionRef} adopt={adopt} refresh={refresh} />
+      <FinishCard session={session} versionRef={versionRef} runClock={run} />
     </div>
   );
 }
@@ -1123,21 +1148,32 @@ function NumField({
 // --------------------------------------------------------------------------
 // Finish / reopen
 // --------------------------------------------------------------------------
-function FinishCard({ session, versionRef, adopt, refresh }: { session: TimerSession } & VersionProps) {
+// finish/reopen go through the root's run() so the venue display flips to the
+// finished/paused screen via the broadcast intent (~100-300ms) instead of
+// waiting a realtime hop — critical when the socket is flapping (a finished
+// tournament's clock must not keep counting on the TV).
+function FinishCard({
+  session,
+  versionRef,
+  runClock,
+}: {
+  session: TimerSession;
+  versionRef: React.RefObject<number>;
+  runClock: (fn: () => Promise<TimerActionResult>, patch?: Partial<TimerSession>) => Promise<void>;
+}) {
   const isFinished = session.status === "finished";
 
   async function finish() {
-    const res = await finishTimer(session.id, versionRef.current);
-    if (reportError(res) && res.ok) adopt(res.version);
-    void refresh();
+    await runClock(() => finishTimer(session.id, versionRef.current), {
+      status: "finished",
+      started_at: null,
+    });
   }
   async function reopen() {
-    const res = await reopenTimer(session.id, versionRef.current);
-    if (reportError(res) && res.ok) {
-      adopt(res.version);
-      toast.success("타이머를 재개했습니다");
-    }
-    void refresh();
+    await runClock(() => reopenTimer(session.id, versionRef.current), {
+      status: "paused",
+      started_at: null,
+    });
   }
 
   if (isFinished) {

@@ -22,13 +22,13 @@ import {
  * live tournament, so any refusal is surfaced as a toast rather than silently
  * swallowed.
  */
-export function TimerDeleteButton({ id, title }: { id: string; title: string }) {
+export function TimerDeleteButton({ id, title, version }: { id: string; title: string; version?: number }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function onDelete() {
     startTransition(async () => {
-      const res = await deleteTimer(id);
+      const res = await deleteTimer(id, version);
       if (res.ok) {
         toast.success("타이머를 삭제했습니다");
         router.refresh();
