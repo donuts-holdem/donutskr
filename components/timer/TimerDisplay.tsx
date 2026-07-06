@@ -275,18 +275,29 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
 
       {/* ── Main grid ── */}
       {/* Phones stack the three zones taller than the viewport — let this zone
-          scroll instead of clipping; the TV/landscape grid still locks to fit. */}
-      <main className="relative grid min-h-0 flex-1 grid-cols-1 content-start items-center gap-8 overflow-y-auto px-6 py-6 sm:px-10 lg:grid-cols-[1fr_2.4fr_1fr] lg:content-center lg:gap-8 lg:overflow-visible">
+          scroll instead of clipping; the TV/landscape grid still locks to fit.
+          minmax(0,·) pins every track to its fr share: a long stat string must
+          shrink (statStyle) rather than widen its column and push the clock
+          off true center. */}
+      <main className="relative grid min-h-0 flex-1 grid-cols-1 content-start items-center gap-8 overflow-y-auto px-6 py-6 sm:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)] lg:content-center lg:gap-8 lg:overflow-visible">
         {/* Left — players & average stack */}
         <section className="order-2 flex flex-row flex-wrap justify-center gap-x-12 gap-y-8 lg:order-1 lg:flex-col lg:justify-start">
           <Stat label="Players">
-            <span className="text-stat font-bold leading-none tabular-nums">
+            <span
+              className="whitespace-nowrap text-stat font-bold leading-none tabular-nums"
+              style={statStyle(`${session.players}/${session.entries}`)}
+            >
               {session.players}
               <span className="text-ink/45">/{session.entries}</span>
             </span>
           </Stat>
           <Stat label="Average Stack">
-            <span className="text-stat font-bold leading-none tabular-nums">
+            <span
+              className="whitespace-nowrap text-stat font-bold leading-none tabular-nums"
+              style={statStyle(
+                `${avg != null ? fmtChips(avg) : "—"}${avgBB != null ? `/${avgBB}BB` : ""}`,
+              )}
+            >
               {avg != null ? fmtChips(avg) : "—"}
               {avgBB != null && <span className="text-gold">/{avgBB}BB</span>}
             </span>
@@ -379,6 +390,21 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
 
     </div>
   );
+}
+
+/**
+ * Side-stat values live in fixed-width grid tracks, so a long string
+ * ("112,500/1,024BB") must scale its font down instead of widening the column.
+ * ~9 digit-widths render at the full --text-stat size; beyond that the size
+ * shrinks proportionally to the string's width in digit units (commas, slashes
+ * and dots count as half a digit under tabular-nums).
+ */
+const STAT_FIT_UNITS = 9;
+function statStyle(text: string): React.CSSProperties | undefined {
+  let units = 0;
+  for (const ch of text) units += ",./.".includes(ch) ? 0.5 : 1;
+  if (units <= STAT_FIT_UNITS) return undefined;
+  return { fontSize: `calc(var(--text-stat) * ${(STAT_FIT_UNITS / units).toFixed(3)})` };
 }
 
 // Text chip values ("PLO") render verbatim; 0 renders as an em-dash.
