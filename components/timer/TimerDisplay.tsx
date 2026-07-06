@@ -360,10 +360,10 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
           </p>
         </section>
 
-        {/* Right — prizes, only once entered */}
+        {/* Right — prizes; an em-dash until they are entered */}
         <section className="order-3 flex justify-center lg:justify-end">
-          {prizes.length > 0 && (
-            <Stat label="Prize" align="end">
+          <Stat label="Prize" align="end">
+            {prizes.length > 0 ? (
               <ul className="space-y-1.5">
                 {prizes.map((p) => (
                   <li
@@ -375,8 +375,10 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
                   </li>
                 ))}
               </ul>
-            </Stat>
-          )}
+            ) : (
+              <span className="text-2xl font-bold text-ink/45 sm:text-4xl">—</span>
+            )}
+          </Stat>
         </section>
       </main>
 
