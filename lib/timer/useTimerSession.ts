@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 import type { TimerSession, TimerLevel, TimerPrize } from "@/lib/types";
 
@@ -36,6 +37,22 @@ const POLL_INTERVAL_MS = 20_000;
 // Re-measure server skew periodically: an NTP step-correction on the display
 // device would otherwise shift the countdown by the correction amount.
 const OFFSET_REMEASURE_MS = 30 * 60_000;
+// How long a broadcast intent may bridge the gap before the authoritative row
+// must have arrived. Long enough for a slow server action (~1-2s), short
+// enough that a spoofed/orphaned intent self-heals quickly.
+const INTENT_TTL_MS = 4_000;
+
+// A control page's declared action, broadcast browser→realtime→peers at click
+// time. It skips the whole server round-trip (action → DB → WAL → push), so a
+// venue display freezes/starts ~100-300ms after the click instead of 1-2s.
+// Receivers treat it strictly as a short-lived overlay: it is dropped the
+// moment a row newer than `baseVersion` arrives, on expiry, and every receiver
+// refetches immediately, so the DB row remains the single source of truth.
+interface TimerIntent {
+  forId: string;
+  baseVersion: number;
+  patch: Partial<TimerSession>;
+}
 
 export interface UseTimerSessionResult {
   session: TimerSession | null;
@@ -51,6 +68,14 @@ export interface UseTimerSessionResult {
    * leave the UI stale until the next poll).
    */
   refresh: () => Promise<void>;
+  /**
+   * Broadcast the expected result of an action to every peer viewing this
+   * timer (venue displays, other control pages) so they repaint immediately,
+   * before the server action lands. Fire at click time with the same patch
+   * used for the local optimistic overlay. Stable reference; no-op while the
+   * channel is still connecting.
+   */
+  sendIntent: (patch: Partial<TimerSession>) => void;
 }
 
 /**
@@ -64,13 +89,24 @@ export function useTimerSession(id: string): UseTimerSessionResult {
   // "Gone" is tracked per id so an id change resets it without a setState in
   // the effect body (goneForId from a previous id simply stops matching).
   const [goneForId, setGoneForId] = useState<string | null>(null);
+  // Latest broadcast intent — carries its own id so an id change simply stops
+  // matching (same pattern as goneForId, avoids setState in the effect body).
+  const [intent, setIntent] = useState<TimerIntent | null>(null);
   const offsetRef = useRef(0);
   const versionRef = useRef(-1);
   const seenRef = useRef(false);
   const refetchRef = useRef<() => Promise<void>>(async () => {});
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const now = useCallback(() => Date.now() + offsetRef.current, []);
   const refresh = useCallback(() => refetchRef.current(), []);
+  const sendIntent = useCallback((patch: Partial<TimerSession>) => {
+    // baseVersion is the newest SERVER version this client has seen — peers
+    // drop the overlay as soon as any row above it arrives.
+    void channelRef.current
+      ?.send({ type: "broadcast", event: "intent", payload: { baseVersion: versionRef.current, patch } })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const supabase = createBrowserSupabase();
@@ -122,6 +158,20 @@ export function useTimerSession(id: string): UseTimerSessionResult {
 
     const channel = supabase
       .channel(`timer:${id}`)
+      .on("broadcast", { event: "intent" }, (msg) => {
+        if (!active) return;
+        const p = msg.payload as { baseVersion?: number; patch?: Partial<TimerSession> } | undefined;
+        if (typeof p?.baseVersion !== "number" || p.patch == null || typeof p.patch !== "object") return;
+        const mine: TimerIntent = { forId: id, baseVersion: p.baseVersion, patch: p.patch };
+        setIntent(mine);
+        // Expire by identity after the TTL — a newer intent simply replaces it.
+        window.setTimeout(() => setIntent((cur) => (cur === mine ? null : cur)), INTENT_TTL_MS);
+        // Reconcile with the authoritative row: once immediately, and once
+        // after the server action has surely committed — so even a spoofed or
+        // orphaned intent (or a dropped postgres_changes event) is corrected.
+        void refetch();
+        window.setTimeout(() => void refetch(), 1_500);
+      })
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "timer_sessions", filter: `id=eq.${id}` },
@@ -145,6 +195,7 @@ export function useTimerSession(id: string): UseTimerSessionResult {
           setConnectionState("disconnected");
         }
       });
+    channelRef.current = channel;
 
     const onVisible = () => {
       if (document.visibilityState === "visible") void refetch();
@@ -156,6 +207,7 @@ export function useTimerSession(id: string): UseTimerSessionResult {
 
     return () => {
       active = false;
+      channelRef.current = null;
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(poll);
       window.clearInterval(remeasure);
@@ -163,5 +215,14 @@ export function useTimerSession(id: string): UseTimerSessionResult {
     };
   }, [id]);
 
-  return { session, now, connectionState, gone: goneForId === id, refresh };
+  // Overlay a live intent on top of the last authoritative row. It drops when
+  // a newer row arrives (version gate) or when its TTL timeout clears it.
+  const intentActive =
+    intent != null &&
+    intent.forId === id &&
+    session != null &&
+    session.version <= intent.baseVersion;
+  const view = intentActive && session != null ? { ...session, ...intent.patch } : session;
+
+  return { session: view, now, connectionState, gone: goneForId === id, refresh, sendIntent };
 }

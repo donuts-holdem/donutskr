@@ -113,7 +113,7 @@ function blindsLabel(row: TimerLevel): string {
 // Root
 // --------------------------------------------------------------------------
 export function TimerControl({ initial }: { initial: TimerSession }) {
-  const { session: live, now, connectionState, refresh } = useTimerSession(initial.id);
+  const { session: live, now, connectionState, refresh, sendIntent } = useTimerSession(initial.id);
   const server = live ?? initial;
 
   // Optimistic overlay: the moment a clock action is pressed, the expected
@@ -186,8 +186,13 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
-    // Paint the expected result before the round-trip.
-    if (patch) setOverride({ baseVersion: versionRef.current, patch });
+    // Paint the expected result before the round-trip — locally AND on every
+    // peer (venue display) via broadcast, so the room's clock reacts to the
+    // click in ~100-300ms instead of after the full server round-trip.
+    if (patch) {
+      setOverride({ baseVersion: versionRef.current, patch });
+      sendIntent(patch);
+    }
     try {
       const res = await fn();
       if (reportError(res) && res.ok) adopt(res.version);
