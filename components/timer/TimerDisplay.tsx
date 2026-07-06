@@ -408,10 +408,11 @@ function statStyle(text: string): React.CSSProperties | undefined {
 }
 
 // Text chip values ("PLO") render verbatim; 0 renders as an em-dash.
+// Blind amounts are written plain (no thousand separators) — "2000", not "2,000".
 function chip(val: number | string | null): string {
   if (val == null) return "-";
   if (typeof val === "string") return val.trim() === "" ? "-" : val;
-  return val === 0 ? "—" : fmtChips(val);
+  return val === 0 ? "—" : String(val);
 }
 
 function BlindRow({
