@@ -51,7 +51,8 @@ layer(base);
   /* Tournament-clock display sizes — viewport-scaled so the countdown stays
      dominant on a venue TV yet degrades onto a tablet. */
   --text-clock: clamp(4.5rem, 19vw, 17rem); /* the huge MM:SS countdown */
-  --text-blind: clamp(2.25rem, 5.5vw, 5rem); /* current blind values */
+  --text-blind: clamp(2rem, 4vw, 4.5rem); /* SB/BB/ANTE row under the clock */
+  --text-stat: clamp(2.25rem, 4.2vw, 4.5rem); /* side stats — players, avg stack */
 
   --font-sans:
     var(--font-inter), Wanted Sans, Pretendard, system-ui, sans-serif;
