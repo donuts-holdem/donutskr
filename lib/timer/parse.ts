@@ -26,17 +26,25 @@ export type BuildStructureResult =
   | { ok: true; structure: TimerLevel[] }
   | { ok: false; error: BuildStructureError };
 
+/** Duration for a lone final level with no time set and no prior level to inherit from. */
+const FALLBACK_FINAL_LEVEL_MIN = 20;
+
 /**
  * Flatten blind-structure rows into the timer's level/break list. 'stage' rows
  * are skipped (they are display separators, not clock segments). Any unparseable
- * chip value or missing duration returns an error identifying the offending row.
+ * chip value or missing duration returns an error identifying the offending row —
+ * except an empty duration on the FINAL level, which by data-entry convention
+ * means "play until the tournament ends"; it inherits the previous level's
+ * duration (the clock freezes at 0:00 on the last level, so the TD just plays on
+ * or adds time).
  */
 export function buildTimerStructure(rows: BlindRow[]): BuildStructureResult {
   const sorted = [...rows].sort((a, b) => a.sort_order - b.sort_order);
+  const clockRows = sorted.filter((r) => r.row_type !== "stage");
   const structure: TimerLevel[] = [];
 
-  for (const row of sorted) {
-    if (row.row_type === "stage") continue;
+  for (let i = 0; i < clockRows.length; i++) {
+    const row = clockRows[i];
 
     if (row.row_type === "level") {
       const sb = parseChipValue(row.sb);
@@ -45,8 +53,15 @@ export function buildTimerStructure(rows: BlindRow[]): BuildStructureResult {
       if (bb === null) return { ok: false, error: { sortOrder: row.sort_order, field: "bb", raw: row.bb ?? "" } };
       const ante = parseChipValue(row.ante);
       if (ante === null) return { ok: false, error: { sortOrder: row.sort_order, field: "ante", raw: row.ante ?? "" } };
-      if (row.duration == null) return { ok: false, error: { sortOrder: row.sort_order, field: "duration", raw: "" } };
-      structure.push({ type: "level", level_no: row.level_no, name: null, sb, bb, ante, duration_min: row.duration });
+
+      let duration = row.duration;
+      if (duration == null) {
+        const isLast = i === clockRows.length - 1;
+        if (!isLast) return { ok: false, error: { sortOrder: row.sort_order, field: "duration", raw: "" } };
+        const prevLevel = [...structure].reverse().find((l) => l.type === "level");
+        duration = prevLevel?.duration_min ?? FALLBACK_FINAL_LEVEL_MIN;
+      }
+      structure.push({ type: "level", level_no: row.level_no, name: null, sb, bb, ante, duration_min: duration });
     } else {
       // break
       if (row.break_minutes == null) return { ok: false, error: { sortOrder: row.sort_order, field: "break_minutes", raw: "" } };

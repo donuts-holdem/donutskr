@@ -62,13 +62,45 @@ describe("buildTimerStructure", () => {
     expect(res.error).toEqual({ sortOrder: 3, field: "bb", raw: "100/200" });
   });
 
-  it("errors when a level duration is missing", () => {
+  it("errors when a mid-structure level duration is missing", () => {
     const res = buildTimerStructure([
       row({ level_no: 1, sb: "100", bb: "200", ante: "0", duration: null, sort_order: 0 }),
+      row({ level_no: 2, sb: "200", bb: "400", ante: "0", duration: 20, sort_order: 1 }),
     ]);
     expect(res.ok).toBe(false);
     if (res.ok) return;
-    expect(res.error.field).toBe("duration");
+    expect(res.error).toEqual({ sortOrder: 0, field: "duration", raw: "" });
+  });
+
+  it("final level with empty duration inherits the previous level's duration", () => {
+    const res = buildTimerStructure([
+      row({ level_no: 1, sb: "100", bb: "200", ante: "0", duration: 15, sort_order: 0 }),
+      row({ row_type: "break", break_name: "휴식", break_minutes: 10, sort_order: 1 }),
+      row({ level_no: 2, sb: "200", bb: "400", ante: "0", duration: null, sort_order: 2 }),
+    ]);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.structure[2]).toMatchObject({ type: "level", level_no: 2, duration_min: 15 });
+  });
+
+  it("trailing stage rows do not stop the final level inheriting a duration", () => {
+    const res = buildTimerStructure([
+      row({ level_no: 1, sb: "100", bb: "200", ante: "0", duration: 12, sort_order: 0 }),
+      row({ level_no: 2, sb: "200", bb: "400", ante: "0", duration: null, sort_order: 1 }),
+      row({ row_type: "stage", stage_note: "Final", sort_order: 2 }),
+    ]);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.structure[1]).toMatchObject({ level_no: 2, duration_min: 12 });
+  });
+
+  it("a lone final level with no duration falls back to 20 minutes", () => {
+    const res = buildTimerStructure([
+      row({ level_no: 1, sb: "100", bb: "200", ante: "0", duration: null, sort_order: 0 }),
+    ]);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.structure[0]).toMatchObject({ level_no: 1, duration_min: 20 });
   });
 
   it("rejects an empty structure", () => {
