@@ -68,9 +68,11 @@ export interface TimerLevel {
   type: TimerRowType;
   level_no: number | null;
   name: string | null;
-  sb: number;
-  bb: number;
-  ante: number;
+  // Chip values are numbers when parseable; free text (e.g. "PLO") passes
+  // through and is displayed verbatim on the clock.
+  sb: number | string;
+  bb: number | string;
+  ante: number | string;
   duration_min: number;
 }
 export type TimerStatus = "running" | "paused" | "finished";

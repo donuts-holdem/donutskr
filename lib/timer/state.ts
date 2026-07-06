@@ -129,8 +129,9 @@ export function avgStack(session: TimerSession): number | null {
   return session.players > 0 ? Math.floor(totalChips(session) / session.players) : null;
 }
 
-export function avgStackBB(session: TimerSession, bb: number): number | null {
+export function avgStackBB(session: TimerSession, bb: number | string): number | null {
   const avg = avgStack(session);
-  if (avg == null || bb <= 0) return null;
+  // Text BB values ("PLO") can't anchor a BB average — skip the stat.
+  if (avg == null || typeof bb !== "number" || bb <= 0) return null;
   return Math.floor(avg / bb);
 }

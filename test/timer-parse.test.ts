@@ -53,23 +53,28 @@ describe("buildTimerStructure", () => {
     expect(res.structure.map((r) => r.level_no)).toEqual([1, 2]);
   });
 
-  it("carries sortOrder + field + raw on a parse error", () => {
+  it("keeps non-numeric chip text verbatim and reports it as a warning", () => {
     const res = buildTimerStructure([
-      row({ level_no: 1, sb: "100", bb: "100/200", ante: "0", duration: 20, sort_order: 3 }),
+      row({ level_no: 1, sb: "100", bb: "200", ante: "PLO", duration: 20, sort_order: 3 }),
     ]);
-    expect(res.ok).toBe(false);
-    if (res.ok) return;
-    expect(res.error).toEqual({ sortOrder: 3, field: "bb", raw: "100/200" });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.structure[0]).toMatchObject({ sb: 100, bb: 200, ante: "PLO" });
+    expect(res.warnings).toEqual([{ sortOrder: 3, levelNo: 1, field: "ante", raw: "PLO" }]);
   });
 
-  it("errors when a mid-structure level duration is missing", () => {
+  it("collects ALL missing mid-structure durations, not just the first", () => {
     const res = buildTimerStructure([
       row({ level_no: 1, sb: "100", bb: "200", ante: "0", duration: null, sort_order: 0 }),
-      row({ level_no: 2, sb: "200", bb: "400", ante: "0", duration: 20, sort_order: 1 }),
+      row({ row_type: "break", break_name: "휴식", break_minutes: null, sort_order: 1 }),
+      row({ level_no: 2, sb: "200", bb: "400", ante: "0", duration: 20, sort_order: 2 }),
     ]);
     expect(res.ok).toBe(false);
     if (res.ok) return;
-    expect(res.error).toEqual({ sortOrder: 0, field: "duration", raw: "" });
+    expect(res.errors).toEqual([
+      { sortOrder: 0, field: "duration", raw: "" },
+      { sortOrder: 1, field: "break_minutes", raw: "" },
+    ]);
   });
 
   it("final level with empty duration inherits the previous level's duration", () => {
@@ -107,6 +112,6 @@ describe("buildTimerStructure", () => {
     const res = buildTimerStructure([row({ row_type: "stage", stage_note: "x", sort_order: 0 })]);
     expect(res.ok).toBe(false);
     if (res.ok) return;
-    expect(res.error.field).toBe("structure");
+    expect(res.errors[0].field).toBe("structure");
   });
 });

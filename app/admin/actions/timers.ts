@@ -3,8 +3,8 @@ import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/lib/auth";
 import { mapRow } from "@/lib/data/blindStructures";
-import { buildTimerStructure, type BuildStructureError } from "@/lib/timer/parse";
-import type { TimerLevel, TimerPrize } from "@/lib/types";
+import { buildTimerStructure, type BuildStructureWarning } from "@/lib/timer/parse";
+import type { BlindRow, TimerLevel, TimerPrize } from "@/lib/types";
 
 // Every mutating action guards on the caller's expected `version` and bumps it,
 // so a stale client write no-ops (0 rows) and reports a conflict instead of
@@ -12,7 +12,23 @@ import type { TimerLevel, TimerPrize } from "@/lib/types";
 // version so clients can adopt it immediately (rapid sequential clicks must not
 // wait for the realtime echo). Returns are discriminated unions, Korean errors.
 export type TimerActionResult = { ok: true; version?: number } | { ok: false; error: string };
-export type CreateTimerResult = { ok: true; id: string } | { ok: false; error: string };
+
+// A row the operator must supply a duration for before the timer can be built.
+// `label` is display-ready ("12번째 행 · 레벨 12"); `sortOrder` keys the fix.
+export interface TimerCreateIssue {
+  sortOrder: number;
+  field: "duration" | "break_minutes";
+  label: string;
+}
+// Operator-supplied duration for an offending row — applied to the TIMER
+// snapshot only, never written back to the blind structure.
+export interface TimerDurationFix {
+  sortOrder: number;
+  minutes: number;
+}
+export type CreateTimerResult =
+  | { ok: true; id: string; warning: string | null }
+  | { ok: false; error: string; issues?: TimerCreateIssue[] };
 
 const CONFLICT: TimerActionResult = { ok: false, error: "conflict" };
 
@@ -36,21 +52,29 @@ async function logAction(
   }
 }
 
-function timerErrMsg(e: BuildStructureError): string {
-  if (e.field === "structure") return "타이머로 만들 수 있는 레벨이 없습니다";
-  const labels: Record<string, string> = {
-    sb: "SB", bb: "BB", ante: "앤티", duration: "진행 시간", break_minutes: "휴식 시간",
-  };
-  const field = labels[e.field] ?? e.field;
-  const pos = e.sortOrder + 1;
-  if (e.raw === "") return `${pos}번째 행의 ${field} 값이 비어 있습니다`;
-  return `${pos}번째 행의 ${field} '${e.raw}' 값을 숫자로 변환할 수 없습니다`;
+// Human label for an offending row in the fix-up dialog.
+function issueLabel(row: BlindRow): string {
+  const pos = `${row.sort_order + 1}번째 행`;
+  if (row.row_type === "break") return `${pos} · ${row.break_name?.trim() || "휴식"}`;
+  const level = row.level_no != null ? `레벨 ${row.level_no}` : "레벨";
+  const blinds = row.sb || row.bb ? ` (${row.sb ?? "?"}/${row.bb ?? "?"})` : "";
+  return `${pos} · ${level}${blinds}`;
+}
+
+// One-line warning for non-numeric chip text that flowed into the timer as-is.
+function chipWarning(warnings: BuildStructureWarning[]): string | null {
+  if (warnings.length === 0) return null;
+  const w = warnings[0];
+  const fieldLabels = { sb: "SB", bb: "BB", ante: "앤티" } as const;
+  const where = w.levelNo != null ? `레벨 ${w.levelNo} ${fieldLabels[w.field]}` : fieldLabels[w.field];
+  const more = warnings.length > 1 ? ` 외 ${warnings.length - 1}건` : "";
+  return `블라인드에 숫자가 아닌 텍스트가 있습니다 (${where} '${w.raw}'${more}) — 타이머에 그대로 표시됩니다`;
 }
 
 // --------------------------------------------------------------------------
 // Create
 // --------------------------------------------------------------------------
-export async function createTimerFromEvent(eventId: string): Promise<CreateTimerResult> {
+export async function createTimerFromEvent(eventId: string, fixes?: TimerDurationFix[]): Promise<CreateTimerResult> {
   const supabase = await requireAdmin();
 
   const { data: event, error: evErr } = await supabase
@@ -65,8 +89,38 @@ export async function createTimerFromEvent(eventId: string): Promise<CreateTimer
     .from("blind_structure_rows").select("*").eq("structure_id", event.blind_structure_id).order("sort_order");
   if (rowsErr) throw rowsErr;
 
-  const built = buildTimerStructure((rawRows ?? []).map(mapRow));
-  if (!built.ok) return { ok: false, error: timerErrMsg(built.error) };
+  // Operator-supplied durations patch the row list BEFORE the build, so the
+  // fix lives only in the timer's snapshot — the blind structure is untouched.
+  const rows = (rawRows ?? []).map(mapRow);
+  for (const fix of fixes ?? []) {
+    if (!Number.isInteger(fix.minutes) || fix.minutes < 1) {
+      return { ok: false, error: "진행 시간은 1분 이상의 정수여야 합니다" };
+    }
+    const row = rows.find((r) => r.sort_order === fix.sortOrder);
+    if (!row) continue;
+    if (row.row_type === "break") row.break_minutes = fix.minutes;
+    else row.duration = fix.minutes;
+  }
+
+  const built = buildTimerStructure(rows);
+  if (!built.ok) {
+    if (built.errors.some((e) => e.field === "structure")) {
+      return { ok: false, error: "타이머로 만들 수 있는 레벨이 없습니다" };
+    }
+    const issues: TimerCreateIssue[] = built.errors.map((e) => {
+      const row = rows.find((r) => r.sort_order === e.sortOrder);
+      return {
+        sortOrder: e.sortOrder,
+        field: e.field === "break_minutes" ? "break_minutes" : "duration",
+        label: row ? issueLabel(row) : `${e.sortOrder + 1}번째 행`,
+      };
+    });
+    return {
+      ok: false,
+      error: `진행 시간이 비어 있는 행이 ${issues.length}개 있습니다`,
+      issues,
+    };
+  }
 
   const { data: created, error: insErr } = await supabase
     .from("timer_sessions")
@@ -85,7 +139,7 @@ export async function createTimerFromEvent(eventId: string): Promise<CreateTimer
 
   await logAction(supabase, created.id, "create", { event_id: event.id, levels: built.structure.length });
   revalidateTimer(created.id);
-  return { ok: true, id: created.id };
+  return { ok: true, id: created.id, warning: chipWarning(built.warnings) };
 }
 
 // --------------------------------------------------------------------------
@@ -313,7 +367,11 @@ function validateStructure(structure: unknown): string | null {
   for (const row of structure as TimerLevel[]) {
     if (row?.type !== "level" && row?.type !== "break") return "행 타입이 올바르지 않습니다";
     for (const f of ["sb", "bb", "ante"] as const) {
-      if (typeof row[f] !== "number" || !Number.isFinite(row[f]) || row[f] < 0) return "블라인드 값은 0 이상의 숫자여야 합니다";
+      const v = row[f];
+      const numOk = typeof v === "number" && Number.isFinite(v) && v >= 0;
+      // Text chip values ("PLO") are displayed verbatim — allow short non-empty text.
+      const textOk = typeof v === "string" && v.trim().length > 0 && v.trim().length <= 24;
+      if (!numOk && !textOk) return "블라인드 값은 0 이상의 숫자 또는 짧은 텍스트여야 합니다";
     }
     if (typeof row.duration_min !== "number" || !Number.isInteger(row.duration_min) || row.duration_min < 1) {
       return "진행 시간은 1분 이상의 정수여야 합니다";

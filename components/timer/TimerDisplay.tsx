@@ -380,9 +380,9 @@ function BlindStack({
   emphatic = false,
   align = "start",
 }: {
-  sb: number | null;
-  bb: number | null;
-  ante: number | null;
+  sb: number | string | null;
+  bb: number | string | null;
+  ante: number | string | null;
   emphatic?: boolean;
   align?: "start" | "end";
 }) {
@@ -391,11 +391,17 @@ function BlindStack({
   const valueCls = emphatic
     ? "text-blind font-bold text-ink"
     : "text-3xl font-semibold text-ink sm:text-5xl";
-  const rows: [string, number | null][] = [
+  const rows: [string, number | string | null][] = [
     ["SMALL BLIND", sb],
     ["BIG BLIND", bb],
     ["ANTE", ante],
   ];
+  // Text chip values ("PLO") render verbatim; 0 renders as an em-dash.
+  const chip = (val: number | string | null): string => {
+    if (val == null) return "-";
+    if (typeof val === "string") return val.trim() === "" ? "-" : val;
+    return val === 0 ? "—" : fmtChips(val);
+  };
   return (
     <dl className={`flex flex-col gap-4 ${itemAlign}`}>
       {rows.map(([label, val]) => (
@@ -403,9 +409,7 @@ function BlindStack({
           <dt className="text-2xs font-semibold uppercase tracking-[0.2em] text-ink/60 sm:text-xs">
             {label}
           </dt>
-          <dd className={`leading-none tabular-nums ${valueCls}`}>
-            {val == null ? "-" : val === 0 ? "—" : fmtChips(val)}
-          </dd>
+          <dd className={`leading-none tabular-nums ${valueCls}`}>{chip(val)}</dd>
         </div>
       ))}
     </dl>

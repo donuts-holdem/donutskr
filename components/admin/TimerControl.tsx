@@ -98,9 +98,15 @@ function formatNum(n: number): string {
   return n.toLocaleString("ko-KR");
 }
 
+/** Chip values may be free text ("PLO") — numbers get formatted, text passes through. */
+function chipText(v: number | string): string {
+  return typeof v === "number" ? formatNum(v) : v;
+}
+
 function blindsLabel(row: TimerLevel): string {
-  const base = `${formatNum(row.sb)} / ${formatNum(row.bb)}`;
-  return row.ante > 0 ? `${base} (앤티 ${formatNum(row.ante)})` : base;
+  const base = `${chipText(row.sb)} / ${chipText(row.bb)}`;
+  const hasAnte = typeof row.ante === "number" ? row.ante > 0 : row.ante.trim() !== "";
+  return hasAnte ? `${base} (앤티 ${chipText(row.ante)})` : base;
 }
 
 // --------------------------------------------------------------------------
@@ -331,7 +337,7 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
                             : `레벨 ${row.level_no ?? "—"}`}
                         </span>
                         <span className="text-muted-foreground tabular-nums">
-                          {row.type === "break" ? `${row.duration_min}분` : `${formatNum(row.sb)}/${formatNum(row.bb)}`}
+                          {row.type === "break" ? `${row.duration_min}분` : `${chipText(row.sb)}/${chipText(row.bb)}`}
                         </span>
                       </button>
                     </li>
@@ -454,7 +460,7 @@ const CountersCard = memo(function CountersCard({
   adopt,
 }: {
   session: TimerSession;
-  currentBB: number;
+  currentBB: number | string;
 } & VersionProps) {
   const [entries, setEntries] = useState(session.entries);
   const [players, setPlayers] = useState(session.players);
@@ -874,9 +880,9 @@ const StructureCard = memo(function StructureCard({
 
                 {r.type === "level" ? (
                   <>
-                    <NumField label="SB" value={r.sb} onChange={(v) => update(r.key, { sb: v })} disabled={locked} />
-                    <NumField label="BB" value={r.bb} onChange={(v) => update(r.key, { bb: v })} disabled={locked} />
-                    <NumField label="앤티" value={r.ante} onChange={(v) => update(r.key, { ante: v })} disabled={locked} />
+                    <ChipField label="SB" value={r.sb} onChange={(v) => update(r.key, { sb: v })} disabled={locked} />
+                    <ChipField label="BB" value={r.bb} onChange={(v) => update(r.key, { bb: v })} disabled={locked} />
+                    <ChipField label="앤티" value={r.ante} onChange={(v) => update(r.key, { ante: v })} disabled={locked} />
                   </>
                 ) : (
                   <Input
@@ -927,6 +933,41 @@ const StructureCard = memo(function StructureCard({
     </Card>
   );
 });
+
+// Chip fields accept free text: digits (with commas) commit as numbers, any
+// other text ("PLO") is kept verbatim and shown as-is on the clock.
+function ChipField({
+  label,
+  value,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  value: number | string;
+  onChange: (v: number | string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-muted-foreground text-2xs">{label}</span>
+      <Input
+        type="text"
+        inputMode="numeric"
+        aria-label={label}
+        value={String(value)}
+        onChange={(e) => {
+          const raw = e.target.value;
+          const compact = raw.trim().replace(/[,\s]/g, "");
+          if (compact === "") onChange(0);
+          else if (/^\d+$/.test(compact)) onChange(parseInt(compact, 10));
+          else onChange(raw);
+        }}
+        className="w-20 tabular-nums"
+        disabled={disabled}
+      />
+    </div>
+  );
+}
 
 function NumField({
   label,
