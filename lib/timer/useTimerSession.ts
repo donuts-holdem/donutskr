@@ -44,6 +44,13 @@ export interface UseTimerSessionResult {
   connectionState: TimerConnectionState;
   /** True once the row has disappeared (soft-deleted) after being seen. */
   gone: boolean;
+  /**
+   * Refetch the row immediately. Stable reference. Callers that just mutated
+   * the timer use this so their own action is reflected without depending on
+   * the realtime echo (a still-connecting or dropped socket would otherwise
+   * leave the UI stale until the next poll).
+   */
+  refresh: () => Promise<void>;
 }
 
 /**
@@ -60,8 +67,10 @@ export function useTimerSession(id: string): UseTimerSessionResult {
   const offsetRef = useRef(0);
   const versionRef = useRef(-1);
   const seenRef = useRef(false);
+  const refetchRef = useRef<() => Promise<void>>(async () => {});
 
   const now = useCallback(() => Date.now() + offsetRef.current, []);
+  const refresh = useCallback(() => refetchRef.current(), []);
 
   useEffect(() => {
     const supabase = createBrowserSupabase();
@@ -87,6 +96,7 @@ export function useTimerSession(id: string): UseTimerSessionResult {
       if (data) apply(rowToSession(data));
       else if (seenRef.current) markGone(); // row vanished (soft-deleted)
     };
+    refetchRef.current = refetch;
 
     // Measure server clock skew. Roundtrip-midpoint estimate keeps the
     // countdown honest on devices whose local clock is wrong.
@@ -150,5 +160,5 @@ export function useTimerSession(id: string): UseTimerSessionResult {
     };
   }, [id]);
 
-  return { session, now, connectionState, gone: goneForId === id };
+  return { session, now, connectionState, gone: goneForId === id, refresh };
 }

@@ -113,7 +113,7 @@ function blindsLabel(row: TimerLevel): string {
 // Root
 // --------------------------------------------------------------------------
 export function TimerControl({ initial }: { initial: TimerSession }) {
-  const { session: live, now, connectionState } = useTimerSession(initial.id);
+  const { session: live, now, connectionState, refresh } = useTimerSession(initial.id);
   const session = live ?? initial;
 
   // Re-render on a fixed cadence; the clock is always DERIVED from timestamps,
@@ -151,9 +151,10 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
       // Background sync — realtime will refresh; conflicts self-heal, so ignore.
       void commitAdvance(session.id, versionRef.current, derived.levelIndex).then((res) => {
         if (res.ok) adopt(res.version);
+        void refresh();
       });
     }
-  }, [derived.levelIndex, session.level_index, session.status, session.version, session.id, adopt]);
+  }, [derived.levelIndex, session.level_index, session.status, session.version, session.id, adopt, refresh]);
 
   const isFinished = session.status === "finished";
   const isRunning = session.status === "running";
@@ -176,6 +177,10 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
     try {
       const res = await fn();
       if (reportError(res) && res.ok) adopt(res.version);
+      // Reflect the action immediately — never depend on the realtime echo
+      // (a still-connecting or dropped socket would leave the UI stale until
+      // the next poll). Also resyncs after a conflict.
+      void refresh();
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -364,10 +369,10 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
         </AlertDialogContent>
       </AlertDialog>
 
-      <CountersCard session={session} currentBB={derived.row.bb} versionRef={versionRef} adopt={adopt} />
-      <MetaCard session={session} versionRef={versionRef} adopt={adopt} />
-      <StructureCard session={session} versionRef={versionRef} adopt={adopt} />
-      <FinishCard session={session} versionRef={versionRef} adopt={adopt} />
+      <CountersCard session={session} currentBB={derived.row.bb} versionRef={versionRef} adopt={adopt} refresh={refresh} />
+      <MetaCard session={session} versionRef={versionRef} adopt={adopt} refresh={refresh} />
+      <StructureCard session={session} versionRef={versionRef} adopt={adopt} refresh={refresh} />
+      <FinishCard session={session} versionRef={versionRef} adopt={adopt} refresh={refresh} />
     </div>
   );
 }
@@ -451,6 +456,8 @@ interface VersionProps {
   /** Latest known version, shared with the root — actions adopt bumps into it. */
   versionRef: React.RefObject<number>;
   adopt: (v?: number) => void;
+  /** Immediate refetch after a mutation — see useTimerSession.refresh. */
+  refresh: () => Promise<void>;
 }
 
 const CountersCard = memo(function CountersCard({
@@ -458,6 +465,7 @@ const CountersCard = memo(function CountersCard({
   currentBB,
   versionRef,
   adopt,
+  refresh,
 }: {
   session: TimerSession;
   currentBB: number | string;
@@ -483,6 +491,7 @@ const CountersCard = memo(function CountersCard({
       if (res.ok) {
         adopt(res.version);
         dirtyRef.current = false;
+        void refresh();
       } else if (res.error !== "conflict") {
         // Validation errors are surfaced; conflicts self-heal via resync+retry.
         toast.error(res.error);
@@ -490,7 +499,7 @@ const CountersCard = memo(function CountersCard({
       }
     }, 400);
     return () => window.clearTimeout(t);
-  }, [entries, players, session.id, session.version, versionRef, adopt]);
+  }, [entries, players, session.id, session.version, versionRef, adopt, refresh]);
 
   function changeEntries(n: number) {
     const v = Math.max(0, Math.floor(Number.isFinite(n) ? n : 0));
@@ -589,6 +598,7 @@ const MetaCard = memo(function MetaCard({
   session,
   versionRef,
   adopt,
+  refresh,
 }: { session: TimerSession } & VersionProps) {
   const [title, setTitle] = useState(session.title);
   const [startingStack, setStartingStack] = useState<string>(session.starting_stack?.toString() ?? "");
@@ -634,6 +644,7 @@ const MetaCard = memo(function MetaCard({
       if (res.ok) adopt(res.version);
       dirtyRef.current = false;
       toast.success("저장되었습니다");
+      void refresh();
     }
   }
 
@@ -750,6 +761,7 @@ const StructureCard = memo(function StructureCard({
   session,
   versionRef,
   adopt,
+  refresh,
 }: { session: TimerSession } & VersionProps) {
   const [rows, setRows] = useState<StructRow[]>(() => withKeys(session.structure));
   const [saving, setSaving] = useState(false);
@@ -813,6 +825,7 @@ const StructureCard = memo(function StructureCard({
       if (res.ok) adopt(res.version);
       dirtyRef.current = false;
       toast.success("스트럭처를 저장했습니다");
+      void refresh();
     }
   }
 
@@ -1002,12 +1015,13 @@ function NumField({
 // --------------------------------------------------------------------------
 // Finish / reopen
 // --------------------------------------------------------------------------
-function FinishCard({ session, versionRef, adopt }: { session: TimerSession } & VersionProps) {
+function FinishCard({ session, versionRef, adopt, refresh }: { session: TimerSession } & VersionProps) {
   const isFinished = session.status === "finished";
 
   async function finish() {
     const res = await finishTimer(session.id, versionRef.current);
     if (reportError(res) && res.ok) adopt(res.version);
+    void refresh();
   }
   async function reopen() {
     const res = await reopenTimer(session.id, versionRef.current);
@@ -1015,6 +1029,7 @@ function FinishCard({ session, versionRef, adopt }: { session: TimerSession } & 
       adopt(res.version);
       toast.success("타이머를 재개했습니다");
     }
+    void refresh();
   }
 
   if (isFinished) {
