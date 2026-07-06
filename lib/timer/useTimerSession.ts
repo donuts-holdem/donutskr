@@ -34,6 +34,7 @@ function rowToSession(r: any): TimerSession {
 }
 
 const POLL_INTERVAL_MS = 20_000;
+const FAST_POLL_INTERVAL_MS = 4_000;
 // Re-measure server skew periodically: an NTP step-correction on the display
 // device would otherwise shift the countdown by the correction amount.
 const OFFSET_REMEASURE_MS = 30 * 60_000;
@@ -42,16 +43,37 @@ const OFFSET_REMEASURE_MS = 30 * 60_000;
 // enough that a spoofed/orphaned intent self-heals quickly.
 const INTENT_TTL_MS = 4_000;
 
+// The four fields that define the clock's motion. Overlays are invalidated by
+// a CLOCK change, not by version alone: an unrelated bump (entries autosave,
+// meta edit) must not un-pause an optimistic overlay while the real pause row
+// is still in flight.
+const CLOCK_KEYS = ["status", "started_at", "elapsed_offset_sec", "level_index"] as const;
+type ClockSnapshot = Pick<TimerSession, (typeof CLOCK_KEYS)[number]>;
+
+export function clockSnapshot(s: TimerSession): ClockSnapshot {
+  return {
+    status: s.status,
+    started_at: s.started_at,
+    elapsed_offset_sec: s.elapsed_offset_sec,
+    level_index: s.level_index,
+  };
+}
+export function sameClock(a: ClockSnapshot, b: ClockSnapshot): boolean {
+  return CLOCK_KEYS.every((k) => Object.is(a[k], b[k]));
+}
+
 // A control page's declared action, broadcast browser→realtime→peers at click
 // time. It skips the whole server round-trip (action → DB → WAL → push), so a
 // venue display freezes/starts ~100-300ms after the click instead of 1-2s.
-// Receivers treat it strictly as a short-lived overlay: it is dropped the
-// moment a row newer than `baseVersion` arrives, on expiry, and every receiver
-// refetches immediately, so the DB row remains the single source of truth.
+// Receivers treat it strictly as a short-lived overlay: it is dropped once a
+// newer row actually CHANGES the clock (see CLOCK_KEYS), or on TTL expiry, and
+// every receiver refetches, so the DB row remains the single source of truth.
 interface TimerIntent {
   forId: string;
   baseVersion: number;
   patch: Partial<TimerSession>;
+  /** Receiver's clock at arrival — a newer row that still matches it is an unrelated bump. */
+  snapshot: ClockSnapshot | null;
 }
 
 export interface UseTimerSessionResult {
@@ -72,10 +94,13 @@ export interface UseTimerSessionResult {
    * Broadcast the expected result of an action to every peer viewing this
    * timer (venue displays, other control pages) so they repaint immediately,
    * before the server action lands. Fire at click time with the same patch
-   * used for the local optimistic overlay. Stable reference; no-op while the
-   * channel is still connecting.
+   * used for the local optimistic overlay; pass the caller's freshest known
+   * version (e.g. an adopted action result) so rapid sequential actions are
+   * not discarded by peers that already saw the previous row. An empty patch
+   * cancels the pending intent on peers (used when an action fails). Stable
+   * reference; no-op while the channel is still connecting.
    */
-  sendIntent: (patch: Partial<TimerSession>) => void;
+  sendIntent: (patch: Partial<TimerSession>, baseVersion?: number) => void;
 }
 
 /**
@@ -95,16 +120,19 @@ export function useTimerSession(id: string): UseTimerSessionResult {
   const offsetRef = useRef(0);
   const versionRef = useRef(-1);
   const seenRef = useRef(false);
+  const sessionRef = useRef<TimerSession | null>(null);
   const refetchRef = useRef<() => Promise<void>>(async () => {});
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const connRef = useRef<TimerConnectionState>("connecting");
 
   const now = useCallback(() => Date.now() + offsetRef.current, []);
   const refresh = useCallback(() => refetchRef.current(), []);
-  const sendIntent = useCallback((patch: Partial<TimerSession>) => {
-    // baseVersion is the newest SERVER version this client has seen — peers
-    // drop the overlay as soon as any row above it arrives.
+  const sendIntent = useCallback((patch: Partial<TimerSession>, baseVersion?: number) => {
+    // Send the freshest version anyone involved knows: the hook's last seen
+    // row, or the caller's adopted action result — whichever is newer.
+    const base = Math.max(versionRef.current, baseVersion ?? -1);
     void channelRef.current
-      ?.send({ type: "broadcast", event: "intent", payload: { baseVersion: versionRef.current, patch } })
+      ?.send({ type: "broadcast", event: "intent", payload: { baseVersion: base, patch } })
       .catch(() => {});
   }, []);
 
@@ -113,7 +141,12 @@ export function useTimerSession(id: string): UseTimerSessionResult {
     let active = true;
     versionRef.current = -1;
     seenRef.current = false;
+    sessionRef.current = null;
     const markGone = () => setGoneForId(id);
+    const setConn = (s: TimerConnectionState) => {
+      connRef.current = s;
+      setConnectionState(s);
+    };
 
     // Single apply path with a monotonic version gate: a stale in-flight poll
     // response must never overwrite a newer realtime row (e.g. flashing a
@@ -122,6 +155,7 @@ export function useTimerSession(id: string): UseTimerSessionResult {
       if (!active || row.version < versionRef.current) return;
       versionRef.current = row.version;
       seenRef.current = true;
+      sessionRef.current = row;
       setSession(row);
     };
 
@@ -137,20 +171,27 @@ export function useTimerSession(id: string): UseTimerSessionResult {
     };
     refetchRef.current = refetch;
 
-    // Measure server clock skew. Roundtrip-midpoint estimate keeps the
-    // countdown honest on devices whose local clock is wrong.
+    // Measure server clock skew. Best-of-3 roundtrip-midpoint samples (keep
+    // the one with the smallest RTT — the standard NTP trick) so a single
+    // GC-delayed or asymmetric sample can't shift the room's clock for the
+    // whole re-measure interval.
     const measureOffset = async () => {
-      try {
-        const t0 = Date.now();
-        const res = await fetch("/api/now", { cache: "no-store" });
-        const t1 = Date.now();
-        const { now: serverNow } = (await res.json()) as { now: number };
-        if (active && typeof serverNow === "number") {
-          offsetRef.current = serverNow - (t0 + t1) / 2;
+      let best: { rtt: number; offset: number } | null = null;
+      for (let i = 0; i < 3; i++) {
+        try {
+          const t0 = Date.now();
+          const res = await fetch("/api/now", { cache: "no-store" });
+          const t1 = Date.now();
+          const { now: serverNow } = (await res.json()) as { now: number };
+          if (typeof serverNow === "number") {
+            const rtt = t1 - t0;
+            if (!best || rtt < best.rtt) best = { rtt, offset: serverNow - (t0 + t1) / 2 };
+          }
+        } catch {
+          // skip this sample — local clock is the fallback
         }
-      } catch {
-        // keep offset at 0 — local clock is the fallback
       }
+      if (active && best) offsetRef.current = best.offset;
     };
 
     void measureOffset();
@@ -162,10 +203,23 @@ export function useTimerSession(id: string): UseTimerSessionResult {
         if (!active) return;
         const p = msg.payload as { baseVersion?: number; patch?: Partial<TimerSession> } | undefined;
         if (typeof p?.baseVersion !== "number" || p.patch == null || typeof p.patch !== "object") return;
-        const mine: TimerIntent = { forId: id, baseVersion: p.baseVersion, patch: p.patch };
+        const mine: TimerIntent = {
+          forId: id,
+          // The sender's version can trail rows this receiver already saw
+          // (its own hook lags its adopted action results) — take the max so
+          // a rapid second action isn't discarded.
+          baseVersion: Math.max(p.baseVersion, versionRef.current),
+          patch: p.patch,
+          snapshot: sessionRef.current ? clockSnapshot(sessionRef.current) : null,
+        };
         setIntent(mine);
-        // Expire by identity after the TTL — a newer intent simply replaces it.
-        window.setTimeout(() => setIntent((cur) => (cur === mine ? null : cur)), INTENT_TTL_MS);
+        // Expire by identity after the TTL (a newer intent simply replaces
+        // it) and reconcile once more at expiry — covers an action that
+        // commits late with a dropped postgres_changes event.
+        window.setTimeout(() => {
+          setIntent((cur) => (cur === mine ? null : cur));
+          void refetch();
+        }, INTENT_TTL_MS);
         // Reconcile with the authoritative row: once immediately, and once
         // after the server action has surely committed — so even a spoofed or
         // orphaned intent (or a dropped postgres_changes event) is corrected.
@@ -189,10 +243,10 @@ export function useTimerSession(id: string): UseTimerSessionResult {
       .subscribe((status) => {
         if (!active) return;
         if (status === "SUBSCRIBED") {
-          setConnectionState("connected");
+          setConn("connected");
           void refetch(); // catch anything missed while connecting
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-          setConnectionState("disconnected");
+          setConn("disconnected");
         }
       });
     channelRef.current = channel;
@@ -203,6 +257,12 @@ export function useTimerSession(id: string): UseTimerSessionResult {
     document.addEventListener("visibilitychange", onVisible);
 
     const poll = window.setInterval(() => void refetch(), POLL_INTERVAL_MS);
+    // While the socket is down, realtime AND broadcast intents are both lost —
+    // shrink the stale window from 20s to ~4s so a pause during a venue Wi-Fi
+    // flap can't let the display run through a level boundary.
+    const fastPoll = window.setInterval(() => {
+      if (connRef.current !== "connected") void refetch();
+    }, FAST_POLL_INTERVAL_MS);
     const remeasure = window.setInterval(() => void measureOffset(), OFFSET_REMEASURE_MS);
 
     return () => {
@@ -210,18 +270,22 @@ export function useTimerSession(id: string): UseTimerSessionResult {
       channelRef.current = null;
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(poll);
+      window.clearInterval(fastPoll);
       window.clearInterval(remeasure);
       void supabase.removeChannel(channel);
     };
   }, [id]);
 
-  // Overlay a live intent on top of the last authoritative row. It drops when
-  // a newer row arrives (version gate) or when its TTL timeout clears it.
+  // Overlay a live intent on top of the last authoritative row. It survives
+  // rows that merely bump unrelated fields (entries autosave, meta edits) and
+  // drops when a newer row actually changes the clock — normally the very row
+  // the intent predicted — or when its TTL timeout clears it.
   const intentActive =
     intent != null &&
     intent.forId === id &&
     session != null &&
-    session.version <= intent.baseVersion;
+    (session.version <= intent.baseVersion ||
+      (intent.snapshot != null && sameClock(clockSnapshot(session), intent.snapshot)));
   const view = intentActive && session != null ? { ...session, ...intent.patch } : session;
 
   return { session: view, now, connectionState, gone: goneForId === id, refresh, sendIntent };

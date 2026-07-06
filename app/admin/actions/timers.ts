@@ -36,6 +36,34 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+// ---------------------------------------------------------------------------
+// Click-time anchoring. Clock actions fold/anchor at the moment the operator
+// CLICKED, not when the action executes (~0.3-1s later) — otherwise the
+// authoritative row lands slightly behind the optimistic overlay and the
+// frozen clock visibly ticks one more second. The client sends its
+// skew-corrected timestamp (via /api/now); we clamp it to a plausibility
+// window so a wrong client clock degrades to today's server-time behavior.
+// ---------------------------------------------------------------------------
+const CLIENT_AT_FUTURE_MS = 2_000; // skew-estimate error budget
+const CLIENT_AT_MAX_AGE_MS = 15_000; // slow-network / retried-request budget
+
+function effectiveNowMs(clientAtMs: number | undefined, floorMs?: number): number {
+  const server = Date.now();
+  let t = typeof clientAtMs === "number" && Number.isFinite(clientAtMs) ? clientAtMs : server;
+  t = Math.min(t, server + CLIENT_AT_FUTURE_MS);
+  t = Math.max(t, server - CLIENT_AT_MAX_AGE_MS);
+  if (floorMs != null) t = Math.max(t, floorMs); // e.g. never before started_at
+  return t;
+}
+
+// Seconds of the in-flight run segment, folded WITHOUT truncation: repeated
+// floor() folds under-counted elapsed time (~0.5s per pause/adjust, stuttering
+// the venue clock), so offsets are kept fractional end to end.
+function foldRanSec(startedAt: string | null, atMs: number): number {
+  if (!startedAt) return 0;
+  return Math.max(0, (atMs - Date.parse(startedAt)) / 1000);
+}
+
 function revalidateTimer(id: string): void {
   revalidatePath("/admin/timers");
   revalidatePath(`/admin/timers/${id}`);
@@ -145,14 +173,16 @@ export async function createTimerFromEvent(eventId: string, fixes?: TimerDuratio
 // --------------------------------------------------------------------------
 // Clock controls
 // --------------------------------------------------------------------------
-// start/pause retry once on a version conflict when the row is still in the
-// opposite run-state: at a level boundary the background commitAdvance bumps
-// the version at exactly the moment a TD hits pause (hand-for-hand!), and a
-// dropped pause there is operationally serious. A retry against the fresh
-// version is safe — the intent ("make it paused/running") is state-idempotent.
-export async function startTimer(id: string, version: number): Promise<TimerActionResult> {
+// Every clock mutation retries against the freshly-read row on a version
+// conflict: at a level boundary the background commitAdvance bumps the version
+// at exactly the moment a TD acts (hand-for-hand!), and a silently dropped
+// pause/adjust there is operationally serious. Retrying is safe because these
+// operations are state-absolute ("make it paused", "set elapsed to X").
+const CLOCK_RETRIES = 3;
+
+export async function startTimer(id: string, version: number, clientAtMs?: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
     const { data: cur, error: curErr } = await supabase
       .from("timer_sessions").select("status, version").eq("id", id).is("deleted_at", null).maybeSingle();
     if (curErr) throw curErr;
@@ -163,7 +193,7 @@ export async function startTimer(id: string, version: number): Promise<TimerActi
 
     const { data, error } = await supabase
       .from("timer_sessions")
-      .update({ status: "running", started_at: nowIso(), version: v + 1 })
+      .update({ status: "running", started_at: new Date(effectiveNowMs(clientAtMs)).toISOString(), version: v + 1 })
       .eq("id", id).eq("version", v).select("id");
     if (error) throw error;
     if (data && data.length > 0) {
@@ -175,9 +205,9 @@ export async function startTimer(id: string, version: number): Promise<TimerActi
   return CONFLICT;
 }
 
-export async function pauseTimer(id: string, version: number): Promise<TimerActionResult> {
+export async function pauseTimer(id: string, version: number, clientAtMs?: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
     const { data: cur, error: curErr } = await supabase
       .from("timer_sessions")
       .select("status, version, started_at, elapsed_offset_sec")
@@ -188,10 +218,18 @@ export async function pauseTimer(id: string, version: number): Promise<TimerActi
     const v = attempt === 0 ? version : cur.version;
     if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-    const ranSec = cur.started_at ? Math.max(0, Math.floor((Date.now() - Date.parse(cur.started_at)) / 1000)) : 0;
+    // Fold at click time, floored at the (possibly re-anchored) started_at: a
+    // commitAdvance that won the boundary race re-anchors started_at AFTER the
+    // click, in which case the pause folds 0s of the new level — matching what
+    // the room saw.
+    const atMs = effectiveNowMs(clientAtMs, cur.started_at ? Date.parse(cur.started_at) : undefined);
     const { data, error } = await supabase
       .from("timer_sessions")
-      .update({ status: "paused", started_at: null, elapsed_offset_sec: cur.elapsed_offset_sec + ranSec, version: v + 1 })
+      .update({
+        status: "paused", started_at: null,
+        elapsed_offset_sec: cur.elapsed_offset_sec + foldRanSec(cur.started_at, atMs),
+        version: v + 1,
+      })
       .eq("id", id).eq("version", v).select("id");
     if (error) throw error;
     if (data && data.length > 0) {
@@ -205,99 +243,129 @@ export async function pauseTimer(id: string, version: number): Promise<TimerActi
 
 // deltaSec > 0 ADDS time to the clock (raises remaining ⇒ lowers elapsed_offset).
 // When running we first fold the in-flight run into the offset and re-anchor
-// started_at to now, so the adjustment is exact regardless of elapsed run time.
-export async function adjustTime(id: string, version: number, deltaSec: number): Promise<TimerActionResult> {
+// started_at to the click time, so the adjustment is exact regardless of
+// elapsed run time.
+export async function adjustTime(id: string, version: number, deltaSec: number, clientAtMs?: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
-  const { data: cur, error: curErr } = await supabase
-    .from("timer_sessions")
-    .select("status, started_at, elapsed_offset_sec, level_index, structure")
-    .eq("id", id).eq("version", version).maybeSingle();
-  if (curErr) throw curErr;
-  if (!cur) return CONFLICT;
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
+    const { data: cur, error: curErr } = await supabase
+      .from("timer_sessions")
+      .select("status, version, started_at, elapsed_offset_sec, level_index, structure")
+      .eq("id", id).is("deleted_at", null).maybeSingle();
+    if (curErr) throw curErr;
+    if (!cur) return CONFLICT;
+    if (cur.status === "finished") return CONFLICT;
+    const v = attempt === 0 ? version : cur.version;
+    if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-  const running = cur.status === "running" && cur.started_at != null;
-  const ranSec = running ? Math.max(0, Math.floor((Date.now() - Date.parse(cur.started_at as string)) / 1000)) : 0;
-  const folded = cur.elapsed_offset_sec + ranSec;
-  let newOffset = Math.max(0, folded - Math.round(deltaSec));
+    const running = cur.status === "running" && cur.started_at != null;
+    const atMs = effectiveNowMs(clientAtMs, cur.started_at ? Date.parse(cur.started_at) : undefined);
+    const folded = cur.elapsed_offset_sec + (running ? foldRanSec(cur.started_at, atMs) : 0);
+    let newOffset = Math.max(0, folded - Math.round(deltaSec));
 
-  // A manual subtract must never roll the clock INTO the next level (a TD
-  // hitting -1분 at 00:20 expects 00:00, not a level-up + blinds jump). Cap
-  // the elapsed at the current level's full duration.
-  if (deltaSec < 0) {
-    const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
-    const durationSec = (structure[cur.level_index]?.duration_min ?? 0) * 60;
-    if (durationSec > 0) newOffset = Math.min(newOffset, durationSec);
+    // A manual subtract must never roll the clock INTO the next level (a TD
+    // hitting -1분 at 00:20 expects 00:00, not a level-up + blinds jump). Cap
+    // the elapsed at the current level's full duration.
+    if (deltaSec < 0) {
+      const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
+      const durationSec = (structure[cur.level_index]?.duration_min ?? 0) * 60;
+      if (durationSec > 0) newOffset = Math.min(newOffset, durationSec);
+    }
+
+    const { data, error } = await supabase
+      .from("timer_sessions")
+      .update({
+        elapsed_offset_sec: newOffset,
+        started_at: running ? new Date(atMs).toISOString() : cur.started_at,
+        version: v + 1,
+      })
+      .eq("id", id).eq("version", v).select("id");
+    if (error) throw error;
+    if (data && data.length > 0) {
+      await logAction(supabase, id, "adjust", { deltaSec });
+      revalidateTimer(id);
+      return { ok: true, version: v + 1 };
+    }
   }
-
-  const { data, error } = await supabase
-    .from("timer_sessions")
-    .update({ elapsed_offset_sec: newOffset, started_at: running ? nowIso() : cur.started_at, version: version + 1 })
-    .eq("id", id).eq("version", version).select("id");
-  if (error) throw error;
-  if (!data || data.length === 0) return CONFLICT;
-  await logAction(supabase, id, "adjust", { deltaSec });
-  revalidateTimer(id);
-  return { ok: true, version: version + 1 };
+  return CONFLICT;
 }
 
 // Set the current level's remaining time to an exact value — the standard TD
 // move after a ruling ("put 10 minutes back on the clock").
-export async function setRemaining(id: string, version: number, remainingSec: number): Promise<TimerActionResult> {
+export async function setRemaining(id: string, version: number, remainingSec: number, clientAtMs?: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
   if (!Number.isInteger(remainingSec) || remainingSec < 0) {
     return { ok: false, error: "남은 시간은 0 이상의 초여야 합니다" };
   }
-  const { data: cur, error: curErr } = await supabase
-    .from("timer_sessions")
-    .select("status, level_index, structure")
-    .eq("id", id).eq("version", version).maybeSingle();
-  if (curErr) throw curErr;
-  if (!cur) return CONFLICT;
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
+    const { data: cur, error: curErr } = await supabase
+      .from("timer_sessions")
+      .select("status, version, level_index, structure")
+      .eq("id", id).is("deleted_at", null).maybeSingle();
+    if (curErr) throw curErr;
+    if (!cur) return CONFLICT;
+    if (cur.status === "finished") return CONFLICT;
+    const v = attempt === 0 ? version : cur.version;
+    if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-  const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
-  const durationSec = (structure[cur.level_index]?.duration_min ?? 0) * 60;
-  if (durationSec <= 0) return { ok: false, error: "현재 레벨 정보를 찾을 수 없습니다" };
-  if (remainingSec > durationSec) {
-    return { ok: false, error: `이 레벨의 최대 시간은 ${Math.floor(durationSec / 60)}분입니다` };
+    const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
+    const durationSec = (structure[cur.level_index]?.duration_min ?? 0) * 60;
+    if (durationSec <= 0) return { ok: false, error: "현재 레벨 정보를 찾을 수 없습니다" };
+    if (remainingSec > durationSec) {
+      return { ok: false, error: `이 레벨의 최대 시간은 ${Math.floor(durationSec / 60)}분입니다` };
+    }
+
+    const running = cur.status === "running";
+    const { data, error } = await supabase
+      .from("timer_sessions")
+      .update({
+        elapsed_offset_sec: durationSec - remainingSec,
+        started_at: running ? new Date(effectiveNowMs(clientAtMs)).toISOString() : null,
+        version: v + 1,
+      })
+      .eq("id", id).eq("version", v).select("id");
+    if (error) throw error;
+    if (data && data.length > 0) {
+      await logAction(supabase, id, "set_remaining", { remainingSec });
+      revalidateTimer(id);
+      return { ok: true, version: v + 1 };
+    }
   }
-
-  const running = cur.status === "running";
-  const { data, error } = await supabase
-    .from("timer_sessions")
-    .update({
-      elapsed_offset_sec: durationSec - remainingSec,
-      started_at: running ? nowIso() : null,
-      version: version + 1,
-    })
-    .eq("id", id).eq("version", version).select("id");
-  if (error) throw error;
-  if (!data || data.length === 0) return CONFLICT;
-  await logAction(supabase, id, "set_remaining", { remainingSec });
-  revalidateTimer(id);
-  return { ok: true, version: version + 1 };
+  return CONFLICT;
 }
 
-export async function jumpToLevel(id: string, version: number, index: number): Promise<TimerActionResult> {
+export async function jumpToLevel(id: string, version: number, index: number, clientAtMs?: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
-  const { data: cur, error: curErr } = await supabase
-    .from("timer_sessions").select("status, structure").eq("id", id).eq("version", version).maybeSingle();
-  if (curErr) throw curErr;
-  if (!cur) return CONFLICT;
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
+    const { data: cur, error: curErr } = await supabase
+      .from("timer_sessions").select("status, version, structure").eq("id", id).is("deleted_at", null).maybeSingle();
+    if (curErr) throw curErr;
+    if (!cur) return CONFLICT;
+    if (cur.status === "finished") return CONFLICT;
+    const v = attempt === 0 ? version : cur.version;
+    if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-  const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
-  if (!Number.isInteger(index) || index < 0 || index >= structure.length) {
-    return { ok: false, error: "잘못된 레벨 번호입니다" };
+    const structure = (Array.isArray(cur.structure) ? cur.structure : []) as TimerLevel[];
+    if (!Number.isInteger(index) || index < 0 || index >= structure.length) {
+      return { ok: false, error: "잘못된 레벨 번호입니다" };
+    }
+    const running = cur.status === "running";
+    const { data, error } = await supabase
+      .from("timer_sessions")
+      .update({
+        level_index: index, elapsed_offset_sec: 0,
+        started_at: running ? new Date(effectiveNowMs(clientAtMs)).toISOString() : null,
+        version: v + 1,
+      })
+      .eq("id", id).eq("version", v).select("id");
+    if (error) throw error;
+    if (data && data.length > 0) {
+      await logAction(supabase, id, "jump", { index });
+      revalidateTimer(id);
+      return { ok: true, version: v + 1 };
+    }
   }
-  const running = cur.status === "running";
-  const { data, error } = await supabase
-    .from("timer_sessions")
-    .update({ level_index: index, elapsed_offset_sec: 0, started_at: running ? nowIso() : null, version: version + 1 })
-    .eq("id", id).eq("version", version).select("id");
-  if (error) throw error;
-  if (!data || data.length === 0) return CONFLICT;
-  await logAction(supabase, id, "jump", { index });
-  revalidateTimer(id);
-  return { ok: true, version: version + 1 };
+  return CONFLICT;
 }
 
 // Persist a boundary the client already crossed visually. Idempotent: a no-op
@@ -317,12 +385,14 @@ export async function commitAdvance(id: string, version: number, expectedIndex: 
   if (expectedIndex >= structure.length) return { ok: false, error: "잘못된 레벨 번호입니다" };
 
   const running = cur.status === "running" && cur.started_at != null;
-  const ranSec = running ? Math.max(0, Math.floor((Date.now() - Date.parse(cur.started_at as string)) / 1000)) : 0;
+  // Exact (fractional) fold — truncation here made the venue clock stutter up
+  // by <1s at every level boundary.
+  const ranSec = running ? foldRanSec(cur.started_at, Date.now()) : 0;
   let elapsed = cur.elapsed_offset_sec + ranSec;
   for (let i = cur.level_index; i < expectedIndex; i++) {
     elapsed -= (structure[i]?.duration_min ?? 0) * 60;
   }
-  const overflow = Math.max(0, Math.floor(elapsed));
+  const overflow = Math.max(0, elapsed);
 
   const { data, error } = await supabase
     .from("timer_sessions")
@@ -467,42 +537,48 @@ export async function updateTimerMeta(id: string, version: number, meta: TimerMe
 // --------------------------------------------------------------------------
 export async function finishTimer(id: string, version: number): Promise<TimerActionResult> {
   const supabase = await requireAdmin();
-  const { data: cur, error: curErr } = await supabase
-    .from("timer_sessions")
-    .select("status, started_at, elapsed_offset_sec, event_id, entries, players")
-    .eq("id", id).eq("version", version).neq("status", "finished").maybeSingle();
-  if (curErr) throw curErr;
-  if (!cur) return CONFLICT;
+  // Retry like the other clock actions: a background commitAdvance landing
+  // between read and flip must not leave the event snapshot recorded while
+  // the timer stays live.
+  for (let attempt = 0; attempt < CLOCK_RETRIES; attempt++) {
+    const { data: cur, error: curErr } = await supabase
+      .from("timer_sessions")
+      .select("status, version, started_at, elapsed_offset_sec, event_id, entries, players")
+      .eq("id", id).is("deleted_at", null).neq("status", "finished").maybeSingle();
+    if (curErr) throw curErr;
+    if (!cur) return CONFLICT;
+    const v = attempt === 0 ? version : cur.version;
+    if (attempt === 0 && cur.version !== version) continue; // stale — retry with fresh
 
-  // Snapshot the result onto the event BEFORE flipping status: if this write
-  // fails the timer stays finishable, so a retry can still record the result.
-  // Does NOT touch events.status.
-  if (cur.event_id) {
-    const { error: evErr } = await supabase
-      .from("events")
-      .update({ final_entries: cur.entries, final_players: cur.players, result_recorded_at: nowIso() })
-      .eq("id", cur.event_id);
-    if (evErr) throw evErr;
+    // Snapshot the result onto the event BEFORE flipping status: if this write
+    // fails the timer stays finishable, so a retry can still record the result.
+    // Does NOT touch events.status.
+    if (cur.event_id) {
+      const { error: evErr } = await supabase
+        .from("events")
+        .update({ final_entries: cur.entries, final_players: cur.players, result_recorded_at: nowIso() })
+        .eq("id", cur.event_id);
+      if (evErr) throw evErr;
+    }
+
+    // Fold the in-flight run into the offset so a later reopen resumes from
+    // the actual tournament position instead of the last-committed one.
+    const ranSec = cur.status === "running" ? foldRanSec(cur.started_at, Date.now()) : 0;
+    const { data, error } = await supabase
+      .from("timer_sessions")
+      .update({
+        status: "finished", finished_at: nowIso(), started_at: null,
+        elapsed_offset_sec: cur.elapsed_offset_sec + ranSec, version: v + 1,
+      })
+      .eq("id", id).eq("version", v).neq("status", "finished").select("id");
+    if (error) throw error;
+    if (data && data.length > 0) {
+      await logAction(supabase, id, "finish");
+      revalidateTimer(id);
+      return { ok: true, version: v + 1 };
+    }
   }
-
-  // Fold the in-flight run into the offset so a later reopen resumes from the
-  // actual tournament position instead of the last-committed one.
-  const ranSec = cur.status === "running" && cur.started_at
-    ? Math.max(0, Math.floor((Date.now() - Date.parse(cur.started_at)) / 1000))
-    : 0;
-  const { data, error } = await supabase
-    .from("timer_sessions")
-    .update({
-      status: "finished", finished_at: nowIso(), started_at: null,
-      elapsed_offset_sec: cur.elapsed_offset_sec + ranSec, version: version + 1,
-    })
-    .eq("id", id).eq("version", version).neq("status", "finished").select("id");
-  if (error) throw error;
-  if (!data || data.length === 0) return CONFLICT;
-
-  await logAction(supabase, id, "finish");
-  revalidateTimer(id);
-  return { ok: true, version: version + 1 };
+  return CONFLICT;
 }
 
 export async function reopenTimer(id: string, version: number): Promise<TimerActionResult> {

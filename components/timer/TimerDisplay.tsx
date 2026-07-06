@@ -21,9 +21,15 @@ function pad(n: number): string {
   return n < 10 ? `0${n}` : String(n);
 }
 
-/** Seconds → M:SS (minutes uncapped, so a 90-min level reads 90:00). */
+/**
+ * Seconds → M:SS (minutes uncapped, so a 90-min level reads 90:00).
+ * Countdown semantics: ceil, not floor — each second reads for its full
+ * duration and 0:00 appears only at true zero (floor showed 0:00 for the
+ * whole last fractional second and made sub-second reconciliations flip the
+ * displayed digit).
+ */
 function fmtMMSS(totalSec: number): string {
-  const s = Math.max(0, Math.floor(totalSec));
+  const s = Math.max(0, Math.ceil(totalSec));
   const m = Math.floor(s / 60);
   return `${m}:${pad(s % 60)}`;
 }
@@ -132,28 +138,42 @@ export function TimerDisplay({ initial, id }: { initial: TimerSession; id: strin
   }, []);
 
   // Boundary + 10s-warning detection, driven off derived state between renders.
+  // Cues fire only on TIME-DRIVEN transitions (previous remaining was already
+  // near the boundary): an optimistic/broadcast overlay applying or dropping,
+  // a level jump, or a reconnect catch-up moves the clock too, and those must
+  // not chime the room.
   const prevLevelRef = useRef<number | null>(null);
+  const prevRemainRef = useRef<number | null>(null);
   const warnedRef = useRef(false);
   const secLeft = Math.ceil(derived.remainingSec);
   const running = session.status === "running";
   useEffect(() => {
-    const prev = prevLevelRef.current;
-    if (prev !== null && prev !== derived.levelIndex) {
+    const prevLevel = prevLevelRef.current;
+    const prevRemain = prevRemainRef.current;
+    prevLevelRef.current = derived.levelIndex;
+    prevRemainRef.current = derived.remainingSec;
+
+    if (prevLevel !== null && prevLevel !== derived.levelIndex) {
       warnedRef.current = false;
-      if (soundOnRef.current && running) {
+      // Natural expiry only: the previous frame was in the final seconds of
+      // the previous level and we advanced exactly one segment.
+      const natural = derived.levelIndex === prevLevel + 1 && prevRemain !== null && prevRemain < 2;
+      if (natural && soundOnRef.current && running) {
         tone(660, 0, 0.18);
         tone(880, 0.16, 0.28);
       }
     }
-    prevLevelRef.current = derived.levelIndex;
 
     if (secLeft > 10) {
       warnedRef.current = false;
     } else if (secLeft <= 10 && secLeft > 0 && !warnedRef.current && !derived.isBreak) {
       warnedRef.current = true;
-      if (soundOnRef.current && running) tone(880, 0, 0.5);
+      // Only when the clock TICKED across the line (small decrement), not
+      // when an adjustment/overlay landed it below 10 in one hop.
+      const ticked = prevRemain !== null && prevRemain > derived.remainingSec && prevRemain - derived.remainingSec < 2;
+      if (ticked && soundOnRef.current && running) tone(880, 0, 0.5);
     }
-  }, [derived.levelIndex, derived.isBreak, secLeft, running, tone]);
+  }, [derived.levelIndex, derived.isBreak, derived.remainingSec, secLeft, running, tone]);
 
   // ── Fullscreen ────────────────────────────────────────────────────────────
   const rootRef = useRef<HTMLDivElement>(null);

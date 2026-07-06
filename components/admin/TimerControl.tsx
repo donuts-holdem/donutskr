@@ -32,7 +32,7 @@ import {
   updateTimerMeta,
   type TimerActionResult,
 } from "@/app/admin/actions/timers";
-import { useTimerSession } from "@/lib/timer/useTimerSession";
+import { clockSnapshot, sameClock, useTimerSession } from "@/lib/timer/useTimerSession";
 import { avgStack, avgStackBB, deriveTimerState, totalChips } from "@/lib/timer/state";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -87,8 +87,11 @@ function reportError(res: TimerActionResult): boolean {
   return false;
 }
 
+// Countdown semantics: ceil, not floor — each second reads for its full
+// duration and 00:00 appears only at true zero. Floor also made the frozen
+// post-pause number flip when the reconciled row differed by a fraction.
 function formatClock(sec: number): string {
-  const s = Math.max(0, Math.floor(sec));
+  const s = Math.max(0, Math.ceil(sec));
   const m = Math.floor(s / 60);
   const ss = s % 60;
   return `${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
@@ -119,14 +122,19 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
   // Optimistic overlay: the moment a clock action is pressed, the expected
   // result (mirroring the server action's math) is painted locally, so the
   // operator sees the flip instantly instead of after a network round-trip.
-  // The overlay auto-drops as soon as any newer server row arrives (version
-  // above the press-time base) and is cleared explicitly on failure, so the
-  // server remains the single source of truth.
-  const [override, setOverride] = useState<{ baseVersion: number; patch: Partial<TimerSession> } | null>(null);
-  const session =
-    override != null && server.version <= override.baseVersion
-      ? { ...server, ...override.patch }
-      : server;
+  // It survives rows that only bump unrelated fields (entries autosave, meta
+  // edits — those must not un-pause the clock mid-flight) and drops when a
+  // newer row actually changes the clock, on failure, or on its TTL backstop;
+  // the server remains the single source of truth.
+  const [override, setOverride] = useState<{
+    baseVersion: number;
+    patch: Partial<TimerSession>;
+    snapshot: ReturnType<typeof clockSnapshot>;
+  } | null>(null);
+  const overrideActive =
+    override != null &&
+    (server.version <= override.baseVersion || sameClock(clockSnapshot(server), override.snapshot));
+  const session = overrideActive && override != null ? { ...server, ...override.patch } : server;
 
   // Re-render on a fixed cadence; the clock is always DERIVED from timestamps,
   // never decremented, so a missed tick self-corrects on the next one.
@@ -154,8 +162,10 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
   // the session's own level_index catches up via realtime.
   const committedRef = useRef(session.level_index);
   useEffect(() => {
+    // Reset only when the committed level itself moves — resetting on every
+    // version bump (counts autosave) could re-fire an in-flight commitAdvance.
     committedRef.current = session.level_index;
-  }, [session.level_index, session.version]);
+  }, [session.level_index]);
   useEffect(() => {
     if (session.status !== "running") return;
     if (derived.levelIndex > session.level_index && derived.levelIndex > committedRef.current) {
@@ -175,31 +185,48 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
   const displayUrl = `/timer/${session.id}`;
 
   // Jump confirmation is a single controlled dialog reused by prev / next / list.
-  const [jumpTarget, setJumpTarget] = useState<number | null>(null);
+  // Relative jumps ({delta}) resolve against the CURRENT level at confirm
+  // time; absolute jumps ({index}) come from the level list.
+  const [jumpTarget, setJumpTarget] = useState<{ delta: 1 | -1 } | { index: number } | null>(null);
   const [levelListOpen, setLevelListOpen] = useState(false);
 
   // Serialize clock actions — one in flight at a time, adopting the bumped
   // version between clicks. busyRef guards re-entry without a stale closure.
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
+  const OVERRIDE_TTL_MS = 6_000;
   async function run(fn: () => Promise<TimerActionResult>, patch?: Partial<TimerSession>) {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
+    const clearOverlays = () => {
+      setOverride(null);
+      sendIntent({}); // empty patch replaces (cancels) the pending intent on peers
+    };
     // Paint the expected result before the round-trip — locally AND on every
     // peer (venue display) via broadcast, so the room's clock reacts to the
     // click in ~100-300ms instead of after the full server round-trip.
     if (patch) {
-      setOverride({ baseVersion: versionRef.current, patch });
-      sendIntent(patch);
+      const mine = { baseVersion: versionRef.current, patch, snapshot: clockSnapshot(server) };
+      setOverride(mine);
+      sendIntent(patch, versionRef.current);
+      // TTL backstop: if neither success-row nor failure path clears it
+      // (e.g. an action hanging past all retries), don't stay wrong forever.
+      window.setTimeout(() => setOverride((cur) => (cur === mine ? null : cur)), OVERRIDE_TTL_MS);
     }
     try {
       const res = await fn();
       if (reportError(res) && res.ok) adopt(res.version);
-      if (!res.ok) setOverride(null); // revert the optimistic paint
+      if (!res.ok) clearOverlays(); // revert the optimistic paint everywhere
       // Confirm with the server row immediately — never depend on the
       // realtime echo (a still-connecting or dropped socket would leave the
       // UI stale until the next poll). Also resyncs after a conflict.
+      void refresh();
+    } catch {
+      // Thrown action (network drop, server error): without this the overlay
+      // would stick forever — no newer row is ever coming to clear it.
+      clearOverlays();
+      toast.error("네트워크 오류 — 다시 시도해주세요");
       void refresh();
     } finally {
       busyRef.current = false;
@@ -207,61 +234,72 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
     }
   }
 
-  // Seconds the current run segment has been live — mirrors the server's fold.
-  function ranSec(): number {
+  // Seconds the current run segment has been live — mirrors the server's fold
+  // exactly (fractional; truncating here made the frozen clock disagree with
+  // the reconciled row by up to a second).
+  function ranSecAt(atMs: number): number {
     return session.status === "running" && session.started_at != null
-      ? Math.max(0, Math.floor((now() - Date.parse(session.started_at)) / 1000))
+      ? Math.max(0, (atMs - Date.parse(session.started_at)) / 1000)
       : 0;
   }
-  const nowIsoLocal = () => new Date(now()).toISOString();
 
   function toggleClock() {
+    // One timestamp for the optimistic patch AND the server action, so the
+    // authoritative row reproduces the overlay bit-for-bit.
+    const atMs = now();
     if (isRunning) {
-      void run(() => pauseTimer(session.id, versionRef.current), {
+      void run(() => pauseTimer(session.id, versionRef.current, atMs), {
         status: "paused",
         started_at: null,
-        elapsed_offset_sec: session.elapsed_offset_sec + ranSec(),
+        elapsed_offset_sec: session.elapsed_offset_sec + ranSecAt(atMs),
       });
     } else {
-      void run(() => startTimer(session.id, versionRef.current), {
+      void run(() => startTimer(session.id, versionRef.current, atMs), {
         status: "running",
-        started_at: nowIsoLocal(),
+        started_at: new Date(atMs).toISOString(),
       });
     }
   }
   function nudge(deltaSec: number) {
+    const atMs = now();
     const running = session.status === "running" && session.started_at != null;
-    let newOffset = Math.max(0, session.elapsed_offset_sec + ranSec() - Math.round(deltaSec));
+    let newOffset = Math.max(0, session.elapsed_offset_sec + ranSecAt(atMs) - Math.round(deltaSec));
     if (deltaSec < 0) {
       const durationSec = (session.structure[session.level_index]?.duration_min ?? 0) * 60;
       if (durationSec > 0) newOffset = Math.min(newOffset, durationSec);
     }
-    void run(() => adjustTime(session.id, versionRef.current, deltaSec), {
+    void run(() => adjustTime(session.id, versionRef.current, deltaSec, atMs), {
       elapsed_offset_sec: newOffset,
-      started_at: running ? nowIsoLocal() : session.started_at,
+      started_at: running ? new Date(atMs).toISOString() : session.started_at,
     });
   }
   function submitRemaining(sec: number) {
+    const atMs = now();
     const durationSec = (session.structure[session.level_index]?.duration_min ?? 0) * 60;
     const valid = durationSec > 0 && sec <= durationSec;
     void run(
-      () => setRemaining(session.id, versionRef.current, sec),
+      () => setRemaining(session.id, versionRef.current, sec, atMs),
       valid
         ? {
             elapsed_offset_sec: durationSec - sec,
-            started_at: session.status === "running" ? nowIsoLocal() : null,
+            started_at: session.status === "running" ? new Date(atMs).toISOString() : null,
           }
         : undefined, // let the server produce the validation error
     );
   }
   async function confirmJump() {
     if (jumpTarget == null) return;
-    const target = jumpTarget;
+    // Resolve relative jumps at CONFIRM time: the level may have auto-advanced
+    // while the dialog sat open, and "다음 레벨" must mean next-from-now, not
+    // next-from-when-the-dialog-opened (which would restart the current level).
+    const target = "delta" in jumpTarget ? derived.levelIndex + jumpTarget.delta : jumpTarget.index;
     setJumpTarget(null);
-    await run(() => jumpToLevel(session.id, versionRef.current, target), {
+    if (target < 0 || target >= session.structure.length) return;
+    const atMs = now();
+    await run(() => jumpToLevel(session.id, versionRef.current, target, atMs), {
       level_index: target,
       elapsed_offset_sec: 0,
-      started_at: session.status === "running" ? nowIsoLocal() : null,
+      started_at: session.status === "running" ? new Date(atMs).toISOString() : null,
     });
   }
 
@@ -366,7 +404,7 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setJumpTarget(derived.levelIndex - 1)}
+              onClick={() => setJumpTarget({ delta: -1 })}
               disabled={!canPrev}
             >
               <ChevronLeft aria-hidden />이전 레벨
@@ -374,7 +412,7 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setJumpTarget(derived.levelIndex + 1)}
+              onClick={() => setJumpTarget({ delta: 1 })}
               disabled={!canNext}
             >
               다음 레벨<ChevronRight aria-hidden />
@@ -393,7 +431,7 @@ export function TimerControl({ initial }: { initial: TimerSession }) {
                         type="button"
                         onClick={() => {
                           setLevelListOpen(false);
-                          setJumpTarget(i);
+                          setJumpTarget({ index: i });
                         }}
                         className={cn(
                           "hover:bg-muted flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm",
