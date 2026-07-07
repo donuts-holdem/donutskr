@@ -30,59 +30,67 @@ export default function IntroShuffle() {
         return;
       }
 
-      const cards = Array.from(
-        rootRef.current?.querySelectorAll<HTMLElement>(".intro-card") ?? [],
-      );
-      const left = cards.filter((_, i) => i % 2 === 0);
-      const right = cards.filter((_, i) => i % 2 === 1);
-
-      const tl = gsap.timeline({
-        onComplete: () => {
-          // Mark the session seen only once the intro actually finishes (or is
-          // skipped — skip seeks to the end, firing onComplete). Marking at
-          // build time would let React's dev double-invoke poison the replay:
-          // the first pass would set the flag and the second would early-return.
-          markIntroSeen();
-          removeSkipListeners();
-          setVisible(false);
-        },
-      });
-      timelineRef.current = tl;
-
-      // Deck starts stacked dead-center with a faint fan.
-      gsap.set(cards, {
-        xPercent: -50,
-        yPercent: -50,
-        left: "50%",
-        top: "50%",
-        rotate: (i) => (i - 2) * 1.5,
-        y: (i) => i * -1,
-      });
-
-      tl.to(left, { x: -90, rotate: -8, duration: 0.35, ease: "power2.out" })
-        .to(right, { x: 90, rotate: 8, duration: 0.35, ease: "power2.out" }, "<")
-        .to(cards, {
-          x: 0,
-          rotate: (i) => (i - 2) * 1.5,
-          duration: 0.55,
-          ease: "power3.inOut",
-          stagger: { each: 0.05, from: "center" },
-        })
-        .from(
-          ".intro-word-inner",
-          { yPercent: 120, duration: 0.6, ease: "power3.out", stagger: 0.1 },
-          "-=0.15",
-        )
-        .to(".intro-stack", { opacity: 0, duration: 0.4, ease: "power1.in" }, "+=0.4")
-        .to(rootRef.current, { yPercent: -100, duration: 0.6, ease: "power3.inOut" }, "-=0.1");
-
       const skip = () => timelineRef.current?.progress(1);
       function removeSkipListeners() {
         window.removeEventListener("keydown", skip);
         window.removeEventListener("wheel", skip);
       }
-      window.addEventListener("keydown", skip);
-      window.addEventListener("wheel", skip, { passive: true });
+
+      try {
+        const cards = Array.from(
+          rootRef.current?.querySelectorAll<HTMLElement>(".intro-card") ?? [],
+        );
+        const left = cards.filter((_, i) => i % 2 === 0);
+        const right = cards.filter((_, i) => i % 2 === 1);
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            // Mark the session seen only once the intro actually finishes (or is
+            // skipped — skip seeks to the end, firing onComplete). Marking at
+            // build time would let React's dev double-invoke poison the replay:
+            // the first pass would set the flag and the second would early-return.
+            markIntroSeen();
+            removeSkipListeners();
+            setVisible(false);
+          },
+        });
+        timelineRef.current = tl;
+
+        // Deck starts stacked dead-center with a faint fan.
+        gsap.set(cards, {
+          xPercent: -50,
+          yPercent: -50,
+          left: "50%",
+          top: "50%",
+          rotate: (i) => (i - 2) * 1.5,
+          y: (i) => i * -1,
+        });
+
+        tl.to(left, { x: -90, rotate: -8, duration: 0.35, ease: "power2.out" })
+          .to(right, { x: 90, rotate: 8, duration: 0.35, ease: "power2.out" }, "<")
+          .to(cards, {
+            x: 0,
+            rotate: (i) => (i - 2) * 1.5,
+            duration: 0.55,
+            ease: "power3.inOut",
+            stagger: { each: 0.05, from: "center" },
+          })
+          .from(
+            ".intro-word-inner",
+            { yPercent: 120, duration: 0.6, ease: "power3.out", stagger: 0.1 },
+            "-=0.15",
+          )
+          .to(".intro-stack", { opacity: 0, duration: 0.4, ease: "power1.in" }, "+=0.4")
+          .to(rootRef.current, { yPercent: -100, duration: 0.6, ease: "power3.inOut" }, "-=0.1");
+
+        window.addEventListener("keydown", skip);
+        window.addEventListener("wheel", skip, { passive: true });
+      } catch {
+        // Never leave a full-screen overlay stuck if GSAP ever fails to build
+        // the timeline — dismiss it so the hero underneath is usable.
+        removeSkipListeners();
+        setVisible(false);
+      }
       // Also remove on true unmount (e.g. reduced-motion/never-played path,
       // or the component being torn down before the timeline completes).
       return removeSkipListeners;
