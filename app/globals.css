@@ -34,6 +34,10 @@ layer(base);
   --color-gold-deep: #e7b45a;
   --color-cream: #f7f6f3;
 
+  /* Intro animation timing (card-shuffle overlay). */
+  --duration-intro-out: 500ms;
+  --ease-shuffle: cubic-bezier(0.22, 1, 0.36, 1);
+
   --radius-card: 24px;
   --radius-pill: 999px;
 
@@ -134,6 +138,21 @@ layer(base);
 body {
   background: var(--color-bg);
   color: var(--color-ink);
+}
+
+/* Homepage intro overlay. Sits above all site chrome (header/dialogs are z-50).
+   The pre-hydration script (lib/intro.ts) sets html[data-intro] before paint;
+   sessions that already saw the intro (or prefer reduced motion) get it hidden
+   instantly, so there is never a flash of the overlay. */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--color-bg);
+  transition: opacity var(--duration-intro-out) var(--ease-shuffle);
+}
+html[data-intro="seen"] .intro-overlay {
+  display: none;
 }
 
 /* Respect reduced-motion: neutralize transitions/animations/hover transforms. */
