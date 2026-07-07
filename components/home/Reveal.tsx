@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Subtle scroll-reveal: fades + lifts children into view the first time they
- * intersect the viewport. Elements already in view on mount reveal immediately
- * (IntersectionObserver fires synchronously for them), so above-the-fold content
- * is never withheld. Honors prefers-reduced-motion by showing instantly.
+ * intersect the viewport. Elements already in (or near) view on mount reveal
+ * immediately via a synchronous getBoundingClientRect check, so above-the-fold
+ * content is never withheld. The observer uses threshold: 0 (so elements taller
+ * than the viewport can't slip past a ratio gate) and a positive bottom
+ * rootMargin to preload the reveal just before scroll-in. Honors
+ * prefers-reduced-motion by snapping in with no transition.
  */
 export function Reveal({
   children,
@@ -33,9 +36,29 @@ export function Reveal({
     if (immediate) return;
     const el = ref.current;
     if (!el) return;
-    // Reveal on first intersection. Under reduced motion the element still
-    // reveals here, but `motion-reduce:transition-none` (below) makes it snap
-    // in with no animation — so no synchronous setState special-case is needed.
+
+    // No IntersectionObserver (or SSR-less env): reveal immediately rather than
+    // leaving content stuck at opacity-0 forever.
+    if (typeof IntersectionObserver === "undefined") {
+      setShown(true);
+      return;
+    }
+
+    // If any part of the element is already within the (preload-expanded)
+    // viewport on mount, reveal synchronously — covers the case where the
+    // observer's async first callback would otherwise leave in-view content
+    // briefly (or, for tall elements, permanently) hidden.
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < vh * 1.15 && rect.bottom > 0) {
+      setShown(true);
+      return;
+    }
+
+    // Reveal on first intersection. threshold: 0 fires as soon as a single
+    // pixel enters, so elements taller than the viewport can't slip past a
+    // ratio gate. The positive bottom rootMargin preloads the reveal ~15% of
+    // the viewport height before the element actually scrolls into view.
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -43,7 +66,7 @@ export function Reveal({
           io.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0, rootMargin: "0px 0px 15% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
