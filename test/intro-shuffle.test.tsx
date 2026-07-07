@@ -28,7 +28,7 @@ vi.mock("@gsap/react", async () => {
   };
 });
 
-import { shouldPlayIntro, markIntroSeen, INTRO_SEEN_KEY } from "@/lib/intro";
+import { shouldPlayIntro, markIntroSeen } from "@/lib/intro";
 vi.mock("@/lib/intro", async (orig) => {
   const actual = await orig<typeof import("@/lib/intro")>();
   return { ...actual, shouldPlayIntro: vi.fn(), markIntroSeen: vi.fn() };

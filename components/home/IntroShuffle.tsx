@@ -37,7 +37,12 @@ export default function IntroShuffle() {
       const left = cards.filter((_, i) => i % 2 === 0);
       const right = cards.filter((_, i) => i % 2 === 1);
 
-      const tl = gsap.timeline({ onComplete: () => setVisible(false) });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          removeSkipListeners();
+          setVisible(false);
+        },
+      });
       timelineRef.current = tl;
 
       // Deck starts stacked dead-center with a faint fan.
@@ -68,12 +73,15 @@ export default function IntroShuffle() {
         .to(rootRef.current, { yPercent: -100, duration: 0.6, ease: "power3.inOut" }, "-=0.1");
 
       const skip = () => timelineRef.current?.progress(1);
-      window.addEventListener("keydown", skip);
-      window.addEventListener("wheel", skip, { passive: true });
-      return () => {
+      function removeSkipListeners() {
         window.removeEventListener("keydown", skip);
         window.removeEventListener("wheel", skip);
-      };
+      }
+      window.addEventListener("keydown", skip);
+      window.addEventListener("wheel", skip, { passive: true });
+      // Also remove on true unmount (e.g. reduced-motion/never-played path,
+      // or the component being torn down before the timeline completes).
+      return removeSkipListeners;
     },
     { scope: rootRef },
   );
