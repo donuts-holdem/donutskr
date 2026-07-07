@@ -4,6 +4,7 @@ import { getPrograms } from "@/lib/data/programs";
 import { getProgramOptions } from "@/lib/data/programOptions";
 import { getSiteConfig } from "@/lib/data/siteConfig";
 import { HomeMagazine } from "@/components/home/HomeMagazine";
+import IntroShuffle from "@/components/home/IntroShuffle";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -24,12 +25,15 @@ export default async function HomePage() {
   const statusLabels = Object.fromEntries(statusOptions.map((o) => [o.value, o.label]));
 
   return (
-    <HomeMagazine
-      events={events}
-      programs={programs}
-      signupLink={config.signup_link}
-      groupLabels={groupLabels}
-      statusLabels={statusLabels}
-    />
+    <>
+      <IntroShuffle />
+      <HomeMagazine
+        events={events}
+        programs={programs}
+        signupLink={config.signup_link}
+        groupLabels={groupLabels}
+        statusLabels={statusLabels}
+      />
+    </>
   );
 }
