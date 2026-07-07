@@ -29,7 +29,6 @@ export default function IntroShuffle() {
         setVisible(false);
         return;
       }
-      markIntroSeen();
 
       const cards = Array.from(
         rootRef.current?.querySelectorAll<HTMLElement>(".intro-card") ?? [],
@@ -39,6 +38,11 @@ export default function IntroShuffle() {
 
       const tl = gsap.timeline({
         onComplete: () => {
+          // Mark the session seen only once the intro actually finishes (or is
+          // skipped — skip seeks to the end, firing onComplete). Marking at
+          // build time would let React's dev double-invoke poison the replay:
+          // the first pass would set the flag and the second would early-return.
+          markIntroSeen();
           removeSkipListeners();
           setVisible(false);
         },

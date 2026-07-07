@@ -30,6 +30,9 @@ export default function RootLayout({
     <html
       lang="ko"
       className={`${inter.variable} dark h-full antialiased`}
+      // The intro overlay's pre-hydration script sets `data-intro` on <html>
+      // before React hydrates; suppress the expected attribute mismatch.
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-bg text-ink overflow-x-clip">{children}</body>
     </html>

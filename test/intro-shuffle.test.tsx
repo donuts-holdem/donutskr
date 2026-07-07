@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 
 // Mock GSAP so no real animation runs under jsdom. The timeline is a chainable
 // stub; progress() is a spy so we can assert skip behavior.
@@ -11,9 +11,14 @@ const timelineStub = {
   progress: vi.fn(() => timelineStub),
   kill: vi.fn(() => timelineStub),
 };
+// Capture the timeline's onComplete so tests can simulate the intro finishing.
+let capturedOnComplete: (() => void) | undefined;
 vi.mock("gsap", () => ({
   default: {
-    timeline: vi.fn(() => timelineStub),
+    timeline: vi.fn((opts?: { onComplete?: () => void }) => {
+      capturedOnComplete = opts?.onComplete;
+      return timelineStub;
+    }),
     set: vi.fn(),
     registerPlugin: vi.fn(),
   },
@@ -38,6 +43,7 @@ import IntroShuffle from "@/components/home/IntroShuffle";
 
 afterEach(() => {
   vi.clearAllMocks();
+  capturedOnComplete = undefined;
   window.sessionStorage.clear();
 });
 
@@ -51,13 +57,19 @@ describe("IntroShuffle", () => {
     expect(markIntroSeen).not.toHaveBeenCalled();
   });
 
-  it("plays and marks the session on a fresh visit", async () => {
+  it("plays on a fresh visit and marks the session only when the intro finishes", async () => {
     vi.mocked(shouldPlayIntro).mockReturnValue(true);
     render(<IntroShuffle />);
-    // Overlay present with a keyboard-focusable skip button.
+    // Overlay present with a keyboard-focusable skip button while playing.
     expect(document.querySelector(".intro-overlay")).not.toBeNull();
     const skip = screen.getByRole("button", { name: "건너뛰기" });
     expect(skip.tagName).toBe("BUTTON");
-    await waitFor(() => expect(markIntroSeen).toHaveBeenCalledTimes(1));
+
+    // The session is marked seen on completion — not at build time — so a
+    // dev double-invoke of the effect replays instead of bailing.
+    await waitFor(() => expect(capturedOnComplete).toBeTypeOf("function"));
+    expect(markIntroSeen).not.toHaveBeenCalled();
+    act(() => capturedOnComplete!());
+    expect(markIntroSeen).toHaveBeenCalledTimes(1);
   });
 });
