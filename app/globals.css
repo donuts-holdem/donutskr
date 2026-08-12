@@ -155,6 +155,40 @@ html[data-intro="seen"] .intro-overlay {
   display: none;
 }
 
+/* Intro deck: 3D perspective riffle/bridge. The scene carries the camera
+   perspective; the deck preserves 3D so its cards live in the same space. Each
+   card is a premium back — a gold lattice on the warm surface with a gold edge. */
+.intro-scene {
+  perspective: 1500px;
+}
+.intro-deck {
+  transform-style: preserve-3d;
+}
+.intro-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 134px;
+  margin: -67px 0 0 -48px;
+  border-radius: 9px;
+  background-color: var(--color-surface);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      color-mix(in srgb, var(--color-gold) 20%, transparent) 6px 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 6px,
+      color-mix(in srgb, var(--color-gold) 20%, transparent) 6px 7px
+    );
+  border: 1.5px solid var(--color-gold);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+  backface-visibility: hidden;
+}
+
 /* Respect reduced-motion: neutralize transitions/animations/hover transforms. */
 @media (prefers-reduced-motion: reduce) {
   *,
