@@ -1,0 +1,17 @@
+﻿priority,area,task,status,notes
+P0,Foundation,실서비스 인증/세션,TO BUILD,관리자/회원/리더 권한 서버 검증
+P0,Foundation,PostgreSQL + migrations,TO BUILD,localStorage 제거
+P0,Membership,가입신청/승인/중복아이디,TO BUILD,현장 가입 플로우
+P0,Membership,관리자 MEMBER 관리,TO BUILD,검색/필터/수정/삭제
+P0,Class,클래스 CRUD/자동명/리더,TO BUILD,1~12 회차
+P0,Class,회차 상태/출석 잠금,TO BUILD,XP hook 포함
+P0,Club,동아리 CRUD/로고/리더,TO BUILD,선택지 자동 반영
+P0,Meeting,모임 CRUD/신청 ON-OFF/정원,TO BUILD,신청자 보존
+P0,Meeting,HOT/완료/24h archive,TO BUILD,DB 기록 유지
+P0,Partners,CRUD/순서/로고/URL,TO BUILD,
+P1,XP,XP ledger,TO BUILD,class + daily learning
+P1,Learning,일일 GTO 퀴즈,TO BUILD,5문항 MVP
+P1,Learning,streak/학습완료 XP,TO BUILD,Asia/Seoul
+P1,Learning,문제은행 관리자,TO BUILD,검수된 정답/해설
+P2,Analytics,학습/출석/모임 analytics,RECOMMENDED,
+P2,Learning,개인화/오답복습,RECOMMENDED,V2

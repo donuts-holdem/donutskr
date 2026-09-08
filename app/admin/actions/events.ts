@@ -19,7 +19,6 @@ function parse(fd: FormData) {
     starting_stack: int("starting_stack"),
     status: String(fd.get("status") || "auto"), is_visible: fd.get("is_visible") === "on",
     blind_structure_id: fk("blind_structure_id"),
-    timer_event_id: s("timer_event_id"), timer_event_url: s("timer_event_url"),
   };
 }
 export async function createEvent(fd: FormData) {

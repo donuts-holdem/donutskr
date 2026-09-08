@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAllStructures } from "@/lib/data/blindStructures";
+import { getAllStructures } from "@/lib/legacy/data/blindStructures";
 import { deleteStructure } from "@/app/admin/actions/blindStructures";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { Button } from "@/components/ui/button";

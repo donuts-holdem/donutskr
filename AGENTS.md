@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
   `components/ui/*` (Button, Input, Label, Select, Checkbox, Textarea, Card,
   Separator). Add more with `npx shadcn@latest add <name>`. Don't hand-roll
   inputs/buttons in admin.
-- **Public site (`app/(site)/**`, `components/home|site|schedule|league|...`)
+- **Public site (`app/(site)/**`, `components/site|schedule|series`)
   keeps the bespoke design** using the custom tokens (`bg-bg`, `text-ink`,
   `text-gold`, `bg-glass`, `border-border`, `rounded-card`). Do NOT convert
   public marketing pages to shadcn.
@@ -34,7 +34,9 @@ You are a senior product designer and frontend engineer with deep expertise in m
 
 ## Project Context
 
-We are building the official website for a premium Texas Hold'em poker club, including its landing page and program pages.
+We are building DO:NUTS CLASS, a mobile-first membership, class, university-club, meeting, and daily poker-learning application. Existing schedule and series pages are preserved.
+
+Read `docs/BASELINE.md` and `docs/handoff/donuts-class-developer-handoff-v1/START_HERE.md` before implementing a new domain. The handoff HTML is reference material only.
 
 You understand Texas Hold'em, tournament structures, cash games, club operations, poker culture, and player expectations. Reflect this knowledge in the information architecture, copy, interactions, and visual design.
 
@@ -73,7 +75,7 @@ When in doubt:
 
 ## Design
 
-* Use design tokens only. Never hardcode colors, spacing, typography, radius, or z-index. Use Tailwind's scale (`p-4`, `text-sm`, `rounded-pill`) and the `@theme` tokens in `app/globals.css` (`bg-bg`, `text-ink`, `text-gold`, `bg-surface`, `text-gold-deep`, `text-cream`, …); never use arbitrary values like `bg-[#141211]` or `text-[10.5px]`. If a needed token is missing, add it to `@theme` rather than inlining a value. Exception: self-contained embedded tools with their own visual identity (e.g. the Holdem Lab quiz) may keep a local palette.
+* Use design tokens only. Never hardcode colors, spacing, typography, radius, or z-index. Use Tailwind's scale (`p-4`, `text-sm`, `rounded-pill`) and the `@theme` tokens in `app/globals.css` (`bg-bg`, `text-ink`, `text-gold`, `bg-surface`, `text-gold-deep`, `text-cream`, …); never use arbitrary values like `bg-[#141211]` or `text-[10.5px]`. If a needed token is missing, add it to `@theme` rather than inlining a value. New member views share the DO:NUTS tokens.
 * The hero section establishes the visual language for the entire product.
 * Design mobile-first, then verify tablet and desktop.
 * Prioritize originality, visual hierarchy, typography, spacing rhythm, accessibility, and meaningful interactions.
@@ -93,3 +95,13 @@ Verify:
 * No accessibility violations.
 * No unnecessary abstractions, dependencies, unrelated refactors, or temporary files.
 * The result feels polished, cohesive, and production-ready. If it looks generic, redesign it.
+
+# CLASS baseline boundaries
+
+- `lib/legacy/**` is reserved for the retained schedule/series. New CLASS domains own their models and services.
+- Reuse Supabase Auth. Never store demo passwords or add a second password-hash table from the draft schema.
+- Enforce member status, admin permissions, and entity-scoped leadership on the server and in RLS. View mode is not authorization.
+- Use atomic DB operations for approvals, capacity-limited applications, attendance/XP, and learning completion.
+- XP is an auditable ledger. Archive completed meetings after 24 hours without deleting their history.
+- Learning uses reviewed, versioned questions and server grading. The original hardcoded Holdem Lab has been removed.
+- Keep applied migrations immutable. The handoff SQL is a draft, not a deployable migration.

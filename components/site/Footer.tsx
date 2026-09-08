@@ -1,4 +1,4 @@
-import { getSiteConfig } from "@/lib/data/siteConfig";
+import { getSiteConfig } from "@/lib/legacy/data/siteConfig";
 
 // Ensure outbound links carry a scheme; a bare host like "do-lab.co.kr"
 // would otherwise resolve as a relative path and navigate within the site.

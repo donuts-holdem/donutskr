@@ -2,16 +2,12 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
-import { validateHttpsUrlFormat } from "@/lib/safe-url";
 import { parseJsonField, coerceSponsors } from "@/lib/admin/structured-fields";
 import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 export async function updateSiteConfig(fd: FormData) {
   const supabase = await requireAdmin();
   const s = (k: string) => { const v = fd.get(k); return v === null || v === "" ? null : String(v); };
-  const leaderboard_api_url = s("leaderboard_api_url");
-  // Reject SSRF-prone targets at save time (host resolution happens at fetch time).
-  if (leaderboard_api_url) validateHttpsUrlFormat(leaderboard_api_url);
   const payload = {
     signup_visible: fd.get("signup_visible") === "on",
     signup_link: s("signup_link"),
@@ -19,14 +15,11 @@ export async function updateSiteConfig(fd: FormData) {
     signup_button_label: s("signup_button_label"),
     signup_closed: fd.get("signup_closed") === "on",
     signup_closed_text: s("signup_closed_text"),
-    leaderboard_tab_visible: fd.get("leaderboard_tab_visible") === "on",
-    leaderboard_api_url,
-    leaderboard_personal_rank_visible: fd.get("leaderboard_personal_rank_visible") === "on",
     footer_sponsors: coerceSponsors(parseJsonField(fd.get("footer_sponsors"), "푸터 스폰서")),
   };
   const { data, error } = await supabase.from("site_config").update(payload).eq("id", 1).select("id");
   if (error) throw error;
   assertRowsAffected(data);
-  revalidatePublic(["/leaderboard"]);
+  revalidatePublic();
   redirect("/admin/settings?saved=1");
 }

@@ -1,16 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Space_Grotesk } from "next/font/google";
-import type { Event, Season } from "@/lib/types";
+import type { Event, Season } from "@/lib/legacy/types";
 import { FixtureRow } from "@/components/schedule/fixtures";
-import { Reveal } from "@/components/home/Reveal";
+import { Reveal } from "@/components/site/Reveal";
 
 /* ------------------------------------------------------------------ *
  * SeriesBoard — the season landing page. It mirrors the home board's
  * editorial language: a left-aligned thesis hero (season badge +
  * display masthead with the year set in gold + the champion bracelet
- * bleeding off the right edge), handing off to three signposts that
- * route into the season — schedule, leaderboard, online league.
+ * bleeding off the right edge), followed by fixtures and participation details.
  * Latin labels ride Space Grotesk; Korean copy stays on Pretendard.
  * The official-sponsor strip is the global site footer, not repeated
  * here.
@@ -43,38 +42,13 @@ function IconArrow({ size = 16, className }: { size?: number; className?: string
   );
 }
 
-/* The three signposts into the season. Static marketing copy. */
-const NAV_CARDS = [
-  {
-    eyebrow: "Schedule",
-    title: "일정",
-    desc: "매주 주말 진행되는 시리즈의 일정을 한눈에 확인합니다.",
-    href: "/schedule",
-    cta: "전체 일정 보기",
-  },
-  {
-    eyebrow: "Leaderboard",
-    title: "리더보드",
-    desc: "시리즈의 개인별, 대학별 누적 점수 순위를 확인할 수 있습니다.",
-    href: "/leaderboard",
-    cta: "랭킹 확인하기",
-  },
-  {
-    eyebrow: "Online League",
-    title: "온라인 리그",
-    desc: "매일 진행되는 온라인 토너먼트의 일정, 참가 방법을 안내합니다.",
-    href: "/online-league",
-    cta: "리그 안내 보기",
-  },
-] as const;
-
 /* The season landing leads with what's next, so the fixture board shows a
    short preview of upcoming events and hands off to the full /schedule. */
 const FIXTURE_PREVIEW_LIMIT = 6;
 
 /* Participation guide — static, restrained copy in a members'-club register.
    No gambling language: the sequence is the club's operating rhythm, from
-   picking an event to points landing on the leaderboard. */
+   picking an event to participating at the venue. */
 const JOIN_STEPS = [
   {
     title: "일정 확인",
@@ -89,8 +63,8 @@ const JOIN_STEPS = [
     desc: "레지스트레이션 마감 전 도착해 바이인 등록을 마칩니다.",
   },
   {
-    title: "포인트 집계",
-    desc: "성적은 시즌 리더보드 포인트로 누적되어 순위에 반영됩니다.",
+    title: "시리즈 참여",
+    desc: "현장 운영진의 안내에 따라 토너먼트와 이벤트에 참여합니다.",
   },
 ] as const;
 
@@ -153,32 +127,6 @@ function Masthead({ text, year }: { text: string; year: number }) {
     );
   }
   return <>{text}</>;
-}
-
-function NavCard({ card }: { card: (typeof NAV_CARDS)[number] }) {
-  return (
-    <Link
-      href={card.href}
-      className="group flex flex-col gap-3.5 rounded-card border border-border bg-surface p-6 transition-[border-color,background-color] duration-300 hover:border-white/20 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none sm:p-7"
-    >
-      <span
-        className={`${display.className} text-2xs font-bold uppercase tracking-[0.18em] text-pink`}
-      >
-        {card.eyebrow}
-      </span>
-      <h3 className="text-display-sm font-bold leading-[1.1] tracking-[-0.02em] text-white">
-        {card.title}
-      </h3>
-      <p className="flex-1 text-sm leading-relaxed text-white/55">{card.desc}</p>
-      <span className="inline-flex items-center gap-1.5 pt-1 text-sm font-semibold text-white/80 transition-colors duration-300 group-hover:text-gold motion-reduce:transition-none">
-        {card.cta}
-        <IconArrow
-          size={15}
-          className="transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
-        />
-      </span>
-    </Link>
-  );
 }
 
 export function SeriesBoard({
@@ -383,17 +331,6 @@ export function SeriesBoard({
         )}
       </section>
 
-      {/* -------------------------- SIGNPOSTS ------------------------- */}
-      <section aria-labelledby="series-explore" className="pb-20 sm:pb-28">
-        <Reveal>
-          <SectionHead id="series-explore" eyebrow="Explore" title="더 둘러보기" />
-        </Reveal>
-        <Reveal className="mt-8 grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3">
-          {NAV_CARDS.map((card) => (
-            <NavCard key={card.href} card={card} />
-          ))}
-        </Reveal>
-      </section>
     </div>
   );
 }

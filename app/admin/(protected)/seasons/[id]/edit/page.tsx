@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getSeasonById } from "@/lib/data/seasons";
+import { getSeasonById } from "@/lib/legacy/data/seasons";
 import { SeasonForm } from "@/components/admin/SeasonForm";
 import { updateSeason, deleteSeason } from "@/app/admin/actions/seasons";
 import { DeleteButton } from "@/components/admin/DeleteButton";

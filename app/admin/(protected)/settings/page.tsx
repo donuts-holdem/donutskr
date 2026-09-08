@@ -1,4 +1,4 @@
-import { getSiteConfig } from "@/lib/data/siteConfig";
+import { getSiteConfig } from "@/lib/legacy/data/siteConfig";
 import { updateSiteConfig } from "@/app/admin/actions/siteConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-gold">사이트 설정</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gold">공개 페이지 설정</h1>
 
       <form action={updateSiteConfig} className="flex flex-col gap-6">
         {/* 가입신청 */}
@@ -49,27 +49,6 @@ export default async function SettingsPage() {
             <div className="flex flex-col gap-2">
               <Label htmlFor="signup_closed_text">마감 안내 텍스트</Label>
               <Input id="signup_closed_text" name="signup_closed_text" defaultValue={config.signup_closed_text ?? ""} />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 리더보드 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>리더보드</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <div className="flex items-center gap-2">
-              <Checkbox id="leaderboard_tab_visible" name="leaderboard_tab_visible" defaultChecked={config.leaderboard_tab_visible} />
-              <Label htmlFor="leaderboard_tab_visible">리더보드 탭 노출</Label>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="leaderboard_api_url">리더보드 API URL</Label>
-              <Input id="leaderboard_api_url" name="leaderboard_api_url" type="url" defaultValue={config.leaderboard_api_url ?? ""} />
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox id="leaderboard_personal_rank_visible" name="leaderboard_personal_rank_visible" defaultChecked={config.leaderboard_personal_rank_visible} />
-              <Label htmlFor="leaderboard_personal_rank_visible">개인 랭킹 노출</Label>
             </div>
           </CardContent>
         </Card>

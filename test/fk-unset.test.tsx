@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { EventForm } from "@/components/admin/EventForm";
-import type { Event, Season, BlindStructure } from "@/lib/types";
+import type { Event, Season, BlindStructure } from "@/lib/legacy/types";
 
 const minimalEvent: Event = {
   id: "ev1",
@@ -21,9 +21,7 @@ const minimalEvent: Event = {
   status: "auto",
   is_visible: true,
   blind_structure_id: null,
-  timer_event_id: null,
-  timer_event_url: null,
-};
+  };
 
 const seasons: Season[] = [
   { id: "S1", name: "2024 봄", year: 2024, start_date: null, end_date: null, is_active: true, hero_text: null, sub_text: null, badge_text: null, hero_image: null, bg_image: null },

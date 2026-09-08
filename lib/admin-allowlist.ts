@@ -18,7 +18,7 @@ export function parseAdminAllowlist(allowlistEnv: string | undefined | null): st
 /**
  * True when `email` is present in the parsed allowlist. Returns false when the
  * allowlist is empty/unset or the email is missing — callers decide how to
- * treat the "no allowlist configured" case (see requireAdmin's fallback).
+ * apply optional environment restrictions. DB authorization is always required.
  */
 export function isAllowedAdminEmail(
   email: string | undefined | null,

@@ -1,0 +1,90 @@
+{
+  "demoAccounts": [
+    {
+      "type": "ADMIN",
+      "name": "한승목",
+      "username": "admin",
+      "password": "1234",
+      "includedInMemberList": false
+    },
+    {
+      "type": "CLUB_LEADER",
+      "name": "이민찬",
+      "username": "minchan",
+      "password": "1234",
+      "memberId": "m1"
+    },
+    {
+      "type": "CLASS_LEADER",
+      "name": "조용훈",
+      "username": "yonghun",
+      "password": "1234",
+      "memberId": "m2"
+    },
+    {
+      "type": "MEMBER",
+      "name": "이종한",
+      "username": "jonghan",
+      "password": "1234",
+      "memberId": "m3"
+    }
+  ],
+  "clubs": [
+    {
+      "id": "u1",
+      "name": "서울대학교 ATC",
+      "school": "서울대학교",
+      "leaderMemberIds": [
+        "m1"
+      ],
+      "memberCount": 15
+    }
+  ],
+  "classes": [
+    {
+      "id": "c1",
+      "name": "DO:NUTS CLASS·월요일 A",
+      "weekday": "월요일",
+      "time": "19:00",
+      "place": "사당",
+      "leaderMemberIds": [
+        "m2"
+      ]
+    },
+    {
+      "id": "c2",
+      "name": "DO:NUTS CLASS·수요일 A",
+      "weekday": "수요일",
+      "time": "16:00",
+      "place": "사당",
+      "leaderMemberIds": [
+        "m16"
+      ]
+    },
+    {
+      "id": "c3",
+      "name": "DO:NUTS CLASS·수요일 B",
+      "weekday": "수요일",
+      "time": "19:30",
+      "place": "사당",
+      "leaderMemberIds": [
+        "m17"
+      ]
+    },
+    {
+      "id": "c4",
+      "name": "DO:NUTS CLASS·금요일 A",
+      "weekday": "금요일",
+      "time": "19:00",
+      "place": "사당",
+      "leaderMemberIds": [
+        "m18"
+      ]
+    }
+  ],
+  "notes": [
+    "한승목 관리자 계정은 회원 50명에 포함하지 않는다.",
+    "이민찬/조용훈 등 리더는 일반 회원 레코드에도 존재한다.",
+    "demo_password는 정적 데모용이며 실제 서비스에서 평문 비밀번호를 저장하지 않는다."
+  ]
+}

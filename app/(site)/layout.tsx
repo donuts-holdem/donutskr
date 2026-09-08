@@ -1,7 +1,7 @@
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { SeasonBackdrop } from "@/components/site/SeasonBackdrop";
-import { getActiveSeason } from "@/lib/data/seasons";
+import { getActiveSeason } from "@/lib/legacy/data/seasons";
 import { Suspense } from "react";
 
 // The active season's bg_image, streamed in as a site-wide atmospheric layer.

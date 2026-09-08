@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DO:NUTS CLASS
 
-## Getting Started
+Development baseline for the DO:NUTS university poker union's membership,
+classes, clubs, meetings, partners, and daily learning application.
 
-First, run the development server:
+The existing **schedule and series** remain operational. Member signup, leader
+views, classes, meetings, daily learning, and XP are the next implementation
+slices; they are not implemented by this baseline.
 
-```bash
+## Start here
+
+- [Baseline architecture and decisions](docs/BASELINE.md)
+- [Original developer handoff](docs/handoff/donuts-class-developer-handoff-v1/START_HERE.md)
+- [Product requirements](docs/handoff/donuts-class-developer-handoff-v1/docs/01_PRODUCT_REQUIREMENTS.md)
+- [XP and daily learning](docs/handoff/donuts-class-developer-handoff-v1/docs/05_XP_DAILY_LEARNING.md)
+- [Database migration notes](supabase/README.md)
+- [Engineering and design rules](AGENTS.md)
+
+## Development
+
+Use Node.js 22 or later and npm. Install the lockfile dependencies with `npm ci`.
+Configure `.env.local` using the variables documented in `.env.example`:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `ADMIN_EMAILS` (optional extra administrator restriction)
+
+Connect a Supabase project with the repository migrations applied, then run:
+
+```sh
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`/` temporarily redirects to `/schedule`. `/series` retains the season page.
+Existing operators can use `/admin/login` to edit schedules, seasons, blind
+structures, and public page settings. Admin identities must be authorized by
+`public.admin_emails`; being signed in is not sufficient.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Code structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+app/(site)/         Retained schedule and series routes
+app/admin/          Supporting legacy content-management screens
+components/site/    Public navigation, footer, backdrop, reveal
+components/ui/      Shared shadcn primitives
+lib/legacy/         Retained content models, queries, calendar and status rules
+lib/supabase/       Shared Auth/database clients
+supabase/           Migration history and minimal non-destructive seed
+docs/handoff/       Original product reference and prototype
+```
 
-## Learn More
+New member features get their own domain modules and route shell as described in
+`docs/BASELINE.md`. The handoff prototype and demo credentials are not runtime
+application code or production seeds.
 
-To learn more about Next.js, take a look at the following resources:
+## Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sh
+npm test
+npm run lint
+npm run build
+npm run typecheck
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The production build generates route types; run it before the standalone type
+check on a fresh checkout. Existing `next/font/google` fonts require network
+access during the build.
 
-## Deploy on Vercel
+## Database transition
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Migration `0023_class_development_baseline.sql` retires program CMS, special
+pages, dynamic navigation, league settings, and timer tables, while preserving
+schedule/series data and Auth/Storage. Review the migration and back up an
+existing target before applying it. Deploy this application before the cleanup
+migration. No remote database migration is performed by local code cleanup.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Applied migrations remain in place. `supabase/seed.sql` no longer deletes or
+repopulates content; a fresh database starts with empty schedule/series states.
+The old automatic trash purge is removed. Trash for retained content is managed
+manually, separately from future CLASS history archival.

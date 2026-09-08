@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getEventById } from "@/lib/data/events";
-import { getStructureWithRows } from "@/lib/data/blindStructures";
+import { getEventById } from "@/lib/legacy/data/events";
+import { getStructureWithRows } from "@/lib/legacy/data/blindStructures";
 import { BlindStructureTable } from "@/components/schedule/BlindStructureTable";
 import { StatusBadge } from "@/components/schedule/StatusBadge";
 import { display, eventTime, IconArrow } from "@/components/schedule/fixtures";
-import { formatDotDate } from "@/lib/program-display";
-import { weekdayKO } from "@/lib/schedule";
-import { deriveEventStatus } from "@/lib/event-status";
+import { formatDotDate } from "@/lib/legacy/date-format";
+import { weekdayKO } from "@/lib/legacy/schedule";
+import { deriveEventStatus } from "@/lib/legacy/event-status";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -53,9 +53,6 @@ const IconDate = (p: { size?: number; className?: string }) => (
 );
 const IconPin = (p: { size?: number; className?: string }) => (
   <Line {...p} d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-);
-const IconChip = (p: { size?: number; className?: string }) => (
-  <Line {...p} d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z M12 3v4 M12 17v4 M3 12h4 M17 12h4" />
 );
 const IconClock = (p: { size?: number; className?: string }) => (
   <Line {...p} d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M12 7.5V12l3 2" />
@@ -127,9 +124,6 @@ export default async function EventDetailPage({ params }: Props) {
   const whenValue = dateLabel
     ? `${dateLabel}${weekday ? ` (${weekday})` : ""}`
     : event.date ?? "일정 미정";
-
-  // Live timer is only meaningful while the event is live or about to be.
-  const showTimer = !isCompleted && Boolean(event.timer_event_url);
 
   const showEntry = !isCompleted && Boolean(event.entry_link);
   const entryLabel = event.button_label ?? "참가 신청하기";
@@ -267,18 +261,6 @@ export default async function EventDetailPage({ params }: Props) {
           {/* CTAs */}
           {showEntry && (
             <EntryButton href={event.entry_link!} label={entryLabel} className="w-full" />
-          )}
-
-          {showTimer && (
-            <a
-              href={event.timer_event_url!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${display.className} inline-flex w-full items-center justify-center gap-2 rounded-pill border border-white/15 px-8 py-3 text-sm font-semibold uppercase tracking-[0.04em] text-white/80 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
-            >
-              <IconChip size={16} className="text-gold/80" />
-              라이브 타이머
-            </a>
           )}
 
           {isCompleted && (

@@ -1,5 +1,5 @@
 import { Space_Grotesk } from "next/font/google";
-import type { BlindRow } from "@/lib/types";
+import type { BlindRow } from "@/lib/legacy/types";
 
 const display = Space_Grotesk({
   subsets: ["latin"],

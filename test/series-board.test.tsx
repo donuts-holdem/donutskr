@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import type { Event, Season } from "@/lib/types";
+import type { Event, Season } from "@/lib/legacy/types";
 import { SeriesBoard } from "@/components/series/SeriesBoard";
 
 function ev(over: Partial<Event>): Event {
@@ -24,6 +24,12 @@ const season: Season = {
 } as unknown as Season;
 
 describe("SeriesBoard", () => {
+  it("does not link to retired features", () => {
+    render(<SeriesBoard season={season} events={[]} />);
+    for (const link of screen.getAllByRole("link")) {
+      expect(link.getAttribute("href")).not.toMatch(/^\/(programs|leaderboard|online-league|lab|timer)(?:\/|$)/);
+    }
+  });
   it("renders the season fixtures with a link to the full schedule", () => {
     render(<SeriesBoard season={season} events={[ev({})]} />);
     const fixtures = screen.getByRole("region", { name: "이번 시즌 이벤트" });

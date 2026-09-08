@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Event } from "@/lib/types";
+import type { Event } from "@/lib/legacy/types";
 import {
   buildMonthGrid,
   groupEventsByDate,
@@ -7,7 +7,7 @@ import {
   monthLabel,
   splitOrganizerLabel,
   WEEKDAYS,
-} from "@/lib/calendar";
+} from "@/lib/legacy/calendar";
 
 function ev(date: string | null, over: Partial<Event> = {}): Event {
   return { id: date ?? "x", date, buy_in: null, status: "scheduled", ...over } as unknown as Event;

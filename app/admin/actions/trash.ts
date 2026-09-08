@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePublic } from "@/lib/revalidate";
-import { TRASH_ENTITIES, isTrashEntity, type TrashEntity } from "@/lib/data/trash";
+import { TRASH_ENTITIES, isTrashEntity, type TrashEntity } from "@/lib/legacy/data/trash";
 import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

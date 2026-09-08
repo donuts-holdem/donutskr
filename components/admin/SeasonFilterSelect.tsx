@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Season } from "@/lib/types";
+import type { Season } from "@/lib/legacy/types";
 
 export function SeasonFilterSelect({
   seasons,

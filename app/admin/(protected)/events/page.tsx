@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Event } from "@/lib/types";
-import { getAllEvents } from "@/lib/data/events";
-import { getAllSeasons } from "@/lib/data/seasons";
-import { eventStatusLabel } from "@/lib/labels";
-import { weekdayKO } from "@/lib/schedule";
-import { deriveEventStatus } from "@/lib/event-status";
+import type { Event } from "@/lib/legacy/types";
+import { getAllEvents } from "@/lib/legacy/data/events";
+import { getAllSeasons } from "@/lib/legacy/data/seasons";
+import { eventStatusLabel } from "@/lib/legacy/labels";
+import { weekdayKO } from "@/lib/legacy/schedule";
+import { deriveEventStatus } from "@/lib/legacy/event-status";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EffectiveVisibilityBadge } from "@/components/admin/EffectiveVisibilityBadge";
-import { effectiveEventVisibility } from "@/lib/visibility";
+import { effectiveEventVisibility } from "@/lib/legacy/visibility";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";
 import { SeasonFilterSelect } from "@/components/admin/SeasonFilterSelect";
 import { ShowCompletedToggle } from "@/components/admin/ShowCompletedToggle";

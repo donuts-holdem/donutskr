@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { deriveEventStatus, toStoredStatus } from "@/lib/event-status";
-import type { DerivedEventStatus } from "@/lib/types";
+import { deriveEventStatus, toStoredStatus } from "@/lib/legacy/event-status";
+import type { DerivedEventStatus } from "@/lib/legacy/types";
 
 /* ------------------------------------------------------------------ *
  * deriveEventStatus — the single source of an event's DISPLAY status,

@@ -1,0 +1,109 @@
+{
+  "package": "DO:NUTS CLASS Developer Handoff",
+  "version": "1.0",
+  "generatedDate": "2026-09-06",
+  "prototypeStatus": "frontend localStorage demo",
+  "newRequiredFeatures": [
+    "XP from class attendance",
+    "Daily GTO learning",
+    "Daily learning XP",
+    "Learning streak"
+  ],
+  "files": [
+    {
+      "path": "START_HERE.md",
+      "size": 1793,
+      "sha256": "9ef9674dc9ac8c1d008476d9998c1282ad1a4ee9c8d35976832f8b845b8333ba"
+    },
+    {
+      "path": "data/implementation_backlog.csv",
+      "size": 1069,
+      "sha256": "3b9ce50b8760dddf202d47d1bae6d043fda358ee12214f7b4e42ae73865284bd"
+    },
+    {
+      "path": "data/seed_entities.json",
+      "size": 1930,
+      "sha256": "62b1078731ce4b7e8e591b105b9a24cdc0398119ec3933e5cd2ea4f1910d834a"
+    },
+    {
+      "path": "data/seed_members.csv",
+      "size": 3759,
+      "sha256": "700825347391e126f089f979232f1b1d4dee166716552c6e5600d169378e7101"
+    },
+    {
+      "path": "docs/01_PRODUCT_REQUIREMENTS.md",
+      "size": 8196,
+      "sha256": "3830018d56fd4b82bd68eb155c049b3add8cf9968c376f0f96f93a5be921cb82"
+    },
+    {
+      "path": "docs/02_ROLES_PERMISSIONS.md",
+      "size": 2604,
+      "sha256": "107daa92f7638f34fbe28b89f0d0dbb0d63d3d735c975b2fbdd05fcd66235257"
+    },
+    {
+      "path": "docs/03_DATA_MODEL.md",
+      "size": 3790,
+      "sha256": "819b8c26c609540bc7dbf0d30387395da55c40ce9c01a110f429ff422aaf272c"
+    },
+    {
+      "path": "docs/04_UI_FLOWS.md",
+      "size": 2596,
+      "sha256": "d06449be3217597b28c06e9dcd61cd45f336dd014fd4e7d00a383c63479f7eb0"
+    },
+    {
+      "path": "docs/05_XP_DAILY_LEARNING.md",
+      "size": 5133,
+      "sha256": "d592a1c6b4ee6d3d35a7b779536676092363b6d5a1215e5dc2433d0971965ce3"
+    },
+    {
+      "path": "docs/06_API_SPEC.md",
+      "size": 2867,
+      "sha256": "ca7d979d80fbca69c8c03b9fb09c0ea6d038e5509a84a4c05a312db7b09d83d2"
+    },
+    {
+      "path": "docs/07_IMPLEMENTATION_ROADMAP.md",
+      "size": 1623,
+      "sha256": "9c901352f6d0e03b9272cd24eebfe1a22a0e5289afcc5869f854a06e929ff7bc"
+    },
+    {
+      "path": "docs/08_QA_ACCEPTANCE_CHECKLIST.md",
+      "size": 2481,
+      "sha256": "d46a7326bc53cdfa02090cff4db606cf287b622f7d2ed46d414713ac24f1c264"
+    },
+    {
+      "path": "docs/09_PROTOTYPE_GAP_ANALYSIS.md",
+      "size": 1532,
+      "sha256": "41aa9be882910406eed2f9148581b587e1a7d21b5ed45dee9ebdd1540a2524b0"
+    },
+    {
+      "path": "docs/10_OPEN_DECISIONS.md",
+      "size": 1406,
+      "sha256": "2e680b9fe34d42fe575e579216e7a811c42d0fc591fca6589ac03459df7d2eac"
+    },
+    {
+      "path": "docs/11_TECHNICAL_ARCHITECTURE.md",
+      "size": 3351,
+      "sha256": "eef174070e245b2e47279386ba6369a99c6c3eb5c1114572211586e52dd5f286"
+    },
+    {
+      "path": "prototype/assets/donuts-logo.png",
+      "size": 132915,
+      "sha256": "ebe6aa8fbebc65dc0305f680be23cd2b9cf4befd0ad311939c5c6c0a2256486d"
+    },
+    {
+      "path": "prototype/index.html",
+      "size": 110028,
+      "sha256": "37f3ffe8d5f327c31da09c946742fd22613a4ee19ae7ec1b588a1920dd586827"
+    },
+    {
+      "path": "prototype/vercel.json",
+      "size": 50,
+      "sha256": "f91c66a44fb4186c4d6be9ae89d68c058f5c7abe811b20f60159302b96029c09"
+    },
+    {
+      "path": "schema/postgresql_schema.sql",
+      "size": 9595,
+      "sha256": "f8ff9b79e3d96fe80836cce60ebf2910cb0ab971b559ea0162bdfaa8f302c6aa"
+    }
+  ]
+}

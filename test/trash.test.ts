@@ -4,20 +4,15 @@ import {
   TRASH_ENTITY_KEYS,
   isTrashEntity,
   type TrashEntity,
-} from "@/lib/data/trash";
-import { isAuthorizedCron } from "@/lib/cron";
+} from "@/lib/legacy/data/trash";
 
 describe("TRASH_ENTITIES mapping", () => {
-  it("covers exactly the seven soft-delete entities", () => {
+  it("covers only the retained schedule entities", () => {
     expect(TRASH_ENTITY_KEYS.sort()).toEqual(
       [
         "blind_structures",
         "events",
-        "navigation_tabs",
-        "program_options",
-        "programs",
         "seasons",
-        "special_pages",
       ].sort(),
     );
   });
@@ -36,13 +31,9 @@ describe("TRASH_ENTITIES mapping", () => {
   });
 
   it("maps entities to the correct human-readable title columns", () => {
-    expect(TRASH_ENTITIES.programs.labelColumn).toBe("title");
     expect(TRASH_ENTITIES.events.labelColumn).toBe("title");
-    expect(TRASH_ENTITIES.special_pages.labelColumn).toBe("title");
     expect(TRASH_ENTITIES.seasons.labelColumn).toBe("name");
-    expect(TRASH_ENTITIES.navigation_tabs.labelColumn).toBe("name");
     expect(TRASH_ENTITIES.blind_structures.labelColumn).toBe("name");
-    expect(TRASH_ENTITIES.program_options.labelColumn).toBe("label");
   });
 });
 
@@ -78,22 +69,5 @@ describe("isTrashEntity whitelist guard", () => {
     } else {
       throw new Error("expected 'seasons' to be a trash entity");
     }
-  });
-});
-
-describe("isAuthorizedCron", () => {
-  it("accepts a matching Bearer token", () => {
-    expect(isAuthorizedCron("Bearer s3cret", "s3cret")).toBe(true);
-  });
-
-  it("rejects a mismatched or missing token", () => {
-    expect(isAuthorizedCron("Bearer wrong", "s3cret")).toBe(false);
-    expect(isAuthorizedCron("s3cret", "s3cret")).toBe(false);
-    expect(isAuthorizedCron(null, "s3cret")).toBe(false);
-  });
-
-  it("fails closed when the secret is unset", () => {
-    expect(isAuthorizedCron("Bearer anything", undefined)).toBe(false);
-    expect(isAuthorizedCron("Bearer ", "")).toBe(false);
   });
 });

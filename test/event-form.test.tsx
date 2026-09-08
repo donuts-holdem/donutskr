@@ -7,7 +7,7 @@ describe("EventForm", () => {
     render(<EventForm structures={[]} action={async () => {}} />);
     expect(screen.getByLabelText("이벤트명 *")).toBeInTheDocument();
     expect(screen.getByLabelText("상태")).toBeInTheDocument();
-    expect(screen.getByLabelText("타이머 이벤트 ID")).toBeInTheDocument();
+    expect(screen.getByLabelText("블라인드 스트럭처")).toBeInTheDocument();
   });
 });
 

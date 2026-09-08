@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Dialog, Popover } from "radix-ui";
-import type { Event } from "@/lib/types";
-import { isPast } from "@/lib/schedule";
-import { deriveEventStatus } from "@/lib/event-status";
+import type { Event } from "@/lib/legacy/types";
+import { isPast } from "@/lib/legacy/schedule";
+import { deriveEventStatus } from "@/lib/legacy/event-status";
 import {
   display,
   FixtureRow,
@@ -22,7 +22,7 @@ import {
   monthLabel,
   splitOrganizerLabel,
   type DayCell as DayCellT,
-} from "@/lib/calendar";
+} from "@/lib/legacy/calendar";
 
 const MAX_CHIPS = 3;
 

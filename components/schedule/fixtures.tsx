@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
-import type { Event, DerivedEventStatus } from "@/lib/types";
-import { weekdayKO } from "@/lib/schedule";
-import { deriveEventStatus } from "@/lib/event-status";
+import type { Event, DerivedEventStatus } from "@/lib/legacy/types";
+import { weekdayKO } from "@/lib/legacy/schedule";
+import { deriveEventStatus } from "@/lib/legacy/event-status";
 
 /* ------------------------------------------------------------------ *
  * Fixtures — the shared vocabulary for the club's schedule board. The

@@ -1,6 +1,6 @@
 import { BlindStructureEditor } from "@/components/admin/BlindStructureEditor";
 import { saveStructure } from "@/app/admin/actions/blindStructures";
-import { getStructureWithRows, getAllStructures } from "@/lib/data/blindStructures";
+import { getStructureWithRows, getAllStructures } from "@/lib/legacy/data/blindStructures";
 import { notFound } from "next/navigation";
 
 export default async function EditBlindStructurePage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +13,7 @@ export default async function EditBlindStructurePage({ params }: { params: Promi
     "use server";
     const name = String(fd.get("name") || "");
     const eventType = String(fd.get("event_type") || "").trim() || null;
-    let rowData: any[] = [];
+    let rowData: Parameters<typeof saveStructure>[3] = [];
     try { rowData = JSON.parse(String(fd.get("rows") || "[]")); } catch {}
     await saveStructure(id, name, eventType, rowData);
   }

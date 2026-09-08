@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { Event } from "@/lib/types";
-import { isPast, partitionEvents } from "@/lib/schedule";
+import type { Event } from "@/lib/legacy/types";
+import { isPast, partitionEvents } from "@/lib/legacy/schedule";
 
 // A KST wall-clock instant (Asia/Seoul is a fixed UTC+9).
 const NOW = new Date("2026-06-26T12:00:00+09:00");

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { getActiveSeason } from "@/lib/data/seasons";
-import { getSiteConfig } from "@/lib/data/siteConfig";
-import { getEvents } from "@/lib/data/events";
-import { partitionEvents } from "@/lib/schedule";
+import { getActiveSeason } from "@/lib/legacy/data/seasons";
+import { getSiteConfig } from "@/lib/legacy/data/siteConfig";
+import { getEvents } from "@/lib/legacy/data/events";
+import { partitionEvents } from "@/lib/legacy/schedule";
 import { SeriesBoard } from "@/components/series/SeriesBoard";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function SeriesPage() {
     <SeriesBoard
       season={season}
       events={upcoming}
-      signupLink={config.signup_link}
+      signupLink={config.signup_visible && !config.signup_closed ? config.signup_link : null}
       signupLabel={config.signup_button_label}
       signupNewTab={config.signup_new_tab}
     />

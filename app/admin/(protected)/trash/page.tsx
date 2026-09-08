@@ -3,7 +3,7 @@ import {
   TRASH_ENTITIES,
   TRASH_ENTITY_KEYS,
   type TrashItem,
-} from "@/lib/data/trash";
+} from "@/lib/legacy/data/trash";
 import { restoreItem, purgeItem } from "@/app/admin/actions/trash";
 import { PurgeButton } from "@/components/admin/PurgeButton";
 import { Button } from "@/components/ui/button";
@@ -78,7 +78,7 @@ export default async function AdminTrashPage() {
         <h1 className="text-gold text-2xl font-bold">휴지통</h1>
       </div>
       <p className="text-muted-foreground mb-6 text-sm">
-        삭제된 항목은 30일간 보관된 뒤 자동으로 완전 삭제됩니다. 그 전까지 언제든 복구할 수 있습니다.
+        삭제된 일정·시즌·블라인드 구조를 복구할 수 있습니다. 자동 영구 삭제는 실행하지 않습니다.
       </p>
 
       {items.length === 0 ? (

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Toaster } from "@/components/ui/sonner";
@@ -11,7 +11,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createServerSupabase();
+  const supabase = await requireAdmin().catch(() => null);
+  if (!supabase) redirect("/admin/login");
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -21,9 +22,9 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="bg-background text-foreground flex min-h-screen">
+    <div className="bg-background text-foreground flex min-h-screen flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="border-border flex w-56 shrink-0 flex-col border-r">
+      <aside className="border-border flex w-full shrink-0 md:w-56 flex-col border-r">
         <div className="border-border border-b px-5 py-5">
           <span className="text-gold text-lg font-bold tracking-tight">
             DO:NUTS Admin
@@ -37,7 +38,7 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <main className="min-w-0 flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
       <Toaster />
       <Suspense fallback={null}><SaveToast /></Suspense>
     </div>

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -9,7 +9,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "DO:NUTS",
-  description: "DO:NUTS Poker Club",
+  description: "DO:NUTS CLASS · 대학 포커 동아리연합",
 };
 
 // Dark-theme platform hints: matches scrollbars/form controls to the theme and
@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 };
 
 // Root shell only (html/body/font). Site chrome lives in app/(site)/layout.tsx
-// so full-bleed routes (/lab, /admin) can opt out of the header/footer.
+// so member and admin routes can use their own navigation.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,9 +30,6 @@ export default function RootLayout({
     <html
       lang="ko"
       className={`${inter.variable} dark h-full antialiased`}
-      // The intro overlay's pre-hydration script sets `data-intro` on <html>
-      // before React hydrates; suppress the expected attribute mismatch.
-      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-bg text-ink overflow-x-clip">{children}</body>
     </html>

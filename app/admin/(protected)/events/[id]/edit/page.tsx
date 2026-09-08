@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { getEventById } from "@/lib/data/events";
-import { getAllStructures } from "@/lib/data/blindStructures";
-import { getAllSeasons } from "@/lib/data/seasons";
+import { getEventById } from "@/lib/legacy/data/events";
+import { getAllStructures } from "@/lib/legacy/data/blindStructures";
+import { getAllSeasons } from "@/lib/legacy/data/seasons";
 import { EventForm } from "@/components/admin/EventForm";
-import { deriveEventStatus } from "@/lib/event-status";
+import { deriveEventStatus } from "@/lib/legacy/event-status";
 import { updateEvent, deleteEvent } from "@/app/admin/actions/events";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";

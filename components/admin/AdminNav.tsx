@@ -4,20 +4,12 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const NAV_GROUPS = [
-  { label: "콘텐츠", links: [
-    { href: "/admin/programs", label: "프로그램" },
-    { href: "/admin/events", label: "이벤트" },
-    { href: "/admin/special-pages", label: "특수페이지" },
-    { href: "/admin/tabs", label: "탭 관리" },
-  ]},
-  { label: "운영", links: [
+  { label: "일정 · 시리즈 운영", links: [
+    { href: "/admin/events", label: "일정" },
     { href: "/admin/seasons", label: "시즌" },
-    { href: "/admin/blind-structures", label: "블라인드 스트럭처" },
-    { href: "/admin/timers", label: "타이머" },
+    { href: "/admin/blind-structures", label: "블라인드 구조" },
   ]},
-  { label: "사이트 설정", links: [
-    { href: "/admin/online-league", label: "온라인 리그" },
-    { href: "/admin/program-options", label: "프로그램 옵션" },
+  { label: "공개 페이지 관리", links: [
     { href: "/admin/settings", label: "설정" },
     { href: "/admin/trash", label: "휴지통" },
   ]},

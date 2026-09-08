@@ -1,5 +1,5 @@
-import { getAllStructures } from "@/lib/data/blindStructures";
-import { getAllSeasons } from "@/lib/data/seasons";
+import { getAllStructures } from "@/lib/legacy/data/blindStructures";
+import { getAllSeasons } from "@/lib/legacy/data/seasons";
 import { EventForm } from "@/components/admin/EventForm";
 import { createEvent } from "@/app/admin/actions/events";
 

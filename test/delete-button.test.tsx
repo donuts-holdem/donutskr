@@ -11,7 +11,7 @@ describe("DeleteButton", () => {
     expect(onDelete).not.toHaveBeenCalled();
     // Dialog explains soft-delete → trash + item name.
     expect(screen.getByText(/휴지통으로 이동/)).toBeInTheDocument();
-    expect(screen.getByText(/30일 내 복구/)).toBeInTheDocument();
+    expect(screen.getByText(/자동으로 영구 삭제되지 않습니다/)).toBeInTheDocument();
     expect(screen.getByText(/슈퍼컵/)).toBeInTheDocument();
   });
 

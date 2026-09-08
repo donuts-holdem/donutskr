@@ -1,6 +1,6 @@
 "use client";
 
-import type { Event, BlindStructure, Season } from "@/lib/types";
+import type { Event, BlindStructure, Season } from "@/lib/legacy/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/labels";
-import { toStoredStatus } from "@/lib/event-status";
-import type { DerivedEventStatus } from "@/lib/types";
+import { EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/legacy/labels";
+import { toStoredStatus } from "@/lib/legacy/event-status";
+import type { DerivedEventStatus } from "@/lib/legacy/types";
 import { ImageField } from "@/components/admin/ImageField";
 
 interface EventFormProps {
@@ -199,15 +199,7 @@ export function EventForm({ event, structures, seasons = [], derivedStatus, acti
               defaultValue={event?.starting_stack ?? ""}
               placeholder="예: 30000"
             />
-            <p className="text-muted-foreground text-xs">타이머의 평균 스택(총 칩 ÷ 인원) 계산에 사용됩니다.</p>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-6">
-            <Label htmlFor="timer_event_id">타이머 이벤트 ID</Label>
-            <Input id="timer_event_id" name="timer_event_id" defaultValue={event?.timer_event_id ?? ""} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-12">
-            <Label htmlFor="timer_event_url">타이머 URL</Label>
-            <Input id="timer_event_url" name="timer_event_url" type="url" defaultValue={event?.timer_event_url ?? ""} />
+            <p className="text-muted-foreground text-xs">토너먼트 시작 시 참가자에게 지급하는 칩 수입니다.</p>
           </div>
         </CardContent>
       </Card>
