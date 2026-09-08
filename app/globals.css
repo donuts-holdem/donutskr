@@ -37,6 +37,14 @@ layer(base);
   --radius-card: 24px;
   --radius-pill: 999px;
 
+  --spacing-full-bleed: calc(50% - 50vw);
+  --spacing-home-hero: 46svh;
+  --spacing-home-hero-wide: 62svh;
+
+  --tracking-headline: -0.02em;
+  --tracking-wordmark: -0.03em;
+  --tracking-action: 0.04em;
+
   /* Type scale. xs/sm/base/lg/xl/7xl reuse Tailwind defaults; these add the
      micro label size and the editorial display ramp. */
   --text-2xs: 0.6875rem; /* 11px — eyebrows / micro labels */
@@ -50,6 +58,7 @@ layer(base);
 
   --font-sans:
     var(--font-inter), Wanted Sans, Pretendard, system-ui, sans-serif;
+  --font-editorial: "Pretendard Variable", Pretendard, system-ui, sans-serif;
 
   --background-image-coral-cta: linear-gradient(90deg, #d94b45, #f08b6f);
 }

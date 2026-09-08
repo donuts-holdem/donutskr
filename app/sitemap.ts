@@ -3,7 +3,8 @@ import { getEvents } from "@/lib/legacy/data/events";
 
 const BASE = "https://do-nuts.kr";
 const staticRoutes: MetadataRoute.Sitemap = [
-  { url: `${BASE}/schedule`, priority: 1 },
+  { url: BASE, priority: 1 },
+  { url: `${BASE}/schedule`, priority: 0.9 },
   { url: `${BASE}/series`, priority: 0.9 },
 ];
 

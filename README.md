@@ -31,7 +31,8 @@ Connect a Supabase project with the repository migrations applied, then run:
 npm run dev
 ```
 
-`/` temporarily redirects to `/schedule`. `/series` retains the season page.
+`/` shows the original DO:NUTS hero without the former lower content sections.
+`/schedule` and `/series` retain the schedule and season pages.
 Existing operators can use `/admin/login` to edit schedules, seasons, blind
 structures, and public page settings. Admin identities must be authorized by
 `public.admin_emails`; being signed in is not sufficient.

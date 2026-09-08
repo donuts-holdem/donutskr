@@ -18,7 +18,7 @@ classes, clubs, meetings, partners, learning, or XP yet.
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Temporary redirect to `/schedule`; reserved for the future member home |
+| `/` | Original DO:NUTS hero; no lower schedule/program sections or shuffle intro |
 | `/schedule` | Existing list/calendar, upcoming and past schedules |
 | `/schedule/[id]` | Event detail, entry link, poster, blind structure |
 | `/series` | Existing season presentation, upcoming events, participation guide |
@@ -30,7 +30,8 @@ classes, clubs, meetings, partners, learning, or XP yet.
 | `/admin/trash` | Manual restore/delete for these retained content entities |
 
 Program CMS, dynamic navigation/special pages, leaderboard, online league,
-the former home/intro, tournament timer, and the hardcoded Holdem Lab are retired.
+the former lower home sections and card-shuffle intro, tournament timer, and
+the hardcoded Holdem Lab are retired. The public home hero is retained.
 There are no retired routes in the public navigation or sitemap.
 
 ## Code boundaries
@@ -51,8 +52,9 @@ or success-returning API stubs. Do not extend legacy `Event` into `Meeting`,
 or recreate the retired `Program` as a class model.
 
 Keep one root HTML/font layout. New member routes can use `app/(member)` with
-their own shell; route groups do not add URL segments, so replace the current
-root redirect when introducing the member home. Planned member URLs follow the
+their own shell; route groups do not add URL segments, so define how the public
+landing and member home share the root entry before adding a member home.
+Planned member URLs follow the
 handoff: `/class`, `/club`, `/partners`, `/my`, plus learning routes. Leader views
 live under `/leader/class` and `/leader/club`.
 
