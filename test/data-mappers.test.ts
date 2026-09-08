@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { mapEvent } from "@/lib/legacy/data/events";
-import { mapRow } from "@/lib/legacy/data/blindStructures";
+import { mapEvent } from "@/lib/site/data/events";
+import { mapRow } from "@/lib/site/data/blindStructures";
 
 describe("mapEvent", () => {
   it("normalizes a row and defaults nulls", () => {

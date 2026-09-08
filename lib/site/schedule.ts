@@ -1,5 +1,5 @@
-import type { Event } from "@/lib/legacy/types";
-import { deriveEventStatus } from "@/lib/legacy/event-status";
+import type { Event } from "@/lib/site/types";
+import { deriveEventStatus } from "@/lib/site/event-status";
 
 /* ------------------------------------------------------------------ *
  * Schedule partition — splits the calendar into "다가오는 일정" (예정)

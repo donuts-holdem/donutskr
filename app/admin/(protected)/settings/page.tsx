@@ -1,4 +1,4 @@
-import { getSiteConfig } from "@/lib/legacy/data/siteConfig";
+import { getSiteConfig } from "@/lib/site/data/siteConfig";
 import { updateSiteConfig } from "@/app/admin/actions/siteConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,6 +1,6 @@
 import { BlindStructureEditor } from "@/components/admin/BlindStructureEditor";
 import { saveStructure } from "@/app/admin/actions/blindStructures";
-import { getAllStructures } from "@/lib/legacy/data/blindStructures";
+import { getAllStructures } from "@/lib/site/data/blindStructures";
 
 export default async function NewBlindStructurePage() {
   const structures = await getAllStructures();

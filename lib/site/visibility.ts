@@ -1,4 +1,4 @@
-import type { Event } from "@/lib/legacy/types";
+import type { Event } from "@/lib/site/types";
 
 export type EventVisibility = "live" | "off" | "hidden-flag";
 

@@ -3,9 +3,11 @@
 Development baseline for the DO:NUTS university poker union's membership,
 classes, clubs, meetings, partners, and daily learning application.
 
-The existing **schedule and series** remain operational. Member signup, leader
-views, classes, meetings, daily learning, and XP are the next implementation
-slices; they are not implemented by this baseline.
+The existing **schedule and series** are actively maintained product domains.
+The first membership slice adds username login with email verification, signup
+requests, scoped approvals, and member home/profile screens. Its new migration
+and production Auth configuration must be deployed separately. Class sessions,
+meetings, partners, daily learning, and XP remain subsequent implementation slices.
 
 ## Start here
 
@@ -14,6 +16,7 @@ slices; they are not implemented by this baseline.
 - [Product requirements](docs/handoff/donuts-class-developer-handoff-v1/docs/01_PRODUCT_REQUIREMENTS.md)
 - [XP and daily learning](docs/handoff/donuts-class-developer-handoff-v1/docs/05_XP_DAILY_LEARNING.md)
 - [Database migration notes](supabase/README.md)
+- [Membership implementation and rollout](docs/MEMBERSHIP.md)
 - [Engineering and design rules](AGENTS.md)
 
 ## Development
@@ -23,6 +26,8 @@ Configure `.env.local` using the variables documented in `.env.example`:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only username lookup and auth throttling)
+- `SITE_URL` (canonical origin for authentication emails)
 - `ADMIN_EMAILS` (optional extra administrator restriction)
 
 Connect a Supabase project with the repository migrations applied, then run:
@@ -40,17 +45,20 @@ structures, and public page settings. Admin identities must be authorized by
 ## Code structure
 
 ```text
-app/(site)/         Retained schedule and series routes
-app/admin/          Supporting legacy content-management screens
+app/(site)/         Active public landing, schedule, and series routes
+app/(auth)/         Member signup, login, recovery, and application status
+app/(member)/       Authenticated member home, profile, and scoped approvals
+app/admin/          Active schedule, series, and membership operator screens
 components/site/    Public navigation, footer, backdrop, reveal
 components/ui/      Shared shadcn primitives
-lib/legacy/         Retained content models, queries, calendar and status rules
+lib/site/           Active public-site models, queries, calendar and status rules
+lib/membership/     Membership models, authorization, queries, and validation
 lib/supabase/       Shared Auth/database clients
 supabase/           Migration history and minimal non-destructive seed
 docs/handoff/       Original product reference and prototype
 ```
 
-New member features get their own domain modules and route shell as described in
+Member features get their own domain modules and route shell as described in
 `docs/BASELINE.md`. The handoff prototype and demo credentials are not runtime
 application code or production seeds.
 
@@ -79,3 +87,8 @@ Applied migrations remain in place. `supabase/seed.sql` no longer deletes or
 repopulates content; a fresh database starts with empty schedule/series states.
 The old automatic trash purge is removed. Trash for retained content is managed
 manually, separately from future CLASS history archival.
+
+Migration `0024_membership_foundation.sql` adds membership without changing any
+schedule/series table. Signup is closed by default. Before opening enrollment,
+follow `docs/MEMBERSHIP.md` for migrations, email delivery, callback URLs, actual
+catalog setup, and the published privacy notice. No demo identities are created.

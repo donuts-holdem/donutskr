@@ -1,4 +1,4 @@
-import type { Event, Season } from "@/lib/legacy/types";
+import type { Event, Season } from "@/lib/site/types";
 
 /* ------------------------------------------------------------------ *
  * Pure season rules. The board gate and the backfill assignment are

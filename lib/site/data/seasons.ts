@@ -1,5 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { Season } from "@/lib/legacy/types";
+import type { Season } from "@/lib/site/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapSeason(r: any): Season {

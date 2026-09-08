@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getEventById } from "@/lib/legacy/data/events";
-import { getStructureWithRows } from "@/lib/legacy/data/blindStructures";
+import { getEventById } from "@/lib/site/data/events";
+import { getStructureWithRows } from "@/lib/site/data/blindStructures";
 import { BlindStructureTable } from "@/components/schedule/BlindStructureTable";
 import { StatusBadge } from "@/components/schedule/StatusBadge";
 import { display, eventTime, IconArrow } from "@/components/schedule/fixtures";
-import { formatDotDate } from "@/lib/legacy/date-format";
-import { weekdayKO } from "@/lib/legacy/schedule";
-import { deriveEventStatus } from "@/lib/legacy/event-status";
+import { formatDotDate } from "@/lib/site/date-format";
+import { weekdayKO } from "@/lib/site/schedule";
+import { deriveEventStatus } from "@/lib/site/event-status";
 
 type Props = { params: Promise<{ id: string }> };
 

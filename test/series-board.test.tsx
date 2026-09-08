@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import type { Event, Season } from "@/lib/legacy/types";
+import type { Event, Season } from "@/lib/site/types";
 import { SeriesBoard } from "@/components/series/SeriesBoard";
 
 function ev(over: Partial<Event>): Event {

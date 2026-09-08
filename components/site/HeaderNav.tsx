@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { HeaderTab } from "@/lib/legacy/types";
+import type { HeaderTab } from "@/lib/site/types";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");

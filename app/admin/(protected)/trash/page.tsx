@@ -3,7 +3,7 @@ import {
   TRASH_ENTITIES,
   TRASH_ENTITY_KEYS,
   type TrashItem,
-} from "@/lib/legacy/data/trash";
+} from "@/lib/site/data/trash";
 import { restoreItem, purgeItem } from "@/app/admin/actions/trash";
 import { PurgeButton } from "@/components/admin/PurgeButton";
 import { Button } from "@/components/ui/button";

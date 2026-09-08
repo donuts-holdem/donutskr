@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { EventForm } from "@/components/admin/EventForm";
-import type { Event, Season, BlindStructure } from "@/lib/legacy/types";
+import type { Event, Season, BlindStructure } from "@/lib/site/types";
 
 const minimalEvent: Event = {
   id: "ev1",

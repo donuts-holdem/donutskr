@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Event } from "@/lib/legacy/types";
+import type { Event } from "@/lib/site/types";
 import { ScheduleBoard } from "@/components/schedule/ScheduleBoard";
 import { CalendarView } from "@/components/schedule/CalendarView";
 import { display } from "@/components/schedule/fixtures";

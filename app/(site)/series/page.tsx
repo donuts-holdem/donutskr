@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { getActiveSeason } from "@/lib/legacy/data/seasons";
-import { getSiteConfig } from "@/lib/legacy/data/siteConfig";
-import { getEvents } from "@/lib/legacy/data/events";
-import { partitionEvents } from "@/lib/legacy/schedule";
+import { getActiveSeason } from "@/lib/site/data/seasons";
+import { getSiteConfig } from "@/lib/site/data/siteConfig";
+import { getEvents } from "@/lib/site/data/events";
+import { partitionEvents } from "@/lib/site/schedule";
 import { SeriesBoard } from "@/components/series/SeriesBoard";
 
 export const dynamic = "force-dynamic";

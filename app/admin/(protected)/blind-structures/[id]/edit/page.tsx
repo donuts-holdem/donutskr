@@ -1,6 +1,6 @@
 import { BlindStructureEditor } from "@/components/admin/BlindStructureEditor";
 import { saveStructure } from "@/app/admin/actions/blindStructures";
-import { getStructureWithRows, getAllStructures } from "@/lib/legacy/data/blindStructures";
+import { getStructureWithRows, getAllStructures } from "@/lib/site/data/blindStructures";
 import { notFound } from "next/navigation";
 
 export default async function EditBlindStructurePage({ params }: { params: Promise<{ id: string }> }) {

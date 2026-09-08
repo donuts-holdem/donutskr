@@ -1,5 +1,18 @@
 # DO:NUTS CLASS development baseline
 
+## Current implementation update
+
+The public landing, schedule, and series are actively maintained product domains,
+not deprecated code. Their shared modules now live in `lib/site/**`.
+
+The first membership implementation adds Supabase Auth-backed username login
+with an email address for verification/recovery, membership applications,
+entity-scoped approvals, and `/home` and `/my`. See `docs/MEMBERSHIP.md` for the
+exact scope and rollout prerequisites. Migration `0024` is additive and must be
+applied separately; creating the file does not update production.
+
+The remaining sections document the original cleanup checkpoint and architecture.
+
 Established: 2026-09-08.
 
 ## Product reference
@@ -38,7 +51,7 @@ There are no retired routes in the public navigation or sitemap.
 
 - `app/(site)`, `components/schedule`, `components/series`: retained public pages.
 - `components/site`: public chrome and the shared reveal effect.
-- `lib/legacy`: retained schedule/series types, data access, and display rules.
+- `lib/site`: retained schedule/series types, data access, and display rules.
 - `app/admin`: retained operator tools; these are not the new CLASS console.
 - `components/ui`, `lib/supabase`, `lib/auth`, `lib/upload`: shared foundations.
 - `docs/handoff`: unmodified source reference, not deployed routes or live seeds.
@@ -48,7 +61,7 @@ New member features should own their models and services under
 `lib/membership`, `lib/classes`, `lib/clubs`, `lib/meetings`, `lib/partners`,
 `lib/learning`, and `lib/xp` as those features are implemented.
 Create real modules when a vertical slice needs them; do not add empty services
-or success-returning API stubs. Do not extend legacy `Event` into `Meeting`,
+or success-returning API stubs. Do not extend schedule `Event` into `Meeting`,
 or recreate the retired `Program` as a class model.
 
 Keep one root HTML/font layout. New member routes can use `app/(member)` with
@@ -76,7 +89,7 @@ live under `/leader/class` and `/leader/club`.
    signup requests, attendance, or XP.
 6. Business dates use `Asia/Seoul`. Approval, capacity-limited applications,
    attendance finalization/XP, and daily completion require atomic DB operations.
-7. Meetings are separate from legacy events. At completion, disable applications
+7. Meetings are separate from schedule events. At completion, disable applications
    and set the archive deadline to exactly 24 hours later. Reads enforce the
    deadline; jobs materialize archival without deleting participation history.
 8. XP is an append-only ledger with idempotency keys and auditable corrections.

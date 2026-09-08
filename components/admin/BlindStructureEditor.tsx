@@ -1,7 +1,7 @@
 "use client";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { GripVertical, Plus } from "lucide-react";
-import type { BlindRow, BlindStructure } from "@/lib/legacy/types";
+import type { BlindRow, BlindStructure } from "@/lib/site/types";
 import { duplicateStructure } from "@/app/admin/actions/blindStructures";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { BlindStructure, BlindRow, RowType } from "@/lib/legacy/types";
+import type { BlindStructure, BlindRow, RowType } from "@/lib/site/types";
 
 export function mapStructure(r: Partial<BlindStructure>): BlindStructure {
   return { id: String(r.id ?? ""), name: String(r.name ?? ""), is_template: Boolean(r.is_template), event_type: r.event_type ?? null };

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
 import { ArrowRight } from "lucide-react";
-import { getSiteConfig } from "@/lib/legacy/data/siteConfig";
+import { getSiteConfig } from "@/lib/site/data/siteConfig";
 
 const display = Space_Grotesk({
   subsets: ["latin"],

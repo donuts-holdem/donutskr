@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getAllSeasons } from "@/lib/legacy/data/seasons";
-import { getAllEvents } from "@/lib/legacy/data/events";
+import { getAllSeasons } from "@/lib/site/data/seasons";
+import { getAllEvents } from "@/lib/site/data/events";
 import { activateSeason, deleteSeason } from "@/app/admin/actions/seasons";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ViewOnSiteLink } from "@/components/admin/ViewOnSiteLink";

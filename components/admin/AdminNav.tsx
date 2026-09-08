@@ -4,6 +4,9 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const NAV_GROUPS = [
+  { label: "DO:NUTS CLASS", links: [
+    { href: "/admin/members", label: "회원 승인" },
+  ]},
   { label: "일정 · 시리즈 운영", links: [
     { href: "/admin/events", label: "일정" },
     { href: "/admin/seasons", label: "시즌" },

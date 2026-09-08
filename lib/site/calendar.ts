@@ -1,4 +1,4 @@
-import type { Event } from "@/lib/legacy/types";
+import type { Event } from "@/lib/site/types";
 
 export type DayCell = { date: string; day: number; inMonth: boolean };
 export type Week = DayCell[]; // length 7

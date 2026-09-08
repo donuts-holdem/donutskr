@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getEvents } from "@/lib/legacy/data/events";
+import { getEvents } from "@/lib/site/data/events";
 
 const BASE = "https://do-nuts.kr";
 const staticRoutes: MetadataRoute.Sitemap = [

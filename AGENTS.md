@@ -98,7 +98,7 @@ Verify:
 
 # CLASS baseline boundaries
 
-- `lib/legacy/**` is reserved for the retained schedule/series. New CLASS domains own their models and services.
+- `lib/site/**` owns the actively maintained public site, schedule, and series. These are first-class product domains, not deprecated code. New membership, class, and club domains own their models and services.
 - Reuse Supabase Auth. Never store demo passwords or add a second password-hash table from the draft schema.
 - Enforce member status, admin permissions, and entity-scoped leadership on the server and in RLS. View mode is not authorization.
 - Use atomic DB operations for approvals, capacity-limited applications, attendance/XP, and learning completion.

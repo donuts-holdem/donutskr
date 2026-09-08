@@ -10,9 +10,15 @@ The active retained tables after migration `0023` are:
 - `admin_emails`
 
 Supabase owns the Auth and Storage schemas. The `media` bucket and admin storage
-policies are retained. New CLASS domains are not migrated yet.
+policies are retained. `0024_membership_foundation.sql` adds membership catalogs,
+profiles, applications, leadership assignments, audit records, RLS, and atomic
+approval functions. It does not modify the tables listed above. A local migration
+file is not evidence that the remote database has been migrated.
 
-Run migrations in numeric order through the project's normal Supabase workflow.
+For a fresh database, apply migrations in their recorded order. The existing
+production history uses timestamp versions with numeric filenames in the names;
+do not blindly run `supabase db push` and reapply historical numeric migrations.
+Apply only the new migration through a history-aware, backed-up rollout.
 Keep already-applied migration files unchanged. For an existing project, deploy
 the cleaned application and back up the database before applying `0023`; it drops
 retired CMS/timer tables and their data but keeps schedule/series content.
@@ -24,5 +30,5 @@ operator, create their identity in Supabase Auth and add their email to
 access on its own.
 
 The original handoff SQL under `docs/handoff` is reference material, not a
-migration. Future membership must reuse Auth and introduce explicit RLS, scoped
-leadership, audit records, and transactions. See `docs/BASELINE.md`.
+migration. Membership reuses Auth with explicit RLS, scoped leadership, audit
+records, and transactions. See `docs/BASELINE.md` and `docs/MEMBERSHIP.md`.

@@ -1,4 +1,4 @@
-import type { HeaderTab } from "@/lib/legacy/types";
+import type { HeaderTab } from "@/lib/site/types";
 
 // Public routes retained while the member application is developed.
 export const PUBLIC_NAVIGATION: HeaderTab[] = [

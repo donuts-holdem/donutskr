@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
-import type { Event } from "@/lib/legacy/types";
+import type { Event } from "@/lib/site/types";
 import { CalendarView } from "@/components/schedule/CalendarView";
 
 function ev(over: Partial<Event>): Event {

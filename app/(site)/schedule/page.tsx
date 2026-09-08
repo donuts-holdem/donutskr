@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getEvents } from "@/lib/legacy/data/events";
-import { partitionEvents, todayKST } from "@/lib/legacy/schedule";
+import { getEvents } from "@/lib/site/data/events";
+import { partitionEvents, todayKST } from "@/lib/site/schedule";
 import { ScheduleView } from "@/components/schedule/ScheduleView";
 
 export const metadata: Metadata = {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Space_Grotesk } from "next/font/google";
-import type { Event, Season } from "@/lib/legacy/types";
+import type { Event, Season } from "@/lib/site/types";
 import { FixtureRow } from "@/components/schedule/fixtures";
 import { Reveal } from "@/components/site/Reveal";
 

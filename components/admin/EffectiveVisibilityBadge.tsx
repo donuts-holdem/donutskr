@@ -1,6 +1,6 @@
 import { Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { EventVisibility } from "@/lib/legacy/visibility";
+import type { EventVisibility } from "@/lib/site/visibility";
 
 type State = EventVisibility;
 

@@ -1,9 +1,9 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { Event } from "@/lib/legacy/types";
-import { toStoredStatus } from "@/lib/legacy/event-status";
-import { isEventPublic } from "@/lib/legacy/visibility";
-import { filterByActiveSeason } from "@/lib/legacy/season-rules";
-import { getActiveSeason } from "@/lib/legacy/data/seasons";
+import type { Event } from "@/lib/site/types";
+import { toStoredStatus } from "@/lib/site/event-status";
+import { isEventPublic } from "@/lib/site/visibility";
+import { filterByActiveSeason } from "@/lib/site/season-rules";
+import { getActiveSeason } from "@/lib/site/data/seasons";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapEvent(r: any): Event {

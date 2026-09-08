@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { filterByActiveSeason, assignSeasonByDate } from "@/lib/legacy/season-rules";
-import type { Event, Season } from "@/lib/legacy/types";
+import { filterByActiveSeason, assignSeasonByDate } from "@/lib/site/season-rules";
+import type { Event, Season } from "@/lib/site/types";
 
 const ev = (id: string, season_id: string | null, date = "2026-06-01"): Event =>
   ({ id, season_id, date, title: id } as Event);

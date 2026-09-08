@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Event } from "@/lib/legacy/types";
-import { deriveEventStatus } from "@/lib/legacy/event-status";
+import type { Event } from "@/lib/site/types";
+import { deriveEventStatus } from "@/lib/site/event-status";
 import { display, FixtureRow, parseEventDate } from "@/components/schedule/fixtures";
 
 /* ------------------------------------------------------------------ *

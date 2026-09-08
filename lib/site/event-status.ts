@@ -1,4 +1,4 @@
-import type { StoredEventStatus, DerivedEventStatus } from "@/lib/legacy/types";
+import type { StoredEventStatus, DerivedEventStatus } from "@/lib/site/types";
 
 /* ------------------------------------------------------------------ *
  * Event status — the SINGLE source of an event's DISPLAY state.

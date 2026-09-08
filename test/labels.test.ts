@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { EVENT_STATUS_LABELS, EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/legacy/labels";
+import { EVENT_STATUS_LABELS, EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/site/labels";
 
 describe("schedule labels", () => {
   it("covers all derived states and preserves unknown labels", () => {

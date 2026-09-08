@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   effectiveEventVisibility,
   isEventPublic,
-} from "@/lib/legacy/visibility";
+} from "@/lib/site/visibility";
 
 describe("effectiveEventVisibility", () => {
   it("is off when is_visible is false (status irrelevant)", () => {

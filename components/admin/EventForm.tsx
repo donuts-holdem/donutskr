@@ -1,6 +1,6 @@
 "use client";
 
-import type { Event, BlindStructure, Season } from "@/lib/legacy/types";
+import type { Event, BlindStructure, Season } from "@/lib/site/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/legacy/labels";
-import { toStoredStatus } from "@/lib/legacy/event-status";
-import type { DerivedEventStatus } from "@/lib/legacy/types";
+import { EVENT_STATUS_OPTIONS, eventStatusLabel } from "@/lib/site/labels";
+import { toStoredStatus } from "@/lib/site/event-status";
+import type { DerivedEventStatus } from "@/lib/site/types";
 import { ImageField } from "@/components/admin/ImageField";
 
 interface EventFormProps {

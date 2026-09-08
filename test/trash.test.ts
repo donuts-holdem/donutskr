@@ -4,7 +4,7 @@ import {
   TRASH_ENTITY_KEYS,
   isTrashEntity,
   type TrashEntity,
-} from "@/lib/legacy/data/trash";
+} from "@/lib/site/data/trash";
 
 describe("TRASH_ENTITIES mapping", () => {
   it("covers only the retained schedule entities", () => {

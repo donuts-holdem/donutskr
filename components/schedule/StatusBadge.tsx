@@ -1,4 +1,4 @@
-import type { DerivedEventStatus } from "@/lib/legacy/types";
+import type { DerivedEventStatus } from "@/lib/site/types";
 
 const LABEL: Record<DerivedEventStatus, string> = {
   scheduled: "예정",

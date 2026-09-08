@@ -11,12 +11,20 @@ export async function proxy(request: NextRequest) {
     !pathname.startsWith("/admin/login") &&
     !user
   ) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+    const redirectResponse = NextResponse.redirect(new URL("/admin/login", request.url));
+    response.cookies.getAll().forEach(cookie => redirectResponse.cookies.set(cookie));
+    return redirectResponse;
   }
 
+  // Membership authorization lives in its DAL and RLS, not in this proxy.
+  response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"],
+  matcher: [
+    "/admin", "/admin/:path*", "/login", "/signup/:path*",
+    "/membership/:path*", "/home", "/my", "/leader/:path*",
+    "/forgot-password", "/reset-password", "/auth/callback",
+  ],
 };

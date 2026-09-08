@@ -1,5 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { SiteConfig } from "@/lib/legacy/types";
+import type { SiteConfig } from "@/lib/site/types";
 
 const DEFAULT_SITE_CONFIG: SiteConfig = {
   signup_visible: false,
