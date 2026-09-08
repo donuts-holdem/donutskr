@@ -33,6 +33,8 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# This file contains only public production defaults, never credentials.
+!.env.production
 
 # vercel
 .vercel

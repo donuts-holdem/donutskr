@@ -79,8 +79,9 @@ in the approval-only first slice; do not present this as the full handoff MVP.
    fresh server-only `SUPABASE_SERVICE_ROLE_KEY` in the deployment environment.
 2. Back up the target and apply only `0024`, recording it in the existing remote
    migration history. Do not replay immutable cleanup/historical migrations.
-3. Configure `SITE_URL` as the real HTTPS deployment origin. Update Supabase's
-   Site URL and allow the exact callback URLs for `/auth/callback` with
+3. The tracked `.env.production` supplies the public `SITE_URL=https://do-nuts.kr`
+   default. Deployment environment variables can override it; never add secrets
+   to that file. Match Supabase's Site URL and allow the exact callback URLs for `/auth/callback` with
    `next=/membership/status` and `next=/reset-password`.
 4. Keep email confirmations enabled and configure production SMTP, email
    templates, provider rate limits, and abuse controls. No provider configuration
