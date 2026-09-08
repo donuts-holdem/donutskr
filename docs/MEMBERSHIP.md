@@ -79,7 +79,7 @@ in the approval-only first slice; do not present this as the full handoff MVP.
    fresh server-only `SUPABASE_SERVICE_ROLE_KEY` in the deployment environment.
 2. Back up the target and apply only `0024`, recording it in the existing remote
    migration history. Do not replay immutable cleanup/historical migrations.
-3. The tracked `.env.production` supplies the public `SITE_URL=https://do-nuts.kr`
+3. The tracked `.env.production` supplies the public `SITE_URL=https://donutskr.vercel.app`
    default. Deployment environment variables can override it; never add secrets
    to that file. Match Supabase's Site URL and allow the exact callback URLs for `/auth/callback` with
    `next=/membership/status` and `next=/reset-password`.
