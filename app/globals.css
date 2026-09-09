@@ -40,6 +40,7 @@ layer(base);
   --spacing-full-bleed: calc(50% - 50vw);
   --spacing-home-hero: 46svh;
   --spacing-home-hero-wide: 62svh;
+  --spacing-safe-bottom: env(safe-area-inset-bottom, 0px);
 
   --tracking-headline: -0.02em;
   --tracking-wordmark: -0.03em;

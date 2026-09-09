@@ -7,7 +7,11 @@ const NAV_GROUPS = [
   { label: "DO:NUTS CLASS", links: [
     { href: "/admin/members", label: "회원 · 소속 관리" },
     { href: "/admin/classes", label: "클래스 · 회차 · 출석" },
+    { href: "/admin/successors", label: "후속 클래스" },
     { href: "/admin/clubs", label: "클럽 관리" },
+    { href: "/admin/meetings", label: "클럽 모임" },
+    { href: "/admin/learning", label: "문항 · 데일리 학습" },
+    { href: "/admin/notifications", label: "알림 · 발송 관리" },
   ]},
   { label: "일정 · 시리즈 운영", links: [
     { href: "/admin/events", label: "일정" },

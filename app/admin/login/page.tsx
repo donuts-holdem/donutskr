@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default function AdminLoginPage() {
         setError(authError.message);
       } else {
         router.push("/admin");
+        router.refresh();
       }
     } finally {
       setLoading(false);
@@ -36,7 +38,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="bg-bg flex min-h-screen items-center justify-center px-4">
+    <main id="main-content" tabIndex={-1} className="flex flex-1 scroll-mt-20 items-center justify-center bg-bg px-4 py-12">
       <div className="w-full max-w-sm">
         <h1 className="text-gold mb-8 text-center text-2xl font-bold tracking-tight">
           DO:NUTS Admin
@@ -81,7 +83,12 @@ export default function AdminLoginPage() {
             </form>
           </CardContent>
         </Card>
+        <p className="mt-6 text-center text-sm leading-relaxed text-muted-foreground">일정·시리즈와 클래스·클럽·학습을 한곳에서 관리합니다.</p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <Button asChild variant="ghost" className="min-h-11"><Link href="/login">회원 로그인</Link></Button>
+          <Button asChild variant="ghost" className="min-h-11"><Link href="/">도너츠 메인</Link></Button>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

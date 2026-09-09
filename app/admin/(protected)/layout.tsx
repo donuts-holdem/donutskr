@@ -1,3 +1,4 @@
+import { Header } from "@/components/site/Header";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth";
@@ -23,7 +24,9 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="bg-background text-foreground flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-svh flex-col bg-background text-foreground">
+      <Header />
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       {/* Sidebar */}
       <aside className="border-border flex w-full shrink-0 md:w-56 flex-col border-r">
         <div className="border-border border-b px-5 py-5">
@@ -42,9 +45,10 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <main className="min-w-0 flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+      <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
       <Toaster />
       <Suspense fallback={null}><SaveToast /></Suspense>
+      </div>
     </div>
   );
 }

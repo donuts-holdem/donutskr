@@ -13,8 +13,7 @@ async function SeasonBackdropSlot() {
   return <SeasonBackdrop image={season?.bg_image ?? null} />;
 }
 
-// Site chrome (header / centered container / footer) for the public marketing
-// pages. Routes outside this group (e.g. /lab, /admin) render full-bleed without it.
+// Public content retains its backdrop and footer, with shared app navigation.
 export default function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -23,10 +22,10 @@ export default function SiteLayout({
       <Suspense fallback={null}>
         <SeasonBackdropSlot />
       </Suspense>
-      <Suspense fallback={<div className="h-20 bg-bg border-b border-border" />}>
+      <Suspense fallback={<div className="h-16 bg-bg border-b border-border" />}>
         <Header />
       </Suspense>
-      <main className="mx-auto max-w-7xl px-4 w-full flex-1">{children}</main>
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl px-4 w-full flex-1 scroll-mt-20">{children}</main>
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
