@@ -10,8 +10,8 @@ export function requireUuid(value: string) {
   return value;
 }
 
-export function parseEmail(form: FormData) {
-  const email = formText(form, "email").toLowerCase();
+export function parseEmail(form: FormData, key = "email") {
+  const email = formText(form, key).toLowerCase();
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new Error("올바른 이메일을 입력해 주세요.");
   }

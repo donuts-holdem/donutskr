@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createServiceRoleSupabase } from "@/lib/supabase/service-role";
 import { getMembershipSession } from "@/lib/membership/server";
@@ -30,32 +31,62 @@ async function allowAuthAttempt(kind: string, identifier: string) {
 }
 
 export async function loginMember(_state: FormState, form: FormData): Promise<FormState> {
-  const username = formText(form, "username").toLowerCase();
+  // Keep the field name compatible with existing ID-login clients.
+  const identifier = formText(form, "username").toLowerCase();
+  const emailLogin = identifier.includes("@");
   const password = form.get("password");
-  const invalid = { error: "아이디 또는 비밀번호를 확인해 주세요. 이메일 인증도 완료해야 합니다." };
-  if (!/^[a-z][a-z0-9_]{3,23}$/.test(username) || typeof password !== "string" || !password || password.length > 256) return invalid;
+  const invalid = { error: "아이디·이메일 또는 비밀번호를 확인해 주세요. 이메일 인증도 완료해야 합니다." };
+  if (typeof password !== "string" || !password || password.length > 256) return invalid;
+  let email: string | null = null;
+  if (emailLogin) {
+    try { email = parseEmail(form, "username"); }
+    catch { return invalid; }
+  } else if (!/^[a-z][a-z0-9_]{3,23}$/.test(identifier)) {
+    return invalid;
+  }
   let destination = "/membership/status";
+  let signedIn: Awaited<ReturnType<typeof createServerSupabase>> | null = null;
   try {
-    if (!await allowAuthAttempt("login", username)) return { error: "로그인 시도가 많습니다. 15분 후 다시 시도해 주세요." };
-    const service = createServiceRoleSupabase();
-    const { data: email, error: lookupError } = await service.rpc("resolve_member_login_email", { p_username: username });
-    if (lookupError) return { error: "로그인 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요." };
+    const limited = { error: "로그인 시도가 많습니다. 15분 후 다시 시도해 주세요." };
+    if (!await allowAuthAttempt("login", identifier)) return limited;
+    if (!emailLogin) {
+      const service = createServiceRoleSupabase();
+      const lookup = await service.rpc("resolve_member_login_email", { p_username: identifier });
+      if (lookup.error) return { error: "로그인 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요." };
+      email = typeof lookup.data === "string" ? lookup.data.trim().toLowerCase() : null;
+      // ID and email attempts share the same account-level throttle.
+      if (email && !await allowAuthAttempt("login", email)) return limited;
+    }
     const supabase = await createServerSupabase();
     // An unknown username takes the same password-auth path and generic error.
     const result = await supabase.auth.signInWithPassword({
-      email: typeof email === "string" ? email : "unregistered-member@invalid.example",
+      email: email ?? "unregistered-member@invalid.example",
       password,
     });
-    if (result.error || typeof email !== "string" || !result.data.user) return invalid;
-    const profile = await supabase.from("member_profiles").select("status").eq("id", result.data.user.id).maybeSingle();
-    if (profile.error) {
+    if (result.error || !result.data.user) return invalid;
+    signedIn = supabase;
+    if (!email) {
       await supabase.auth.signOut({ scope: "local" });
-      return { error: "회원 상태를 확인하지 못했습니다. 잠시 후 다시 로그인해 주세요." };
+      return invalid;
     }
-    if (profile.data?.status === "ACTIVE" && result.data.user.email_confirmed_at) destination = "/home";
+    const permission = await supabase.rpc("is_admin");
+    if (permission.error || typeof permission.data !== "boolean") throw new Error("Account authorization unavailable.");
+    if (permission.data) {
+      // Use the same DB and optional environment allowlist as admin pages.
+      // Administrators do not need a fabricated member profile.
+      await requireAdmin();
+      destination = "/admin";
+    } else {
+      const profile = await supabase.from("member_profiles").select("status").eq("id", result.data.user.id).maybeSingle();
+      if (profile.error) throw new Error("Member status unavailable.");
+      if (!profile.data) destination = "/signup";
+      else if (profile.data.status === "ACTIVE" && result.data.user.email_confirmed_at) destination = "/home";
+    }
   } catch {
+    if (signedIn) await signedIn.auth.signOut({ scope: "local" }).catch(() => null);
     return { error: "로그인 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요." };
   }
+  revalidatePath("/", "layout");
   redirect(destination);
 }
 
