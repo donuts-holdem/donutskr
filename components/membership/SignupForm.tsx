@@ -62,7 +62,7 @@ export function SignupForm({ catalog, email, profile }: { catalog: SignupCatalog
           <a href={catalog.settings.privacy_url ?? undefined} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sm text-gold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-gold">개인정보 수집·이용 안내 열기</a>
         </div>
       </div>
-      <p className="text-sm leading-relaxed text-ink/60">이메일 인증 후, 현장에서 담당 운영진의 승인을 받으면 회원 서비스를 이용할 수 있습니다.</p>
+      <p className="text-sm leading-relaxed text-ink/60">이메일 인증을 완료하면 정회원으로 이용할 수 있습니다. 클래스와 동아리 소속은 각각 담당자의 승인 후 확정되며, 다른 학교의 동아리에도 신청할 수 있습니다.</p>
     </ActionForm>
   );
 }

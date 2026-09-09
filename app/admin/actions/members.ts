@@ -1,5 +1,7 @@
 "use server";
 
+import { refreshOperations } from "@/lib/membership/operations";
+
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { requireReviewer } from "@/lib/membership/server";
@@ -7,7 +9,7 @@ import { databaseErrorMessage, formText, requireUuid } from "@/lib/membership/va
 import type { FormState } from "@/lib/membership/types";
 
 function refreshMembership() {
-  for (const path of ["/admin/members", "/admin/members/settings", "/leader/approvals", "/membership/status", "/signup", "/home", "/my"]) revalidatePath(path);
+  for (const path of ["/admin/members", "/admin/members/settings", "/admin/members/directory", "/leader/approvals", "/membership/status", "/signup", "/home", "/my", "/class", "/club"]) revalidatePath(path);
 }
 
 export async function reviewMembership(_state: FormState, form: FormData): Promise<FormState> {
@@ -20,18 +22,14 @@ export async function reviewMembership(_state: FormState, form: FormData): Promi
   if ((decision !== "APPROVED" && decision !== "REJECTED") || reason.length > 500 || (decision === "REJECTED" && !reason)) {
     return { error: "처리 방식과 반려 사유를 확인해 주세요. 사유는 500자 이내로 입력합니다." };
   }
-  const request = await supabase.from("signup_requests").select("requested_class_id,requested_club_id").eq("id", requestId).maybeSingle();
-  if (request.error || !request.data) return { error: "신청을 찾을 수 없거나 조회 권한이 없습니다." };
-  const permission = await supabase.rpc("can_review_signup", {
-    p_class_id: request.data.requested_class_id, p_club_id: request.data.requested_club_id,
-  });
-  if (permission.error || permission.data !== true) return { error: "이 신청을 처리할 권한이 없습니다." };
-  const { error } = await supabase.rpc("review_signup_request", {
+  // The RPC checks the request's own entity scope inside the approval transaction.
+  const { error } = await supabase.rpc("review_affiliation_request", {
     p_request_id: requestId, p_decision: decision, p_reason: reason || null,
   });
   if (error) return { error: databaseErrorMessage(error) };
   refreshMembership();
-  return { success: decision === "APPROVED" ? "가입을 승인했습니다." : "신청을 반려했습니다." };
+  refreshOperations();
+  return { success: decision === "APPROVED" ? "이 소속의 가입을 승인했습니다. 다른 소속에는 영향이 없습니다." : "소속 신청을 반려했습니다. 정회원 자격은 유지됩니다." };
 }
 
 export async function saveMembershipSettings(_state: FormState, form: FormData): Promise<FormState> {
@@ -56,6 +54,7 @@ export async function saveMembershipSettings(_state: FormState, form: FormData):
   }).eq("singleton", true).select("singleton").single();
   if (error) return { error: databaseErrorMessage(error) };
   refreshMembership();
+  refreshOperations();
   return { success: "가입 설정을 저장했습니다." };
 }
 
@@ -67,24 +66,10 @@ export async function createMembershipCatalogEntry(_state: FormState, form: Form
   if (kind === "school") {
     const { error } = await supabase.from("schools").insert({ name }).select("id").single();
     if (error) return { error: databaseErrorMessage(error) };
-  } else if (kind === "class") {
-    const place = formText(form, "place");
-    const weekday = formText(form, "weekday");
-    const startTime = formText(form, "start_time");
-    if (!place || place.length > 200 || !/^[0-6]$/.test(weekday) || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime)) {
-      return { error: "장소, 요일, 시작 시간을 확인해 주세요." };
-    }
-    const { error } = await supabase.from("classes").insert({ name, place, weekday: Number(weekday), start_time: startTime }).select("id").single();
-    if (error) return { error: databaseErrorMessage(error) };
-  } else if (kind === "club") {
-    let schoolId: string;
-    try { schoolId = requireUuid(formText(form, "school_id")); }
-    catch { return { error: "동아리의 학교를 선택해 주세요." }; }
-    const { error } = await supabase.from("clubs").insert({ name, school_id: schoolId }).select("id").single();
-    if (error) return { error: databaseErrorMessage(error) };
-  } else return { error: "등록할 소속 종류를 확인해 주세요." };
+  } else return { error: "클래스와 클럽은 각각의 관리 화면에서 담당 리더와 함께 생성해 주세요." };
   refreshMembership();
-  return { success: "가입 선택지에 등록했습니다." };
+  refreshOperations();
+  return { success: "학교를 등록했습니다." };
 }
 
 export async function assignMembershipLeader(_state: FormState, form: FormData): Promise<FormState> {
@@ -98,5 +83,38 @@ export async function assignMembershipLeader(_state: FormState, form: FormData):
   const { error } = await supabase.rpc("assign_membership_leader", { p_kind: kind, p_entity_id: entityId, p_user_id: userId });
   if (error) return { error: databaseErrorMessage(error) };
   refreshMembership();
+  refreshOperations();
   return { success: "담당 리더를 지정했습니다. 다른 소속의 권한은 부여되지 않습니다." };
+}
+
+export async function removeMembershipLeader(_state: FormState, form: FormData): Promise<FormState> {
+  const supabase = await requireAdmin();
+  const kind = formText(form, "kind");
+  if (kind !== "CLASS" && kind !== "CLUB") return { error: "담당 영역을 확인해 주세요." };
+  let entityId: string;
+  let userId: string;
+  try { entityId = requireUuid(formText(form, "entity_id")); userId = requireUuid(formText(form, "user_id")); }
+  catch { return { error: "리더와 담당 소속을 확인해 주세요." }; }
+  const { error } = await supabase.rpc("remove_membership_leader", { p_kind: kind, p_entity_id: entityId, p_user_id: userId });
+  if (error) return { error: databaseErrorMessage(error) };
+  refreshMembership();
+  refreshOperations();
+  return { success: "이 소속의 리더 권한을 해제했습니다." };
+}
+
+export async function changeMemberSuspension(_state: FormState, form: FormData): Promise<FormState> {
+  const supabase = await requireAdmin();
+  const mode = formText(form, "mode");
+  const reason = formText(form, "reason");
+  if ((mode !== "SUSPEND" && mode !== "RESTORE") || !reason || reason.length > 500 || form.get("confirm") !== "on") {
+    return { error: "상태 변경 사유와 권한 처리 안내를 확인해 주세요." };
+  }
+  let userId: string;
+  try { userId = requireUuid(formText(form, "user_id")); }
+  catch { return { error: "회원을 다시 선택해 주세요." }; }
+  const { error } = await supabase.rpc("set_member_suspension", { p_user_id: userId, p_suspended: mode === "SUSPEND", p_reason: reason });
+  if (error) return { error: databaseErrorMessage(error) };
+  refreshMembership();
+  refreshOperations();
+  return { success: mode === "SUSPEND" ? "이용을 정지하고 리더 권한을 해제했습니다. 소속과 기록은 보존됩니다." : "이용 정지를 해제했습니다. 리더 권한은 별도로 다시 지정해 주세요." };
 }

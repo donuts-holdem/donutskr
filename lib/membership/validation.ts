@@ -60,7 +60,7 @@ const databaseMessages: Record<string, string> = {
   terms_changed: "개인정보 안내가 변경되었습니다. 새로고침한 뒤 다시 동의해 주세요.",
   invalid_class: "신청 가능한 클래스를 다시 선택해 주세요.",
   invalid_school: "학교 정보를 다시 확인해 주세요.",
-  invalid_club: "선택한 학교에 소속된 동아리를 선택해 주세요.",
+  invalid_club: "신청 가능한 동아리를 다시 선택해 주세요.",
   duplicate_pending: "이미 승인 대기 중인 신청이 있습니다. 승인 상태를 확인해 주세요.",
   member_status_blocked: "현재 회원 상태에서는 이 작업을 할 수 없습니다.",
   email_not_verified: "가입 이메일 인증을 먼저 완료해 주세요.",
@@ -71,6 +71,13 @@ const databaseMessages: Record<string, string> = {
   already_reviewed: "이미 처리된 신청입니다. 목록을 새로고침해 주세요.",
   invalid_decision: "반려 사유를 500자 이내로 입력해 주세요.",
   request_not_found: "신청을 찾을 수 없거나 조회 권한이 없습니다.",
+  profile_already_exists: "이미 가입한 회원입니다. 클래스·클럽 목록에서 소속을 신청해 주세요.",
+  already_affiliated: "이미 승인된 소속입니다.",
+  invalid_affiliation_kind: "클래스 또는 클럽을 선택해 주세요.",
+  invalid_leader_type: "리더의 담당 영역을 확인해 주세요.",
+  last_leader_requires_replacement: "마지막 리더입니다. 후임 리더를 먼저 지정한 뒤 해제해 주세요.",
+  invalid_status_reason: "상태 변경 사유를 500자 이내로 입력해 주세요.",
+  separate_affiliation_approval_required: "클래스와 클럽은 각각 승인해야 합니다. 목록을 새로고침해 주세요.",
 };
 
 export function databaseErrorMessage(error: { code?: string; message: string }) {

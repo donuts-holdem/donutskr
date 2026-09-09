@@ -5,11 +5,17 @@
 The public landing, schedule, and series are actively maintained product domains,
 not deprecated code. Their shared modules now live in `lib/site/**`.
 
-The first membership implementation adds Supabase Auth-backed username login
-with an email address for verification/recovery, membership applications,
-entity-scoped approvals, and `/home` and `/my`. See `docs/MEMBERSHIP.md` for the
-exact scope and rollout prerequisites. Migration `0024` is additive and must be
-applied separately; creating the file does not update production.
+Membership source now separates email-verified regular membership from class and
+club affiliation approval, with multiple affiliations, cross-school applications,
+member catalogs and administrator suspension/leader management. See
+`docs/MEMBERSHIP.md` for implemented scope and rollout prerequisites, and
+`docs/MEMBER_CLASS_CLUB_DECISIONS.md` for the complete owner-approved policy register.
+Class/club management, dated sessions, attendance correction, automatic closure,
+history-safe archival and attendance XP are now implemented in source. See
+`docs/CLASS_OPERATIONS.md` for routes, invariants, exclusions and rollout gates.
+Applied migration `0024` remains immutable. New `0025` and `0026` must be applied
+in order before this source version is deployed; creating these files does not
+update production. The new operations slice has not been tested or built.
 
 The remaining sections document the original cleanup checkpoint and architecture.
 
@@ -93,23 +99,28 @@ live under `/leader/class` and `/leader/club`.
    and set the archive deadline to exactly 24 hours later. Reads enforce the
    deadline; jobs materialize archival without deleting participation history.
 8. XP is an append-only ledger with idempotency keys and auditable corrections.
-   Proposed default: award attendance XP on locked session completion. Reopening
-   attendance must support reversal and subsequent correction without duplication.
+   Award the approved 100 attendance XP on locked session completion. Unlocking
+   completed attendance preserves credited XP; relocking applies only the net
+   correction. Cancellation and restoration append adjustments without rewriting
+   the original credits. Activity levels are recalculated from the corrected total.
 9. Daily learning uses a reviewed question bank, structured poker spots,
    versioned published sets, server grading, one assignment per member/KST date,
    and one completion award. Review attempts must not overwrite the initial score.
-10. Start with the handoff's single-answer quiz and shared daily set. Five
-    questions and 100/30/10 XP remain proposed values, not hardcoded policy.
-    Content provenance and editorial review are required before publishing.
+10. The owner approved a shared five-question daily set and 100/30/10 XP rules.
+    Questions support author-selected single or multiple answers, with exact-set
+    grading and no partial credit. Follow `MEMBER_CLASS_CLUB_DECISIONS.md` for the
+    full confirmed policy; content provenance and recorded review remain required.
 
-## Decisions before their implementation slices
+## Policy and remaining implementation slices
 
-- Membership: username/recovery mechanism, rejection/reapplication, withdrawal,
-  and whether active class/club membership is restricted to one of each.
-- Classes: cohort lifecycle, actual dates, breaks/makeups, historical rosters,
-  leader replacement, and deletion of completed sessions.
-- Learning: content source, exact spot schema, immutable versions, midnight
-  completion rules, question count, scoring/bonus policy, and review UX.
+- Membership/class/club policies are now recorded in
+  `docs/MEMBER_CLASS_CLUB_DECISIONS.md`. Do not reopen the settled interview.
+- Class/club management, dated sessions/attendance and archival are implemented
+  in source, not yet validated or deployed. Remaining related work includes linked
+  successors and their notifications/enrollment, withdrawal/anonymization and full
+  member profile editing. Closure-time eligibility snapshots are already retained.
+- Learning implementation must follow the confirmed content, review, versioning,
+  daily-set, scoring, streak and analytics policies. Do not reopen settled questions.
 - Operations: keep five primary CLASS admin tabs; place school management and
   learning content operations in explicitly designed secondary workflows.
 - History: distinguish withdrawal/anonymization, archival, and permanent removal.

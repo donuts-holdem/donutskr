@@ -1,116 +1,139 @@
-# Membership implementation: first slice
+# Membership implementation
 
-## Product decisions
+## Confirmed product rules
 
-- Schedule and series remain actively maintained in `lib/site/**`; the previous
-  `legacy` name did not imply an agreed retirement and has been removed.
-- Keep the original username/password login. Collect an additional email address
-  for Supabase Auth verification and password recovery, as approved by the owner.
-- Do not store passwords or grant permissions from editable Auth user metadata.
-- Keep the public landing at `/`; approved members use `/home` and `/my`.
-- Scoped leadership and transactional approvals are already handoff requirements,
-  not independently invented product additions.
+The complete owner-approved policy register is
+[MEMBER_CLASS_CLUB_DECISIONS.md](MEMBER_CLASS_CLUB_DECISIONS.md).
 
-## Implemented in source
+Keep username/password login with an additional Supabase Auth email for
+verification/recovery. Email verification grants regular membership; class and
+club approvals grant only their own affiliations. Initial class selection is
+mandatory, club selection optional. Multiple simultaneous affiliations and
+cross-school club applications are allowed.
 
-- `/signup`: actual membership fields, current catalog choices, versioned consent.
-- `/signup/complete`: email confirmation instructions without account disclosure.
-- `/login`: username/password login; email resolution stays on the server.
-- `/forgot-password`, `/reset-password`, `/auth/callback`: Supabase Auth recovery.
-- `/membership/status`: pending, rejected, suspended, and withdrawn states.
-- `/home`, `/my`: approved-member gates and actual profile/affiliation data.
-- `/admin/members`: paginated pending, approved, and rejected applications.
-- `/admin/members/settings`: initial catalogs, signup switch, consent document,
-  and administrator-controlled initial leader assignments.
-- `/leader/approvals`: only applications for assigned classes/clubs.
+The public landing stays at `/`. Schedule and series are maintained domains under
+`lib/site/**`, not legacy code or replacement targets.
 
-Supabase Auth can authenticate a pending identity to display its own application.
-This is not member access: the server DAL and DB membership checks require
-`ACTIVE` status and a confirmed email before member-domain access.
+## Implemented in this source slice
+
+- `/signup`, `/signup/complete`: catalog-backed registration and versioned consent,
+  with clear separation of email activation from entity approval.
+- `/login`, recovery routes and `/auth/callback`: existing Supabase Auth flows.
+- `/membership/status`: verification and suspended/withdrawn account notices.
+- `/home`, `/my`: regular members may enter without approved affiliations.
+- `/class`, `/club`: catalog, own affiliations, pending/rejected applications and
+  applications to additional entities without removing existing memberships.
+- `/admin/members`, `/leader/approvals`: independent class/club approval queues;
+  entity-scoped authorization is enforced in the database, not just the view.
+- `/admin/members/directory`: paginated name/username/phone search, status filter,
+  suspension/restoration and scoped leader removal.
+- `/admin/members/settings`: signup/consent settings and school registration.
+  Class/club creation and leader management now live in the domain operating pages.
+- `/admin/classes`, `/admin/clubs`: creation, editing, Auth-backed leadership,
+  approved affiliation management, archival and unused-only deletion.
+- `/leader/class`, `/leader/club`: entity-scoped operating views. Class session
+  detail includes schedule changes, attendance and lifecycle operations.
+- `/class/[id]`, `/club/[id]`: member detail pages; `/my` also displays actual
+  class attendance, activity XP and its adjustment history.
+- Administrators can enter member views without creating a member profile.
+
+This change does not implement the complete handoff MVP or all agreed policies.
+No meeting or learning screens, demo identities or invented XP records are created.
+See `CLASS_OPERATIONS.md` for the exact new operations scope and rollout status.
 
 ## Database and authorization
 
-`0024_membership_foundation.sql` introduces schools, class/club catalogs,
-`member_profiles`, memberships, leader assignments, `signup_requests`,
-`membership_audit_log`, settings, and a private authentication throttle.
+Applied migration `0024_membership_foundation.sql` is immutable. Migrations
+`0025_independent_affiliations.sql` and `0026_class_club_operations.sql` must be
+applied in order before this app version is deployed. Creating these files does
+not change any deployed database. Neither was applied during this operations task.
 
-All new tables use RLS. Browser/member JWTs cannot directly change profiles,
-approval state, leader assignments, memberships, or audit rows. Their mutations
-go through authorization-checking DB functions. The service-role key is used
-only for private username/email lookup and authentication attempt throttling;
-normal membership mutations use the actual caller's cookie session.
+0025 preserves `signup_requests` as original registration/consent snapshots and
+copies their decisions into independently scoped `affiliation_requests`. It does
+not retroactively grant pending affiliations or remove existing memberships.
+The old combined approval RPC is disabled, including calls from stale clients.
+It must not be used as an alternative approval path.
 
-Signup data is inserted by an Auth after-insert trigger in the Auth account's
-transaction. The trigger accepts only membership fields, always starts at
-`PENDING`, and validates current catalog entries and consent version in the DB.
-It does not affect identities created without `donuts_membership` metadata,
-including existing operator identities. Confirmed identities without a profile,
-and rejected applicants, can submit through an authenticated enrollment RPC.
+The Auth signup trigger validates required fields, catalog and consent in the
+account transaction. It creates independent class and optional club requests.
+Email confirmation activates only PENDING profiles, never suspended/withdrawn
+profiles. Already-confirmed PENDING profiles are activated during migration,
+without granting their pending affiliations. Auth metadata cannot grant roles.
 
-Approval locks the request, applicant, and relevant leader assignment. It checks
-the confirmed email and current catalog, updates status, adds class/club
-memberships, and records the decision/audit together. Replaying the same decision
-does not duplicate side effects; an opposite decision cannot overwrite it.
-Rejections preserve their history and allow a new application while pending.
+All application/approval/leader/status mutations use the caller's JWT and
+authorization-checking database functions. A short shared transaction lock
+serializes membership mutations so approval, suspension and leader revocation
+cannot race through separate permission checks. Request rows are locked and
+pending uniqueness is also enforced by partial indexes. Replaying the same
+decision is idempotent; an opposite decision cannot overwrite history.
 
-The login/recovery throttle permits ten requests per normalized identifier per
-15-minute bucket and fails closed if unavailable. Keys are SHA-256 digests;
-neither passwords nor raw email addresses are stored in the throttle table.
-This is not a replacement for provider limits, perimeter abuse controls, or
-CAPTCHA. Expired throttle buckets are removed; application/audit history is not.
+RLS limits request reads to the applicant, their entity's assigned leaders and
+administrators. Class approval cannot grant club affiliation, and vice versa.
+Browser/member clients cannot directly write memberships, profiles, approvals,
+leadership or audit records. The private service-role client remains limited to
+existing username/email resolution and auth throttling, not membership writes.
 
-## Initial operator setup
+0026 also removes direct authenticated writes to class/club catalogs. Their
+creation RPC requires actual leaders and, for classes, at least one dated session.
+Leader user IDs reference Auth rather than member profiles, so administrator
+accounts can lead without fabricated member enrollment. Leader selection alone
+never adds a class/club membership or attendance entry.
 
-The first slice needs real class/school choices before the first member can
-apply. Initial catalog registration is a bootstrap tool, not the final CLASS or
-CLUB creation workflow. An existing administrator can register catalog entries,
-approve actual first operators, and then assign their class/club leadership.
-No sample members, demo passwords, fake schools, or fictitious classes are seeded.
+Session operations share the membership transaction lock, recheck caller scope
+after acquiring it, and reject stale revisions. Archived entities cannot accept
+new affiliations or ordinary operations, including requests through old signup
+and approval RPCs. Attendance rosters, closure snapshots and XP adjustments are
+retained separately from the current affiliation state.
 
-Full class/club creation screens, minimum leader/session rules, session
-operations, leader removal/reassignment, and catalog editing are the next domain
-slice. The temporary bootstrap controls should move into those full workflows.
-The full MEMBERS search/edit/suspension/withdrawal console is also not included
-in the approval-only first slice; do not present this as the full handoff MVP.
+Suspension preserves affiliations but removes leader assignments atomically.
+Restoration does not resurrect leadership. Normal removal of the last active,
+verified leader is blocked until a replacement exists; suspension is not blocked.
+State/reason and affected assignment IDs are retained in the audit log.
 
-## Required before production enrollment
+## Remaining agreed implementation
 
-1. Rotate credentials previously exposed outside secure configuration and set a
-   fresh server-only `SUPABASE_SERVICE_ROLE_KEY` in the deployment environment.
-2. Back up the target and apply only `0024`, recording it in the existing remote
-   migration history. Do not replay immutable cleanup/historical migrations.
-3. The tracked `.env.production` supplies the public `SITE_URL=https://donutskr.vercel.app`
-   default. Deployment environment variables can override it; never add secrets
-   to that file. Match Supabase's Site URL and allow the exact callback URLs for `/auth/callback` with
-   `next=/membership/status` and `next=/reset-password`.
-4. Keep email confirmations enabled and configure production SMTP, email
-   templates, provider rate limits, and abuse controls. No provider configuration
-   or credentials are changed merely by adding these application files.
-5. With the default PKCE confirmation flow, open the email in the same browser
-   that initiated signup/recovery. The callback also accepts an explicitly
-   configured token-hash template with `type=signup`, `email`, or `recovery` for
-   cross-browser links. Never put email tokens into application logs.
-6. Register real initial catalogs in `/admin/members/settings`. Publish the actual
-   privacy/collection notice and set its HTTPS URL and version. Signup defaults
-   to closed and cannot open through the admin action without a class and notice.
-7. Explicitly authorize and perform validation before rollout: username uniqueness,
-   email confirmation/recovery, pending-member isolation, unaffiliated-leader
-   denial, concurrent/repeated decisions, RLS direct requests, and all retained
-   public/admin pages. Responsive/browser checks have not been performed here.
+1. Full member profile editing and withdrawal/anonymization across Auth,
+   snapshots and audit records. Existing suspension/restoration is retained.
+2. Linked successor classes, previewed automatic enrollment or invitations,
+   in-service notification and email delivery. Closure and its affiliation
+   snapshot are implemented, but do not themselves enroll or notify anyone.
+3. Club meetings, capacity-limited applications, held waitlist offers and history.
+4. Reviewed/versioned daily learning, its XP sources, streaks and analytics.
 
-Official integration references: [Supabase password auth](https://supabase.com/docs/guides/auth/passwords),
-[SSR clients](https://supabase.com/docs/guides/auth/server-side/creating-a-client),
-[Auth profile triggers](https://supabase.com/docs/guides/auth/managing-user-data).
+The tracked policy interview is complete. Session counts have no business maximum;
+the old 1-12 draft limit does not apply. Attendance XP uses the approved 100 XP
+and auditable net-adjustment policy, with activity levels separate from poker skill.
 
-## Next slices
+## Rollout prerequisites
 
-1. Full class and leader workflows, dated sessions, attendance locking, completion,
-   and an idempotent XP ledger.
-2. Full university-club and meeting workflows, capacity-safe applications, and
-   24-hour archival that preserves records.
-3. Partner operations and benefits.
-4. Reviewed/versioned daily learning, private answer keys, server grading,
-   transactional completion/XP, and KST streak calculation.
+1. Back up the target, apply missing 0025 followed by 0026 and record each using
+   the target's existing migration-history convention. Do not blindly replay old
+   numbered files against timestamped production history. Coordinate the schema
+   and application rollout; this source is not compatible with a 0024-only DB.
+2. Validate the new policies explicitly before deployment: email activation,
+   mixed class/club leadership, cross-school and simultaneous applications,
+   repeated/concurrent decisions, direct RLS requests, suspension/recovery,
+   final-leader protection and retained schedule/series regressions. Include the
+   new attendance, concurrency, closure, recovery and XP cases in
+   `CLASS_OPERATIONS.md` before deploying the operations slice.
+3. `SITE_URL=https://donutskr.vercel.app` remains the production auth origin.
+   Supabase callback allowlists must match `/auth/callback` with the approved
+   `/membership/status` and `/reset-password` next paths. `do-nuts.kr` is separate.
+4. Keep email confirmation enabled and configure real SMTP, templates and abuse
+   controls. This source change neither configures SMTP nor sends invitations.
+5. Register actual catalogs and a published privacy notice/version before opening
+   signup. No demo identities, passwords or schools are seeded.
+6. Rotate credentials previously exposed outside secure configuration. Do not
+   put secret keys or access tokens in tracked files or client bundles.
 
-Only working home/profile navigation is exposed now. Do not publish dead class,
-club, partner, or learning tabs, invented XP balances, or success-returning stubs.
+No tests, build, browser checks, production migration or deployment were run for
+the class/club operations slice. Earlier membership validation does not validate
+these new source changes. Testing and production actions need separate approval.
+
+## 2026-09-09 validated rollout update
+
+This supersedes earlier unvalidated/unapplied checkpoints: 155 tests, lint and
+production build passed; 56 isolated PostgreSQL checks passed. Migrations 0025
+and 0026 were backed up and applied to production with retained-data hashes
+unchanged. See [the release record](RELEASE_2026-09-09.md) for remote versions,
+coverage limits and downstream scope.

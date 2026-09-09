@@ -1,5 +1,6 @@
 export type MemberStatus = "PENDING" | "ACTIVE" | "SUSPENDED" | "WITHDRAWN";
 export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type AffiliationKind = "CLASS" | "CLUB";
 
 export interface MemberProfile {
   id: string;
@@ -34,21 +35,36 @@ export interface SignupCatalog {
   clubs: MembershipClub[];
   settings: MembershipSettings;
 }
-export interface MembershipApplication {
+export interface AffiliationRequest {
   id: string;
   user_id: string;
+  kind: AffiliationKind;
   status: ApplicationStatus;
-  requested_class_id: string;
-  requested_club_id: string | null;
-  requested_school_id: string | null;
-  requested_other_school: string | null;
+  class_id: string | null;
+  club_id: string | null;
   decision_reason: string | null;
   created_at: string;
 }
-export interface ReviewApplication extends MembershipApplication {
-  member: Pick<MemberProfile, "id" | "name" | "username" | "phone"> | null;
+export interface ReviewApplication extends AffiliationRequest {
+  member: (Pick<MemberProfile, "id" | "name" | "username" | "phone" | "status" | "other_school_name"> & {
+    school: { name: string } | null;
+  }) | null;
   requested_class: { name: string } | null;
   requested_club: { name: string } | null;
-  requested_school: { name: string } | null;
 }
 export interface FormState { error?: string; success?: string }
+
+export interface LeaderCandidate { id: string; label: string; is_admin: boolean }
+export interface EntityPeople {
+  leaders: { id: string; label: string; eligible: boolean }[];
+  members: { id: string; name: string; username: string; status: MemberStatus; active: boolean; joined_at: string }[];
+}
+export interface EntityOperation {
+  id: string;
+  action: string;
+  actor_id: string;
+  reason: string | null;
+  before_state: unknown;
+  after_state: unknown;
+  created_at: string;
+}

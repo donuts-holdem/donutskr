@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 
 const NAV_GROUPS = [
   { label: "DO:NUTS CLASS", links: [
-    { href: "/admin/members", label: "회원 승인" },
+    { href: "/admin/members", label: "회원 · 소속 관리" },
+    { href: "/admin/classes", label: "클래스 · 회차 · 출석" },
+    { href: "/admin/clubs", label: "클럽 관리" },
   ]},
   { label: "일정 · 시리즈 운영", links: [
     { href: "/admin/events", label: "일정" },
