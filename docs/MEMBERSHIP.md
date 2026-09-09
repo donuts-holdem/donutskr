@@ -137,3 +137,14 @@ production build passed; 56 isolated PostgreSQL checks passed. Migrations 0025
 and 0026 were backed up and applied to production with retained-data hashes
 unchanged. See [the release record](RELEASE_2026-09-09.md) for remote versions,
 coverage limits and downstream scope.
+
+## 2026-09-09 successor, meeting and learning extension
+
+Successor preview/INVITE/AUTO_ENROLL, in-app notifications and an email outbox,
+club meeting operations with reserved FIFO offers, MY meeting history, reviewed
+original question versions, common daily sets, server grading and learning XP are
+now implemented. This supersedes their earlier deferred-feature entries.
+Migrations 0027-0029 are applied and immutable. The Resend provider connection and
+real delivery are explicitly deferred by the owner; no unreviewed content is
+seeded. See [DOMAIN_EXTENSIONS.md](DOMAIN_EXTENSIONS.md) and the
+[release record](RELEASE_2026-09-09.md) for scope, validation and rollout status.

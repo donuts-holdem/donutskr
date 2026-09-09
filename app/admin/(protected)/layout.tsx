@@ -5,6 +5,7 @@ import { SignOutButton } from "@/components/admin/SignOutButton";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Toaster } from "@/components/ui/sonner";
 import { SaveToast } from "@/components/admin/SaveToast";
+import Link from "next/link";
 
 export default async function AdminLayout({
   children,
@@ -31,6 +32,9 @@ export default async function AdminLayout({
           </span>
         </div>
         <AdminNav />
+        <nav aria-label="클래스 확장 운영" className="space-y-1 border-t border-border px-3 py-4">
+          {[{ href: "/admin/successors", label: "후속 클래스" }, { href: "/admin/meetings", label: "클럽 모임" }, { href: "/admin/learning", label: "문항·데일리 학습" }, { href: "/admin/notifications", label: "알림 발송 운영" }].map(link => <Link key={link.href} href={link.href} className="flex min-h-11 items-center rounded-md px-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-ring">{link.label}</Link>)}
+        </nav>
         <div className="border-border space-y-2 border-t px-3 py-4">
           <p className="text-muted-foreground truncate px-1 text-xs">{user.email}</p>
           <SignOutButton />

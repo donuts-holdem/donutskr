@@ -163,3 +163,14 @@ visibility, and storage validation. Add transaction and RLS tests alongside each
 new domain. Acceptance must include concurrent last-seat applications, repeated
 completion requests, immediate leader revocation, attendance corrections, and
 archived-history preservation. P1 learning/XP is still required product scope.
+
+## 2026-09-09 successor, meeting and learning extension
+
+Successor preview/INVITE/AUTO_ENROLL, in-app notifications and an email outbox,
+club meeting operations with reserved FIFO offers, MY meeting history, reviewed
+original question versions, common daily sets, server grading and learning XP are
+now implemented. This supersedes their earlier deferred-feature entries.
+Migrations 0027-0029 are applied and immutable. The Resend provider connection and
+real delivery are explicitly deferred by the owner; no unreviewed content is
+seeded. See [DOMAIN_EXTENSIONS.md](DOMAIN_EXTENSIONS.md) and the
+[release record](RELEASE_2026-09-09.md) for scope, validation and rollout status.
