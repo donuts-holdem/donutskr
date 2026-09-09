@@ -33,7 +33,7 @@ export async function MeetingDetail({ id }: { id: string }) {
     </section>
     {board.can_manage && <section className="space-y-8 border-t border-border pt-8">
       <h2 className="text-xl font-semibold">운영 기록과 참가자</h2>
-      {!board.people.length ? <p className="text-sm text-ink/60">아직 신청자가 없습니다.</p> : <ul className="divide-y divide-border">{board.people.map(person => <li key={person.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><p>{person.name} <span className="text-sm text-ink/50">({person.username})</span></p><p className="text-sm text-ink/70">{applicationLabels[person.status]}</p></li>)}</ul>}
+      {!board.people.length ? <p className="text-sm text-ink/60">아직 신청자가 없습니다.</p> : <ul className="divide-y divide-border">{board.people.map(person => <li key={person.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><p>{person.name} <span className="text-sm text-ink/50">(회원 번호 {person.user_id.slice(0, 8)})</span></p><p className="text-sm text-ink/70">{applicationLabels[person.status]}</p></li>)}</ul>}
       {m.status === "OPEN" && <div className="grid items-start gap-10 lg:grid-cols-2"><details className="rounded-card border border-border p-5"><summary className="cursor-pointer py-2 font-semibold focus-visible:outline-2 focus-visible:outline-gold">모임 정보 변경</summary><div className="mt-5"><MeetingEditor clubs={[]} meeting={m} isAdmin={isAdmin} /></div></details>
         <section className="rounded-card border border-border p-5"><h3 className="mb-5 font-semibold">모임 마감</h3><ActionForm action={closeMeeting} label="모임 마감 처리">
           <input type="hidden" name="id" value={m.id} /><input type="hidden" name="revision" value={m.revision} />

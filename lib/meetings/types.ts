@@ -9,7 +9,7 @@ export interface MeetingApplication {
   id: string; meeting_id: string; user_id: string; status: MeetingApplicationStatus;
   queue_number: number; offered_at: string | null; offer_expires_at: string | null;
   confirmed_at: string | null; ended_at: string | null; created_at: string;
-  name?: string; username?: string;
+  name?: string; username?: string | null;
 }
 export interface MeetingBoard {
   meeting: ClubMeeting; can_manage: boolean; eligible: boolean; club_name: string;

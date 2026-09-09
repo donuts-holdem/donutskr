@@ -16,11 +16,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <section aria-labelledby="login-heading">
       <h1 id="login-heading" className="text-2xl font-bold">로그인</h1>
-      <p className="mb-8 mt-3 text-sm leading-relaxed text-ink/60">가입할 때 정한 아이디 또는 이메일로 로그인하세요.</p>
+      <p className="mb-8 mt-3 text-sm leading-relaxed text-ink/60">가입할 때 사용한 이메일로 로그인하세요.</p>
       {notice === "invalid_link" && <p role="alert" className="mb-6 text-sm text-gold">인증 링크가 만료되었거나 유효하지 않습니다. 같은 브라우저에서 최신 메일의 링크를 열어 주세요.</p>}
       {notice === "password_changed" && <p role="status" className="mb-6 text-sm text-gold">비밀번호를 변경했습니다. 새 비밀번호로 로그인해 주세요.</p>}
       <ActionForm action={loginMember} label="로그인" pendingLabel="로그인 중...">
-        <div className="space-y-2"><Label htmlFor="username">아이디 또는 이메일</Label><Input id="username" name="username" className="h-11" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={254} required /></div>
+        <div className="space-y-2"><Label htmlFor="email">이메일</Label><Input id="email" name="email" className="h-11" type="email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={254} required /></div>
         <div className="space-y-2"><Label htmlFor="password">비밀번호</Label><Input id="password" name="password" className="h-11" type="password" autoComplete="current-password" maxLength={256} required /></div>
       </ActionForm>
       <div className="mt-6 flex flex-wrap justify-between gap-4 text-sm">

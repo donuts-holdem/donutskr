@@ -9,7 +9,7 @@ import { Area, Check, Pick } from "@/components/domains/Fields";
 import type { ClassRecord } from "@/lib/classes/types";
 import { formatSessionDate } from "@/lib/classes/format";
 
-interface Preview { id: string; mode: "INVITE" | "AUTO_ENROLL"; successor_id: string; fingerprint: string; excluded_count: number; members: { id: string; name: string; username: string }[] }
+interface Preview { id: string; mode: "INVITE" | "AUTO_ENROLL"; successor_id: string; fingerprint: string; excluded_count: number; members: { id: string; name: string }[] }
 interface Succession { id: string; predecessor_id: string; successor_id: string; mode: string; executed_at: string | null; execution_snapshot: Preview | null }
 
 export default async function SuccessorsPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
@@ -41,7 +41,7 @@ export default async function SuccessorsPage({ searchParams }: { searchParams: P
     </div>
     {preview && selected && <section className="border-t border-border pt-8"><h2 className="text-xl font-semibold">{name(selected.successor_id)} / {selected.executed_at ? "실행 당시 대상자" : "대상자 미리보기"}</h2>
       <p className="mt-4 text-sm text-muted-foreground">대상 {preview.members.length}명 / 제외 {preview.excluded_count}명 / {preview.mode === "AUTO_ENROLL" ? "자동 소속 및 알림" : "등록 안내 알림만 발행"}</p>
-      <ul className="my-6 divide-y divide-border">{preview.members.map(member => <li key={member.id} className="py-3 text-sm">{member.name} <span className="text-muted-foreground">({member.username})</span></li>)}</ul>
+      <ul className="my-6 divide-y divide-border">{preview.members.map(member => <li key={member.id} className="py-3 text-sm">{member.name} <span className="text-muted-foreground">(회원 번호 {member.id.slice(0, 8)})</span></li>)}</ul>
       {!selected.executed_at && <div className="max-w-2xl"><ActionForm action={executeSuccessor} label={preview.mode === "AUTO_ENROLL" ? "확인한 회원을 후속 클래스에 소속시키기" : "확인한 회원에게 등록 안내 보내기"}>
         <input type="hidden" name="id" value={selected.id} /><input type="hidden" name="fingerprint" value={preview.fingerprint} />
         <Area name="reason" label="실행 사유" maxLength={500} /><Check name="confirm" required>대상자·연결 방식을 확인했습니다. 이미 실행된 소속과 알림은 이전 클래스 복구로 자동 취소되지 않습니다.</Check>

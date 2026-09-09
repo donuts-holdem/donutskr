@@ -16,7 +16,6 @@ const statuses: Record<MemberStatus, string> = { PENDING: "이메일 인증 대�
 interface DirectoryMember {
   id: string;
   name: string;
-  username: string;
   phone: string;
   status: MemberStatus;
   class_leaders: { class_id: string; classes: { name: string } | null }[];
@@ -30,9 +29,9 @@ export default async function MemberDirectoryPage({ searchParams }: { searchPara
   const status = Object.hasOwn(statuses, params.status ?? "") ? params.status as MemberStatus : "ALL";
   const parsed = Number(params.page ?? "1");
   const page = Number.isInteger(parsed) && parsed > 0 && parsed <= 10000 ? parsed : 1;
-  let query = supabase.from("member_profiles").select("id,name,username,phone,status", { count: "exact" });
+  let query = supabase.from("member_profiles").select("id,name,phone,status", { count: "exact" });
   if (status !== "ALL") query = query.eq("status", status);
-  if (search) query = query.or(`name.ilike.%${search}%,username.ilike.%${search}%,phone.ilike.%${search}%`);
+  if (search) query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%`);
   const { data: profiles, error, count } = await query.order("created_at", { ascending: false }).range((page - 1) * 50, page * 50 - 1).returns<Omit<DirectoryMember, "class_leaders" | "club_leaders">[]>();
   if (error) throw new Error("회원 목록을 불러오지 못했습니다.");
   // Leadership now references Auth identities; do not infer a profile FK join.
@@ -55,7 +54,7 @@ export default async function MemberDirectoryPage({ searchParams }: { searchPara
       <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link href="/admin/members">소속 신청 승인</Link></Button><Button asChild variant="outline"><Link href="/admin/members/settings">리더 지정 · 가입 설정</Link></Button></div>
     </header>
     <form action="/admin/members/directory" className="grid gap-4 sm:grid-cols-3">
-      <div className="space-y-2"><Label htmlFor="member-search">이름·아이디·전화번호</Label><Input id="member-search" name="q" defaultValue={search} maxLength={80} /></div>
+      <div className="space-y-2"><Label htmlFor="member-search">이름·전화번호</Label><Input id="member-search" name="q" defaultValue={search} maxLength={80} /></div>
       <div className="space-y-2"><Label htmlFor="member-status">회원 상태</Label><Select name="status" defaultValue={status}><SelectTrigger id="member-status" className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="ALL">전체</SelectItem>{Object.entries(statuses).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent></Select></div>
       <Button type="submit" variant="outline" className="self-end">회원 검색</Button>
     </form>
@@ -67,7 +66,7 @@ export default async function MemberDirectoryPage({ searchParams }: { searchPara
           ...member.club_leaders.map(row => ({ kind: "CLUB", id: row.club_id, name: row.clubs?.name ?? "클럽" })),
         ];
         return <li key={member.id} className="grid gap-6 py-8 lg:grid-cols-2">
-          <div><p className="text-xs font-semibold text-gold">{statuses[member.status]}</p><h2 className="mt-3 text-lg font-semibold">{member.name} <span className="text-sm font-normal text-muted-foreground">{member.username}</span></h2><p className="mt-3 text-sm text-muted-foreground">{member.phone}</p>
+          <div><p className="text-xs font-semibold text-gold">{statuses[member.status]}</p><h2 className="mt-3 text-lg font-semibold">{member.name} <span className="text-sm font-normal text-muted-foreground">회원 번호 {member.id.slice(0, 8)}</span></h2><p className="mt-3 text-sm text-muted-foreground">{member.phone}</p>
             {!!leaders.length && <details className="mt-5 rounded-lg border border-border p-4"><summary className="cursor-pointer py-2 text-sm focus-visible:outline-2 focus-visible:outline-ring">담당 리더 권한 {leaders.length}개</summary><div className="mt-4 space-y-6">{leaders.map(leader => <ActionForm key={`${leader.kind}:${leader.id}`} action={removeMembershipLeader} label={`${leader.name} 리더 해제`}>
               <input type="hidden" name="kind" value={leader.kind} /><input type="hidden" name="entity_id" value={leader.id} /><input type="hidden" name="user_id" value={member.id} />
               <p className="text-sm leading-relaxed text-muted-foreground">{leader.kind === "CLASS" ? "클래스" : "클럽"} / {leader.name}. 마지막 리더라면 후임을 먼저 지정해야 합니다.</p>

@@ -15,14 +15,9 @@ export function SignupForm({ catalog, email, profile }: { catalog: SignupCatalog
         <div className="space-y-2"><Label htmlFor="phone">전화번호</Label><Input className="h-11" id="phone" name="phone" type="tel" autoComplete="tel" defaultValue={profile?.phone} maxLength={24} required /></div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="username">아이디</Label>
-        <Input className="h-11" id="username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} defaultValue={profile?.username} pattern="[a-z][a-z0-9_]{3,23}" minLength={4} maxLength={24} aria-describedby="username-help" required />
-        <p id="username-help" className="text-xs leading-relaxed text-ink/60">영문 소문자로 시작하는 영문, 숫자, 밑줄 4~24자. 로그인할 때 사용합니다.</p>
-      </div>
-      <div className="space-y-2">
         <Label htmlFor="email">이메일</Label>
-        <Input className="h-11" id="email" name="email" type="email" autoComplete="email" defaultValue={email} readOnly={Boolean(email)} maxLength={254} aria-describedby="email-help" required />
-        <p id="email-help" className="text-xs leading-relaxed text-ink/60">가입 인증과 비밀번호 재설정에 사용합니다.</p>
+        <Input className="h-11" id="email" name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} defaultValue={email} readOnly={Boolean(email)} maxLength={254} aria-describedby="email-help" required />
+        <p id="email-help" className="text-xs leading-relaxed text-ink/60">로그인, 가입 인증과 비밀번호 재설정에 사용합니다. 별도 아이디는 만들지 않습니다.</p>
       </div>
       {!email && <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2"><Label htmlFor="password">비밀번호</Label><Input className="h-11" id="password" name="password" type="password" autoComplete="new-password" minLength={10} maxLength={72} required /><p className="text-xs text-ink/60">10자 이상, 72바이트 이하</p></div>

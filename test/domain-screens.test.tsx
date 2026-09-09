@@ -8,6 +8,9 @@ vi.mock("@/lib/meetings/server", () => ({ getMeetingBoard: mocks.board }));
 vi.mock("@/app/learning/actions", () => ({ submitLearning: vi.fn(async () => ({})), saveQuestion: vi.fn(async () => ({})) }));
 vi.mock("@/app/meetings/actions", () => ({ applyMeeting: vi.fn(async () => ({})), respondMeeting: vi.fn(async () => ({})), closeMeeting: vi.fn(async () => ({})), saveMeeting: vi.fn(async () => ({})) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/learn" }));
+// React Server Components are exercised in the production browser checks;
+// jsdom renders only the domain content in this unit suite.
+vi.mock("@/components/site/HeaderAccount", () => ({ HeaderAccount: () => null, HeaderAccountFallback: () => null }));
 import MemberLayout from "@/app/(member)/layout";
 import LearnPage from "@/app/(member)/learn/page";
 import { MeetingDetail } from "@/components/meetings/MeetingDetail";

@@ -12,7 +12,7 @@ export function ReviewQueue({ requests }: { requests: ReviewApplication[] }) {
     {requests.map(request => <li key={request.id} className="grid gap-6 py-7 lg:grid-cols-2 lg:gap-10">
       <div>
         <p className="text-xs text-muted-foreground">{dateFormat.format(new Date(request.created_at))}</p>
-        <h2 className="mt-2 text-lg font-semibold">{request.member?.name ?? "회원 정보 열람 제한"}<span className="ml-3 text-sm font-normal text-muted-foreground">{request.member?.username}</span></h2>
+        <h2 className="mt-2 text-lg font-semibold">{request.member?.name ?? "회원 정보 열람 제한"}</h2>
         {request.member && <p className="mt-2 text-sm text-muted-foreground">{request.member.phone}</p>}
         <dl className="mt-5 space-y-2 text-sm">
           <div className="flex gap-4"><dt className="w-12 shrink-0 text-muted-foreground">학교</dt><dd>{request.member?.school?.name ?? request.member?.other_school_name ?? "정보 확인 필요"}</dd></div>

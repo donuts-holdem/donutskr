@@ -9,7 +9,7 @@ export const metadata = { title: "내 회원 정보 | DO:NUTS CLASS" };
 export default async function MyPage() {
   const member = await getMemberAffiliations();
   const fields = [
-    ["이름", member.profile?.name ?? "관리자"], ["아이디", member.profile?.username ?? "운영자 계정"],
+    ["이름", member.profile?.name ?? "관리자"],
     ["이메일", member.email ?? "미등록"], ["전화번호", member.profile?.phone ?? "회원 프로필 없음"],
     ["학교", member.school], ["클래스", member.classes.map(item => item.name).join(", ") || "없음"],
     ["동아리", member.clubs.map(club => club.name).join(", ") || "없음"],

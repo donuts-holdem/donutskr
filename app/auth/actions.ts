@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createServiceRoleSupabase } from "@/lib/supabase/service-role";
 import { getMembershipSession } from "@/lib/membership/server";
-import { databaseErrorMessage, formText, parseApplication, parseEmail, parseNewPassword } from "@/lib/membership/validation";
+import { databaseErrorMessage, parseApplication, parseEmail, parseNewPassword } from "@/lib/membership/validation";
 import type { FormState } from "@/lib/membership/types";
 
 function callbackUrl(next = "/membership/status") {
@@ -31,44 +31,21 @@ async function allowAuthAttempt(kind: string, identifier: string) {
 }
 
 export async function loginMember(_state: FormState, form: FormData): Promise<FormState> {
-  // Keep the field name compatible with existing ID-login clients.
-  const identifier = formText(form, "username").toLowerCase();
-  const emailLogin = identifier.includes("@");
   const password = form.get("password");
-  const invalid = { error: "아이디·이메일 또는 비밀번호를 확인해 주세요. 이메일 인증도 완료해야 합니다." };
+  const invalid = { error: "이메일 또는 비밀번호를 확인해 주세요. 이메일 인증도 완료해야 합니다." };
   if (typeof password !== "string" || !password || password.length > 256) return invalid;
-  let email: string | null = null;
-  if (emailLogin) {
-    try { email = parseEmail(form, "username"); }
-    catch { return invalid; }
-  } else if (!/^[a-z][a-z0-9_]{3,23}$/.test(identifier)) {
-    return invalid;
-  }
+  let email: string;
+  try { email = parseEmail(form); }
+  catch { return { error: "로그인에 사용할 올바른 이메일을 입력해 주세요." }; }
   let destination = "/membership/status";
   let signedIn: Awaited<ReturnType<typeof createServerSupabase>> | null = null;
   try {
     const limited = { error: "로그인 시도가 많습니다. 15분 후 다시 시도해 주세요." };
-    if (!await allowAuthAttempt("login", identifier)) return limited;
-    if (!emailLogin) {
-      const service = createServiceRoleSupabase();
-      const lookup = await service.rpc("resolve_member_login_email", { p_username: identifier });
-      if (lookup.error) return { error: "로그인 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요." };
-      email = typeof lookup.data === "string" ? lookup.data.trim().toLowerCase() : null;
-      // ID and email attempts share the same account-level throttle.
-      if (email && !await allowAuthAttempt("login", email)) return limited;
-    }
+    if (!await allowAuthAttempt("login", email)) return limited;
     const supabase = await createServerSupabase();
-    // An unknown username takes the same password-auth path and generic error.
-    const result = await supabase.auth.signInWithPassword({
-      email: email ?? "unregistered-member@invalid.example",
-      password,
-    });
+    const result = await supabase.auth.signInWithPassword({ email, password });
     if (result.error || !result.data.user) return invalid;
     signedIn = supabase;
-    if (!email) {
-      await supabase.auth.signOut({ scope: "local" });
-      return invalid;
-    }
     const permission = await supabase.rpc("is_admin");
     if (permission.error || typeof permission.data !== "boolean") throw new Error("Account authorization unavailable.");
     if (permission.data) {
@@ -114,7 +91,7 @@ export async function signupMember(_state: FormState, form: FormData): Promise<F
         if (error.code === "over_email_send_rate_limit" || error.code === "over_request_rate_limit") {
           return { error: "인증 메일 요청이 많습니다. 잠시 후 다시 시도해 주세요." };
         }
-        return { error: "가입을 완료하지 못했습니다. 아이디 중복 여부와 입력 정보, 가입 가능 상태를 확인해 주세요." };
+        return { error: "가입을 완료하지 못했습니다. 입력 정보와 가입 가능 상태를 확인해 주세요. 이미 가입했다면 이메일로 로그인하거나 비밀번호를 재설정해 주세요." };
       }
       if (!data.session) destination = "/signup/complete";
     }

@@ -10,8 +10,8 @@ export function requireUuid(value: string) {
   return value;
 }
 
-export function parseEmail(form: FormData, key = "email") {
-  const email = formText(form, key).toLowerCase();
+export function parseEmail(form: FormData) {
+  const email = formText(form, "email").toLowerCase();
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new Error("올바른 이메일을 입력해 주세요.");
   }
@@ -29,12 +29,8 @@ export function parseNewPassword(form: FormData) {
 }
 
 export function parseApplication(form: FormData) {
-  const username = formText(form, "username").toLowerCase();
   const name = formText(form, "name");
   const phone = formText(form, "phone").replace(/[\s()-]/g, "");
-  if (!/^[a-z][a-z0-9_]{3,23}$/.test(username)) {
-    throw new Error("아이디는 영문으로 시작하는 영문 소문자, 숫자, 밑줄 4~24자로 입력해 주세요.");
-  }
   if (!name || name.length > 80) throw new Error("이름을 80자 이내로 입력해 주세요.");
   if (!/^\+?[0-9]{8,15}$/.test(phone)) throw new Error("연락 가능한 전화번호를 입력해 주세요.");
   const school = formText(form, "school_id");
@@ -45,7 +41,7 @@ export function parseApplication(form: FormData) {
   if (form.get("consent") !== "on") throw new Error("개인정보 수집 안내를 확인하고 동의해 주세요.");
   const club = formText(form, "club_id");
   return {
-    username, name, phone,
+    name, phone,
     school_id: school === "other" ? null : requireUuid(school),
     other_school_name: school === "other" ? otherSchool : null,
     class_id: requireUuid(formText(form, "class_id")),
@@ -81,6 +77,6 @@ const databaseMessages: Record<string, string> = {
 };
 
 export function databaseErrorMessage(error: { code?: string; message: string }) {
-  if (error.code === "23505") return "이미 사용 중인 아이디 또는 이름입니다.";
+  if (error.code === "23505") return "이미 등록된 정보입니다. 입력 내용을 확인해 주세요.";
   return databaseMessages[error.message] ?? "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }

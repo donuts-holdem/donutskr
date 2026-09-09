@@ -4,7 +4,7 @@ export type AffiliationKind = "CLASS" | "CLUB";
 
 export interface MemberProfile {
   id: string;
-  username: string;
+  username: string | null;
   name: string;
   phone: string;
   school_id: string | null;
@@ -57,7 +57,7 @@ export interface FormState { error?: string; success?: string }
 export interface LeaderCandidate { id: string; label: string; is_admin: boolean }
 export interface EntityPeople {
   leaders: { id: string; label: string; eligible: boolean }[];
-  members: { id: string; name: string; username: string; status: MemberStatus; active: boolean; joined_at: string }[];
+  members: { id: string; name: string; username: string | null; status: MemberStatus; active: boolean; joined_at: string }[];
 }
 export interface EntityOperation {
   id: string;

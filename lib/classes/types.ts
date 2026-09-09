@@ -39,7 +39,7 @@ export interface AttendanceEntry {
   roster_run: number;
   user_id: string;
   snapshot_name: string;
-  snapshot_username: string;
+  snapshot_username: string | null;
   mark: AttendanceMark;
   checked_at: string | null;
 }
