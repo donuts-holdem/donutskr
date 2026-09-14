@@ -81,9 +81,10 @@ includes Storage metadata; shared object binaries remain in the existing bucket.
 - Migration `0031_remove_schedule_series` was applied and recorded as remote
   version `20260914083002` after verifying the production route removal.
   It is now an immutable applied migration.
-- The apply transaction compared the hashes and counts of all 38 remaining
-  public tables plus the included Auth/Storage tables before committing; every
-  comparison matched. The exact snapshots are in the backup's `applied.json`.
+- The apply transaction compared hashes and counts for 38 tables in total:
+  every remaining public table, `auth.users`, `storage.objects` and
+  `storage.buckets`. Every comparison matched before commit. The exact snapshots
+  are in the backup's `applied.json`.
 - Preserved records include 6 member profiles, 5 classes, 2 clubs, 8 meetings,
   7 learning questions, 10 XP entries, 7 Auth users and 63 Storage objects.
 - PostgREST returns `404/PGRST205` for all four removed tables and
