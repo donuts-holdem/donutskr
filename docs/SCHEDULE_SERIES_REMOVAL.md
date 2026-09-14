@@ -71,3 +71,24 @@ Custom-format PostgreSQL backup:
 SHA-256: `e8ddf62b7474dbdcaae821b2fb822f4294233f0a774e0f0211c0e4c91a4a71c3`.
 The private manifest records row counts/hashes and migration history. The dump
 includes Storage metadata; shared object binaries remain in the existing bucket.
+
+## Production rollout
+
+- Application commit `0e3b685be08f038505881fc66a41c6b2555a6f87` was pushed to
+  `main` and successfully deployed through the existing GitHub/Vercel integration.
+  Deployment: `https://donutskr-k24afufwi-donutskr.vercel.app`;
+  production alias: `https://donutskr.vercel.app`.
+- Migration `0031_remove_schedule_series` was applied and recorded as remote
+  version `20260914083002` after verifying the production route removal.
+  It is now an immutable applied migration.
+- The apply transaction compared the hashes and counts of all 38 remaining
+  public tables plus the included Auth/Storage tables before committing; every
+  comparison matched. The exact snapshots are in the backup's `applied.json`.
+- Preserved records include 6 member profiles, 5 classes, 2 clubs, 8 meetings,
+  7 learning questions, 10 XP entries, 7 Auth users and 63 Storage objects.
+- PostgREST returns `404/PGRST205` for all four removed tables and
+  `404/PGRST202` for the retired function. Public settings still return 200.
+- Production browser checks pass at all three widths, with zero automated
+  WCAG 2.1 AA findings on the landing and mobile menus. Removed public routes
+  return 404 and the sitemap contains no schedule/series entries. These browser
+  checks use anonymous sessions; they do not create or alter member accounts.
