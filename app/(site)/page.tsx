@@ -62,21 +62,14 @@ export default async function HomePage() {
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/schedule"
+              href="/home"
               className={`${display.className} group inline-flex items-center gap-2 rounded-pill bg-ink px-5 py-3 text-sm font-bold uppercase tracking-action text-bg transition hover:-translate-y-0.5 hover:bg-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
             >
-              전체 일정 보기
+              클래스 · 학습 시작하기
               <ArrowRight
                 aria-hidden="true"
                 className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
               />
-            </Link>
-            <Link
-              href="/home"
-              className={`${display.className} inline-flex min-h-11 items-center gap-2 rounded-pill border border-gold/40 bg-gold/10 px-5 py-3 text-sm font-bold tracking-action text-gold transition-colors hover:border-gold hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
-            >
-              클래스 · 학습 시작하기
-              <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
             {signupLink && (
               <a
@@ -89,7 +82,7 @@ export default async function HomePage() {
               </a>
             )}
           </div>
-          <p className="max-w-sm text-sm leading-relaxed text-ink/70">일정 확인부터 클래스, 클럽 모임, 데일리 학습까지.<br />회원 활동도 이곳에서 함께하세요.</p>
+          <p className="max-w-sm text-sm leading-relaxed text-ink/70">클래스, 클럽 모임, 데일리 학습까지.<br />도너츠에서 함께 배우고 즐기세요.</p>
         </div>
       </div>
     </section>

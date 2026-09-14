@@ -359,7 +359,6 @@ try {
     'existing_demo_users',(select count(*) from auth.users where raw_app_meta_data->>'seed_tag'=${literal(TAG)}),
     'member_domain_rows',(select count(*) from public.member_profiles)+(select count(*) from public.classes)+(select count(*) from public.clubs)
       +(select count(*) from public.club_meetings)+(select count(*) from public.learning_questions)+(select count(*) from public.learning_daily_sets),
-    'retained',jsonb_build_object('events',(select count(*) from public.events),'seasons',(select count(*) from public.seasons)),
     'signup_open',(select signup_open from public.membership_settings where singleton=true)
   ) as context`,true);
   const before=rows[0]?.context;

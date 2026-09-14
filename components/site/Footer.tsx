@@ -22,7 +22,7 @@ export async function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-8 flex flex-col items-center gap-4">
         {sponsors.length > 0 && (
           <div className="flex flex-col items-center gap-3">
-            <p className="text-xs text-ink/40 tracking-widest uppercase">
+            <p className="text-xs text-ink/60 tracking-widest uppercase">
               Official Sponsor
             </p>
             <div className="flex items-center gap-6 flex-wrap justify-center">
@@ -49,7 +49,7 @@ export async function Footer() {
           </div>
         )}
 
-        <p className="text-xs text-ink/40">© Donuts Poker Club. All rights reserved.</p>
+        <p className="text-xs text-ink/60">© Donuts Poker Club. All rights reserved.</p>
       </div>
     </footer>
   );

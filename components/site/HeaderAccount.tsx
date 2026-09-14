@@ -9,7 +9,7 @@ export function HeaderAccountFallback() {
 }
 
 export async function HeaderAccount() {
-  // An unavailable membership service must not take public schedules offline.
+  // An unavailable membership service must not take the public landing offline.
   const session = await getMembershipSession().catch(() => null);
   if (!session?.user) return <HeaderAccountFallback />;
 

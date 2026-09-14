@@ -2,8 +2,12 @@
 
 ## Current implementation update
 
-The public landing, schedule, and series are actively maintained product domains,
-not deprecated code. Their shared modules now live in `lib/site/**`.
+On 2026-09-14 the owner requested removal of the public schedule and series,
+including their operator tools and database data. Migration `0031` removes their
+four tables, the season activation function and the blind-row enum. The landing,
+public settings, shared navigation and all CLASS domains remain. `lib/site/**`
+now only owns public settings and navigation types. The original retained-domain
+descriptions below are historical and do not authorize recreating these features.
 
 Membership source now separates email-verified regular membership from class and
 club affiliation approval, with multiple affiliations, cross-school applications,

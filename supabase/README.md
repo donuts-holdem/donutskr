@@ -1,11 +1,7 @@
-# Database baseline
+# Database migrations
 
-The active retained tables after migration `0023` are:
+The public-site tables after migration `0031` are:
 
-- `seasons`
-- `events`
-- `blind_structures`
-- `blind_structure_rows`
 - `site_config`
 - `admin_emails`
 
@@ -20,8 +16,14 @@ production history uses timestamp versions with numeric filenames in the names;
 do not blindly run `supabase db push` and reapply historical numeric migrations.
 Apply only the new migration through a history-aware, backed-up rollout.
 Keep already-applied migration files unchanged. For an existing project, deploy
-the cleaned application and back up the database before applying `0023`; it drops
-retired CMS/timer tables and their data but keeps schedule/series content.
+the cleaned application and back up the database before applying `0031`; it drops
+`events`, `seasons`, `blind_structures`, `blind_structure_rows`, the season
+activation function and `row_type`. Member/class/club/meeting/learning data and
+shared Auth/Storage/site settings remain. Unknown dependencies abort the entire
+transaction instead of being removed with CASCADE.
+
+See [the removal record](../docs/SCHEDULE_SERIES_REMOVAL.md) for the object list,
+backup, validation and rollout details.
 
 The seed is non-destructive and contains no demo accounts. To authorize an actual
 operator, create their identity in Supabase Auth and add their email to

@@ -122,7 +122,7 @@ try {
     $$;
     grant execute on function public.is_admin() to anon,authenticated;
     create table public.retained_content_probe(id integer primary key, payload jsonb not null);
-    insert into public.retained_content_probe values(1,'{"schedule":"preserve","series":"preserve"}');
+    insert into public.retained_content_probe values(1,'{"public_settings":"preserve"}');
   `);
   await owner.query(readFileSync(`${repo}/supabase/migrations/0024_membership_foundation.sql`, 'utf8'));
   console.log('PASS unchanged migration 0024 applies to isolated Supabase-compatible auth scaffold');
@@ -705,7 +705,7 @@ try {
     const summary=(await as(opMember,'select public.get_my_learning_summary() data')).rows[0].data;
     assert.equal(summary.completed_days,0);assert.equal(summary.current_streak,0);
   });
-  await check('Retained schedule/series sentinel is still unchanged after operating workflows',async()=>{
+  await check('Unrelated public-settings sentinel is still unchanged after operating workflows',async()=>{
     assert.deepEqual((await owner.query('select * from public.retained_content_probe')).rows,before.content);
   });
 

@@ -42,5 +42,5 @@
     "typescript": "^5",
     "vitest": "^2.1.9"
   },
-  "description": "DO:NUTS CLASS development baseline with retained schedule and series"
+  "description": "DO:NUTS CLASS membership, classes, clubs, meetings and daily learning"
 }

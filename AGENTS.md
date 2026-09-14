@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
   `components/ui/*` (Button, Input, Label, Select, Checkbox, Textarea, Card,
   Separator). Add more with `npx shadcn@latest add <name>`. Don't hand-roll
   inputs/buttons in admin.
-- **Public site (`app/(site)/**`, `components/site|schedule|series`)
+- **Public site (`app/(site)/**`, `components/site`)
   keeps the bespoke design** using the custom tokens (`bg-bg`, `text-ink`,
   `text-gold`, `bg-glass`, `border-border`, `rounded-card`). Do NOT convert
   public marketing pages to shadcn.
@@ -34,7 +34,7 @@ You are a senior product designer and frontend engineer with deep expertise in m
 
 ## Project Context
 
-We are building DO:NUTS CLASS, a mobile-first membership, class, university-club, meeting, and daily poker-learning application. Existing schedule and series pages are preserved.
+We are building DO:NUTS CLASS, a mobile-first membership, class, university-club, meeting, and daily poker-learning application. The former public schedule and series domains were removed at the owner's request on 2026-09-14.
 
 Read `docs/BASELINE.md` and `docs/handoff/donuts-class-developer-handoff-v1/START_HERE.md` before implementing a new domain. The handoff HTML is reference material only.
 
@@ -98,7 +98,7 @@ Verify:
 
 # CLASS baseline boundaries
 
-- `lib/site/**` owns the actively maintained public site, schedule, and series. These are first-class product domains, not deprecated code. New membership, class, and club domains own their models and services.
+- `lib/site/**` owns public landing settings and shared navigation types. Membership, class, and club domains own their models and services. Do not recreate the retired public schedule/series domain.
 - Reuse Supabase Auth. Never store demo passwords or add a second password-hash table from the draft schema.
 - Enforce member status, admin permissions, and entity-scoped leadership on the server and in RLS. View mode is not authorization.
 - Use atomic DB operations for approvals, capacity-limited applications, attendance/XP, and learning completion.

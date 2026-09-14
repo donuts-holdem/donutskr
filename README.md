@@ -3,7 +3,8 @@
 Development baseline for the DO:NUTS university poker union's membership,
 classes, clubs, meetings, partners, and daily learning application.
 
-The existing **schedule and series** are actively maintained product domains.
+The former public schedule and series, their operator tools, and their database
+tables are removed by migration `0031_remove_schedule_series.sql`.
 The first membership slice adds username login with email verification, signup
 requests, scoped approvals, and member home/profile screens. Its new migration
 and production Auth configuration must be deployed separately. Class sessions,
@@ -37,21 +38,20 @@ npm run dev
 ```
 
 `/` shows the original DO:NUTS hero without the former lower content sections.
-`/schedule` and `/series` retain the schedule and season pages.
-Existing operators can use `/admin/login` to edit schedules, seasons, blind
-structures, and public page settings. Admin identities must be authorized by
+The landing links to member services. `/admin` opens member management, and
+`/admin/settings` manages public page settings. Admin identities must be authorized by
 `public.admin_emails`; being signed in is not sufficient.
 
 ## Code structure
 
 ```text
-app/(site)/         Active public landing, schedule, and series routes
+app/(site)/         Public landing
 app/(auth)/         Member signup, login, recovery, and application status
 app/(member)/       Authenticated member home, profile, and scoped approvals
-app/admin/          Active schedule, series, and membership operator screens
-components/site/    Public navigation, footer, backdrop, reveal
+app/admin/          Membership, class, club, learning and public settings screens
+components/site/    Public navigation and footer
 components/ui/      Shared shadcn primitives
-lib/site/           Active public-site models, queries, calendar and status rules
+lib/site/           Public settings queries and shared navigation types
 lib/membership/     Membership models, authorization, queries, and validation
 lib/supabase/       Shared Auth/database clients
 supabase/           Migration history and minimal non-destructive seed
@@ -77,16 +77,16 @@ access during the build.
 
 ## Database transition
 
-Migration `0023_class_development_baseline.sql` retires program CMS, special
-pages, dynamic navigation, league settings, and timer tables, while preserving
-schedule/series data and Auth/Storage. Review the migration and back up an
-existing target before applying it. Deploy this application before the cleanup
-migration. No remote database migration is performed by local code cleanup.
+Migration `0031_remove_schedule_series.sql` drops `events`, `seasons`,
+`blind_structures`, `blind_structure_rows`, `activate_season(uuid)` and `row_type`.
+It preserves member/class/club/meeting/learning data, Auth, Storage and site settings.
+Back up the target and deploy this application before applying the migration.
+Unknown dependencies stop the transaction; the migration does not use CASCADE.
 
-Applied migrations remain in place. `supabase/seed.sql` no longer deletes or
-repopulates content; a fresh database starts with empty schedule/series states.
-The old automatic trash purge is removed. Trash for retained content is managed
-manually, separately from future CLASS history archival.
+Applied migrations remain in place and replay in their original order.
+The remote migration history uses timestamps; do not blindly push the numbered
+filenames over an existing project. `supabase/seed.sql` only ensures that the
+public settings singleton exists. CLASS history keeps its own archival rules.
 
 Migration `0024_membership_foundation.sql` adds membership without changing any
 schedule/series table. Signup is closed by default. Before opening enrollment,

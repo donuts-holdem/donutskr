@@ -12,12 +12,12 @@ const session: ClassSession = {
   session_number: 1, scheduled_at: "2026-09-10T10:00:00.000Z", status: "SCHEDULED",
   first_started_at: null, started_at: null, completed_at: null, cancelled_at: null,
   cancellation_reason: null, roster_run: 0, attendance_saved_at: null,
-  attendance_locked: false, revision: 1, created_at: "2026-09-01T00:00:00.000Z",
+  attendance_locked: false, revision: 1,
 };
 
 describe("session schedule confirmation", () => {
   it("keeps the date and confirmation controls usable before confirmation", () => {
-    const { container } = render(<SessionScheduleForm classId={classId} session={session} sessions={[session]} />);
+    const { container } = render(<SessionScheduleForm session={session} sessions={[session]} />);
     const date = container.querySelector<HTMLInputElement>('input[name="scheduled_at"]')!;
     const shift = screen.getByRole("checkbox");
     expect(date).toBeEnabled();

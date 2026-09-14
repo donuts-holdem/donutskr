@@ -13,14 +13,8 @@ const NAV_GROUPS = [
     { href: "/admin/learning", label: "문항 · 데일리 학습" },
     { href: "/admin/notifications", label: "알림 · 발송 관리" },
   ]},
-  { label: "일정 · 시리즈 운영", links: [
-    { href: "/admin/events", label: "일정" },
-    { href: "/admin/seasons", label: "시즌" },
-    { href: "/admin/blind-structures", label: "블라인드 구조" },
-  ]},
   { label: "공개 페이지 관리", links: [
     { href: "/admin/settings", label: "설정" },
-    { href: "/admin/trash", label: "휴지통" },
   ]},
 ] as const;
 

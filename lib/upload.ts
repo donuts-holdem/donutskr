@@ -1,6 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-/** Max size for admin image uploads. Shared by uploadIfPresent + the API route. */
+/** Max size for admin image uploads. */
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
 
 // Whitelisted image extensions. Persisted keys use one of these (lowercased);
@@ -46,19 +44,4 @@ export function assertImageUpload(file: File): void {
 /** Build a randomized, extension-preserving storage key (never trusts file.name). */
 export function buildUploadKey(folder: string, file: File): string {
   return `${folder}/${Date.now()}-${crypto.randomUUID()}.${pickImageExtension(file)}`;
-}
-
-export async function uploadIfPresent(
-  supabase: SupabaseClient,
-  fd: FormData,
-  field: string,
-  existing: string | null
-): Promise<string | null> {
-  const file = fd.get(`${field}_file`) as File | null;
-  if (!file || file.size === 0) return existing;
-  assertImageUpload(file);
-  const path = buildUploadKey(field, file);
-  const { error } = await supabase.storage.from("media").upload(path, file, { upsert: true });
-  if (error) throw error;
-  return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
 }

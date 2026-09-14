@@ -67,7 +67,7 @@ function NavigationMenu({ links, pathname, account }: {
             <Dialog.Title className="text-sm font-semibold tracking-wide text-gold">전체 메뉴</Dialog.Title>
             <Dialog.Close asChild><button type="button" aria-label="메뉴 닫기" className="inline-flex size-11 items-center justify-center rounded-pill text-ink/70 transition-colors hover:bg-gold/10 hover:text-gold focus-visible:outline-2 focus-visible:outline-gold"><X className="size-6" aria-hidden="true" /></button></Dialog.Close>
           </div>
-          <Dialog.Description className="sr-only">도너츠의 일정, 시리즈, 클래스, 클럽, 모임과 학습을 한곳에서 이용하세요.</Dialog.Description>
+          <Dialog.Description className="sr-only">도너츠의 클래스, 클럽, 모임과 학습을 한곳에서 이용하세요.</Dialog.Description>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
             <nav aria-label="주요 메뉴" className="grid grid-cols-2 gap-2">
               {links.filter(link => !link.mobileHidden).map(link => <NavigationLink key={link.href} link={link} pathname={pathname} mobile onNavigate={close} />)}
@@ -77,7 +77,7 @@ function NavigationMenu({ links, pathname, account }: {
             </nav>
             <div className="mt-8 rounded-card border border-border p-5">
               <p className="text-sm font-semibold">함께하는 다음 판.</p>
-              <p className="mt-2 text-sm leading-relaxed text-ink/70">일정과 시리즈는 누구나, 클래스와 학습은 로그인 후 이용할 수 있습니다.</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink/70">로그인하고 클래스, 클럽 모임과 데일리 학습에 참여하세요.</p>
               <Link href="/login" onClick={close} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-gold focus-visible:outline-2 focus-visible:outline-gold">회원 서비스로<ArrowUpRight className="size-4" aria-hidden="true" /></Link>
             </div>
           </div>

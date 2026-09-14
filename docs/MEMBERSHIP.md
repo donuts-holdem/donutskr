@@ -113,7 +113,7 @@ and auditable net-adjustment policy, with activity levels separate from poker sk
 2. Validate the new policies explicitly before deployment: email activation,
    mixed class/club leadership, cross-school and simultaneous applications,
    repeated/concurrent decisions, direct RLS requests, suspension/recovery,
-   final-leader protection and retained schedule/series regressions. Include the
+   final-leader protection and public landing regressions. Include the
    new attendance, concurrency, closure, recovery and XP cases in
    `CLASS_OPERATIONS.md` before deploying the operations slice.
 3. `SITE_URL=https://donutskr.vercel.app` remains the production auth origin.

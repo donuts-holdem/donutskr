@@ -152,7 +152,7 @@ server action rejects class/club creation rather than bypassing domain rules.
 - Direct authenticated class/club catalog writes are revoked. New writes go
   through guarded RPCs; internal helpers have no public execution grant.
 - New code lives in `lib/classes`, `lib/clubs`, `lib/xp` and shared membership
-  operating utilities. Existing site/schedule/series modules are not repurposed.
+  operating utilities. Public-site settings remain separate from CLASS domains.
 - Club logo editing currently accepts an HTTPS image URL, not a new upload flow.
   Default ATC is stored; it does not imply the meeting domain exists.
 

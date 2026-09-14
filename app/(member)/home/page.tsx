@@ -19,10 +19,5 @@ export default async function MemberHomePage() {
       {member.classes.length ? <ul className="mt-5 divide-y divide-border">{member.classes.map(item => <li key={item.id} className="flex flex-col justify-between gap-4 border-l-2 border-gold py-4 pl-5 sm:flex-row sm:items-center"><h3 className="font-semibold"><Link href={`/class/${item.id}`} className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-gold">{item.name}</Link></h3><div className="text-sm leading-relaxed text-ink/70"><p>기본 {weekdays[item.weekday]}요일 / {item.start_time.slice(0, 5)}</p><p className="mt-1">{item.place}</p><p className="mt-1 text-xs">실제 회차와 출석은 클래스를 선택해 확인하세요.</p></div></li>)}</ul> : <p className="mt-5 text-sm text-ink/60">아직 승인된 클래스가 없습니다. 소속 승인과 관계없이 정회원 서비스를 이용할 수 있습니다.</p>}
       <Link href="/class" className="mt-5 inline-flex min-h-11 items-center gap-3 text-sm font-semibold text-gold focus-visible:outline-2 focus-visible:outline-gold">클래스 찾기 · 신청 상태<ArrowUpRight className="size-4" aria-hidden="true" /></Link>
     </section>
-    <section aria-labelledby="public-events-heading" className="border-t border-border pt-8">
-      <h2 id="public-events-heading" className="text-xl font-semibold">도너츠의 일정과 시리즈</h2>
-      <p className="mt-3 text-sm leading-relaxed text-ink/60">기존 공개 일정과 시리즈도 계속 함께합니다.</p>
-      <div className="mt-5 flex flex-wrap gap-6">{[{ href: "/schedule", label: "전체 일정" }, { href: "/series", label: "도너츠 시리즈" }].map(link => <Link key={link.href} href={link.href} className="inline-flex min-h-11 items-center gap-3 text-sm font-semibold text-gold focus-visible:outline-2 focus-visible:outline-gold">{link.label}<ArrowUpRight className="size-4" aria-hidden="true" /></Link>)}</div>
-    </section>
   </div>;
 }

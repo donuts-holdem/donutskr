@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { revalidatePublic } from "@/lib/revalidate";
+import { revalidatePath } from "next/cache";
 import { parseJsonField, coerceSponsors } from "@/lib/admin/structured-fields";
 import { assertRowsAffected } from "@/lib/admin/assert-rows";
 
@@ -20,6 +20,6 @@ export async function updateSiteConfig(fd: FormData) {
   const { data, error } = await supabase.from("site_config").update(payload).eq("id", 1).select("id");
   if (error) throw error;
   assertRowsAffected(data);
-  revalidatePublic();
+  revalidatePath("/");
   redirect("/admin/settings?saved=1");
 }
