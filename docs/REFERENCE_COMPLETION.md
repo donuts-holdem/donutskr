@@ -52,7 +52,9 @@ and consent version. Existing approved/source material does not specify the noti
 retention period or responsible privacy contact. These facts were not invented,
 and the previously closed `membership_settings.signup_open` was not silently opened.
 The existing Supabase recovery action is connected; deferred Resend delivery remains
-outside this request's approved mail-infrastructure scope.
+outside this request's approved mail-infrastructure scope. Custom Supabase Auth
+SMTP is also not configured; real-member authentication email delivery is not
+claimed as verified.
 
 ## Verification
 
@@ -68,6 +70,31 @@ the Vercel request-size issue was corrected with direct signed Storage uploads.
 See `audits/reference-completion/member-browser.md` for 204 member/leader page-state
 checks and `audits/reference-completion/production-flows.md` for 16 saved-operation
 checks, six additional accessibility checks and fixture cleanup. No additional
-paid infrastructure or dependencies were introduced. The final production bundle also uses explicit gold progress styling, verified in
-MY and learning after the browser-native accent differed from its computed color.
-Deployment evidence follows.
+paid infrastructure or dependencies were introduced. The final production bundle
+also uses explicit gold progress styling, verified in MY and learning after the
+browser-native accent differed from its computed color.
+
+## Deployment
+
+Implementation commit `7da75e59ba3f67df03adbad9aac57b0675b36d74` was merged into
+`main` and pushed after the merged tree passed all 204 tests. GitHub production
+deployment `6458298558` completed successfully at 2026-09-15 21:01 KST.
+
+- Canonical site: <https://donutskr.vercel.app/home>.
+- Deployment: <https://donutskr-2ozcrzusm-donutskr.vercel.app>.
+- Vercel record: <https://vercel.com/donutskr/donutskr/DS417sDbRqThZwfM9gqVbqozFSMc>.
+
+The canonical site passed 17 member, class-leader, club-leader and anonymous page
+checks, including mobile/tablet/desktop home, assigned session detail, all five
+partners and the replacement application link. All returned HTTP 200 with zero
+axe violations, horizontal overflow or page errors. The anonymous test needed an
+explicit Playwright browser context; this was a harness correction only.
+
+Canonical-production saved-operation verification also passed **18 checks**,
+including the large direct upload, member/partner/session edits, meeting creation
+and application/cancellation, learning grading/XP and completed withdrawal.
+Seven captured operation states had zero axe violations and no overflow.
+The established administrator's temporary verification session was revoked;
+fixture records/uploads were removed and baseline counts were independently
+confirmed. See `audits/reference-completion/production-flows.md` for scope and
+the test-harness corrections.

@@ -74,8 +74,8 @@ Files: `app/(member)/home/page.tsx`, `app/(member)/club/page.tsx`, `components/m
 - [x] Review each independent domain for requirement coverage, permissions and regressions.
 - [x] Run `npm test`, `npm run typecheck`, `npm run lint`, `npm run build` and isolated PostgreSQL validation including new migrations.
 - [x] Verify mobile 390px, tablet 768px, desktop 1440px, keyboard/portals, empty/error states and automated accessibility with existing test accounts.
-- [ ] Complete GitHub/Vercel deployment and live smoke verification. Backup, four migrations, source content and actual saved-operation verification are complete.
-- [ ] Record deployed SHA after production verification; migration versions, tests and outstanding enrollment prerequisites are documented.
+- [x] Complete GitHub/Vercel deployment and live smoke verification. Production deployment `6458298558` succeeded; the canonical site passed 17 member/leader/anonymous page checks.
+- [x] Record deployed SHA after production verification: `7da75e59ba3f67df03adbad9aac57b0675b36d74`. Migration versions, tests and outstanding enrollment prerequisites are documented in `docs/REFERENCE_COMPLETION.md`.
 
 ## Progress
 

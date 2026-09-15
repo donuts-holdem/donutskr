@@ -35,3 +35,34 @@ records were removed. Only fixture-owned audit events were removed during cleanu
 Private logs and screenshots:
 `/private/tmp/donuts-reference-audit/completion-flows/report.json`.
 Credentials are stored separately outside the repository and are not in this report.
+
+## Canonical production verification
+
+The same implementation (`7da75e59ba3f67df03adbad9aac57b0675b36d74`) was verified
+at `https://donutskr.vercel.app` after deployment. **18 operation checks passed**,
+covering every operation above and propagation of the updated partner revision to
+both editing and deletion forms. The successful verification finished at
+2026-09-15 21:17 KST. Seven captured states across six screens/dialogs had zero
+axe violations and no horizontal overflow.
+
+The established administrator was used with a temporary authenticated session,
+which was revoked afterward. The production administrator allowlist and existing
+password were unchanged. Member writes and withdrawal targeted the isolated test
+identity; no email was sent. The production allowlist correctly rejected a newly
+created test administrator before the verifier used the established account.
+
+The verifier was corrected to wait for rendered revisions before the next action,
+accept normal HTTP 303 creation redirects, and avoid an unresolved Playwright
+response-finished wait. Verification resumed with the tracked fixtures; these
+harness corrections required no application changes.
+
+At 21:18 KST, a separate database check confirmed the original counts again:
+6 profiles, 7 Auth users, 9 attendance records, 11 XP rows, 8 meetings and
+20 learning answers. Five intended partners and the established administrator
+remain. There are zero temporary administrators. The original test-session content
+was restored, and Storage contains none of the final fixture's uploaded objects.
+
+Private evidence:
+
+- `/private/tmp/donuts-reference-audit/live-operation-flows/report.json`
+- `/private/tmp/donuts-reference-audit/live-operation-flows/cleanup-verification.json`
