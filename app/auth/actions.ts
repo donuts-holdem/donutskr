@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createServiceRoleSupabase } from "@/lib/supabase/service-role";
-import { getMembershipSession } from "@/lib/membership/server";
+import { getLeaderAssignments, getMembershipSession } from "@/lib/membership/server";
 import { databaseErrorMessage, parseApplication, parseEmail, parseNewPassword } from "@/lib/membership/validation";
 import type { FormState } from "@/lib/membership/types";
 
@@ -57,7 +57,10 @@ export async function loginMember(_state: FormState, form: FormData): Promise<Fo
       const profile = await supabase.from("member_profiles").select("status").eq("id", result.data.user.id).maybeSingle();
       if (profile.error) throw new Error("Member status unavailable.");
       if (!profile.data) destination = "/signup";
-      else if (profile.data.status === "ACTIVE" && result.data.user.email_confirmed_at) destination = "/home";
+      else if (profile.data.status === "ACTIVE" && result.data.user.email_confirmed_at) {
+        const assignments = await getLeaderAssignments(supabase, result.data.user.id);
+        destination = assignments.classIds.length || assignments.clubIds.length ? "/mode" : "/home";
+      }
     }
   } catch {
     if (signedIn) await signedIn.auth.signOut({ scope: "local" }).catch(() => null);

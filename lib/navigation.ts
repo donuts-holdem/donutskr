@@ -6,10 +6,11 @@ export const APP_NAVIGATION: HeaderTab[] = [
   { label: "클럽", href: "/club", external: false, mobileHidden: false },
   { label: "모임", href: "/meetings", external: false, mobileHidden: false },
   { label: "학습", href: "/learn", external: false, mobileHidden: false },
+  { label: "파트너", href: "/partners", external: false, mobileHidden: false },
   { label: "회원 홈", href: "/home", external: false, mobileHidden: false },
 ];
 
 export const PERSONAL_NAVIGATION: HeaderTab[] = [
   { label: "알림", href: "/notifications", external: false, mobileHidden: false },
-  { label: "MY · 내 활동", href: "/my", external: false, mobileHidden: false },
+  { label: "MY", href: "/my", external: false, mobileHidden: false },
 ];

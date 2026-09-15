@@ -22,7 +22,7 @@ export function ActionForm({ action, children, label, pendingLabel = "처리 중
     }}>
       <fieldset disabled={pending || disabled} className="min-w-0 space-y-5">
         {children}
-        {state.error && <p role="alert" className="text-sm text-coral-300">{state.error}</p>}
+        {state.error && <p role="alert" className="text-sm text-coral-to">{state.error}</p>}
         {state.success && <p role="status" className="text-sm text-gold">{state.success}</p>}
         <Button type="submit" disabled={pending || disabled} className="h-11 w-full rounded-pill px-5 font-semibold">
           {pending ? pendingLabel : label}

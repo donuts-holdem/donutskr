@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { createRequire } from 'node:module';
@@ -106,7 +106,13 @@ try {
     grant usage on schema public, auth to anon, authenticated, service_role;
     create table auth.users (
       id uuid primary key, email text unique, email_confirmed_at timestamptz,
-      raw_user_meta_data jsonb not null default '{}'::jsonb
+      raw_user_meta_data jsonb not null default '{}'::jsonb,
+      deleted_at timestamptz
+    );
+    create table auth.audit_log_entries (
+      id uuid primary key, instance_id uuid,
+      payload json, ip_address varchar(64) not null default '',
+      created_at timestamptz not null default now()
     );
     create function auth.jwt() returns jsonb language sql stable as $$
       select coalesce(nullif(current_setting('request.jwt.claims',true),'')::jsonb,'{}'::jsonb)
@@ -708,6 +714,19 @@ try {
   await check('Unrelated public-settings sentinel is still unchanged after operating workflows',async()=>{
     assert.deepEqual((await owner.query('select * from public.retained_content_probe')).rows,before.content);
   });
+
+  if (process.argv.includes('--reference-completion')) {
+    await owner.query(readFileSync(`${repo}/supabase/migrations/0030_email_only_membership.sql`,'utf8'));
+    const onlyMembers=process.argv.includes('--member-meeting-only');
+    for(const name of onlyMembers?['0035_member_meeting_completion.sql']:['0032_partners.sql','0033_session_content.sql','0034_learning_experience.sql','0035_member_meeting_completion.sql']) {
+      const file=`${repo}/supabase/migrations/${name}`;
+      if(existsSync(file))await owner.query(readFileSync(file,'utf8'));
+    }
+    for(const [file,fn] of [['member-meeting-completion-db.mjs','runMemberMeetingChecks'],['class-session-db.mjs','runClassSessionChecks'],['learning-experience-db.mjs','runLearningExperienceChecks'],['partners-db.mjs','runPartnersChecks']]) {
+      if(onlyMembers&&file!=='member-meeting-completion-db.mjs')continue;
+      if(existsSync(`${repo}/test/${file}`))await (await import(pathToFileURL(`${repo}/test/${file}`).href))[fn]({owner,as,check,rejected,actors,ids});
+    }
+  }
 
 } catch (error) {
   report.fatal = { code: error.code, error: error.message };

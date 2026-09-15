@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { RepeatableFieldEditor } from "@/components/admin/RepeatableFieldEditor";
 import { FileInput } from "@/components/admin/FileInput";
+import { uploadAdminImage } from "@/lib/upload-client";
 
 type Sponsor = { name: string; logo?: string; url?: string };
 
@@ -11,29 +12,46 @@ type Sponsor = { name: string; logo?: string; url?: string };
 function LogoField({ value, onChange }: { value?: string; onChange: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const wrapper = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+  useEffect(() => {
+    const form = wrapper.current?.closest("form");
+    if (!form) return;
+    const blockPrematureSave = (event: Event) => {
+      if (!inFlight.current) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setError("이미지 업로드가 완료된 뒤 저장해 주세요.");
+    };
+    form.addEventListener("submit", blockPrematureSave, true);
+    return () => form.removeEventListener("submit", blockPrematureSave, true);
+  }, []);
 
   async function upload(file: File) {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setError(null);
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "site_media");
-      const res = await fetch("/api/admin/program-image", { method: "POST", body: fd });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(body.error ?? "이미지 업로드에 실패했습니다.");
-        return;
-      }
-      const { url } = (await res.json()) as { url: string };
-      onChange(url);
+      const url = await uploadAdminImage(file);
+      onChangeRef.current(url);
+      setError(null);
+    } catch (failure) {
+      setError(failure instanceof Error && /[가-힣]/.test(failure.message)
+        ? failure.message : "이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
     } finally {
+      inFlight.current = false;
       setUploading(false);
+      const input = wrapper.current?.querySelector<HTMLInputElement>('input[type="file"]');
+      if (input) input.value = "";
     }
   }
 
   return (
-    <div className="flex flex-1 items-center gap-2">
+    <div ref={wrapper} className="flex flex-1 flex-wrap items-center gap-2" aria-busy={uploading}>
       {value ? (
         // eslint-disable-next-line @next/next/no-img-element -- admin thumbnail of a stored logo
         <img src={value} alt="로고 미리보기" className="border-border h-10 w-10 shrink-0 rounded border object-contain" />
@@ -42,13 +60,13 @@ function LogoField({ value, onChange }: { value?: string; onChange: (url: string
           로고
         </div>
       )}
-      <FileInput
+      <fieldset disabled={uploading}><FileInput
         label="로고 선택"
         showFileName={false}
         onFileSelected={(file) => void upload(file)}
-      />
-      {uploading && <span className="text-muted-foreground shrink-0 text-xs">업로드중…</span>}
-      {error && <span className="text-destructive shrink-0 text-xs">{error}</span>}
+      /></fieldset>
+      {uploading && <span role="status" className="text-muted-foreground shrink-0 text-xs">업로드중…</span>}
+      {error && <span role="alert" className="text-destructive text-xs">{error}</span>}
     </div>
   );
 }

@@ -17,7 +17,7 @@ export default async function NotificationOperationsPage() {
     <div className="max-w-xl"><ActionForm action={processDomainJobs} label="모임 대기열·보관 및 활성 이메일 작업 처리"><p className="text-sm text-muted-foreground">반복 호출해도 같은 자리나 학습 XP가 중복 생성되지 않습니다. 이메일은 설정이 활성화된 경우에만 최대 3건 처리합니다.</p></ActionForm></div>
     <section><h2 className="text-xl font-semibold">최근 이메일 작업 100건</h2><ul className="mt-5 divide-y divide-border">{(data ?? []).map(row => <li key={row.id} className="py-4">
       <p className="break-all text-sm font-semibold">{row.recipient} / {labels[row.status]}</p><p className="mt-2 text-xs text-muted-foreground">{formatSessionDate(row.created_at)} / 시도 {row.attempts}회</p>
-      {row.last_error && <p className="mt-2 break-all text-xs text-coral-300">{row.last_error}</p>}
+      {row.last_error && <p className="mt-2 break-all text-xs text-coral-to">{row.last_error}</p>}
     </li>)}</ul>{!data?.length && <p className="mt-5 text-sm text-muted-foreground">아직 이메일 작업이 없습니다.</p>}</section>
   </div>;
 }

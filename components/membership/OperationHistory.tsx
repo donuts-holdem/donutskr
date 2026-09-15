@@ -4,7 +4,7 @@ import type { EntityOperation } from "@/lib/membership/types";
 const labels: Record<string, string> = {
   ENTITY_CREATED: "생성", ENTITY_UPDATED: "기본 정보 변경", ENTITY_ARCHIVED: "보관", ENTITY_DELETED: "미사용 항목 삭제",
   LEADER_ASSIGNED: "리더 지정", LEADER_REMOVED: "리더 해제", AFFILIATION_REMOVED: "소속 해제", SESSION_ADDED: "회차 추가",
-  SESSION_DELETED: "회차 삭제", SESSION_RESCHEDULED: "회차 일정 변경", CLASS_CLOSED: "모든 회차 종료",
+  SESSION_DELETED: "회차 삭제", SESSION_RESCHEDULED: "회차 일정 변경", SESSION_CONTENT_UPDATED: "수업 내용 변경", CLASS_CLOSED: "모든 회차 종료",
   CLASS_REOPENED_FOR_CORRECTION: "오류 정정용 클래스 복구", START: "회차 시작", REVERT_START: "시작 되돌림",
   SAVE_ATTENDANCE: "출석 저장", MISSING_AS_ABSENT: "미확인 회원 일괄 결석", ADD_ATTENDEE: "출석 명단 추가",
   LOCK: "출석 확정", UNLOCK: "출석 확정 해제", COMPLETE: "회차 완료", CANCEL: "회차 취소", RESTORE_CANCEL: "취소 복구",

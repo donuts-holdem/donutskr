@@ -14,6 +14,23 @@ function revisionOf(form: FormData) {
   return revision;
 }
 
+export async function saveClassSessionContent(_state: FormState, form: FormData): Promise<FormState> {
+  let classId: string; let payload: Record<string, unknown>;
+  try {
+    classId = requireUuid(formText(form, "class_id"));
+    const title = formText(form, "title");
+    const description = formText(form, "description");
+    if (!title || title.length > 120 || description.length > 4000) throw new Error("제목은 1~120자, 수업 내용은 4,000자 이내로 입력해 주세요.");
+    payload = { p_class_id: classId, p_session_id: requireUuid(formText(form, "session_id")),
+      p_expected_revision: revisionOf(form), p_title: title, p_description: description };
+  } catch (error) { return { error: error instanceof Error ? error.message : "수업 내용을 확인해 주세요." }; }
+  const { supabase } = await requireEntityOperator("CLASS", classId);
+  const result = await supabase.rpc("save_class_session_content", payload);
+  if (result.error) return { error: operationErrorMessage(result.error) };
+  refreshOperations();
+  return { success: "수업 내용을 저장했습니다." };
+}
+
 export async function addClassSession(_state: FormState, form: FormData): Promise<FormState> {
   const supabase = await requireAdmin();
   let payload: Record<string, unknown>;
@@ -22,7 +39,7 @@ export async function addClassSession(_state: FormState, form: FormData): Promis
   const result = await supabase.rpc("add_class_session", payload);
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
-  return { success: "회차를 추가했습니다. 기존 회차의 번호와 기록은 유지됩니다." };
+  return { success: "회차를 추가했습니다." };
 }
 
 export async function rescheduleClassSessions(_state: FormState, form: FormData): Promise<FormState> {
@@ -42,7 +59,7 @@ export async function rescheduleClassSessions(_state: FormState, form: FormData)
   const result = await supabase.rpc("reschedule_class_sessions", payload);
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
-  return { success: "확인한 회차의 날짜와 시간을 변경했습니다." };
+  return { success: "회차 일정을 변경했습니다." };
 }
 
 export async function changeClassSession(_state: FormState, form: FormData): Promise<FormState> {
@@ -71,5 +88,5 @@ export async function changeClassSession(_state: FormState, form: FormData): Pro
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
   if (mode === "DELETE") redirect(`${context.isAdmin ? "/admin/classes" : "/leader/class"}/${classId}`);
-  return { success: "회차 작업을 반영하고 변경 이력을 기록했습니다." };
+  return { success: "회차 상태를 저장했습니다." };
 }

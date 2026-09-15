@@ -183,5 +183,6 @@ review gates, exact-set grading, concurrent once-only XP, immutable served versi
 and streak protection. Browser component fixtures additionally check responsive
 layout, not actual signed-in production sessions.
 
-Out of this slice: account withdrawal/anonymization and broad profile editing.
-They were not silently implemented or replaced with destructive account deletion.
+The original slice excluded withdrawal/anonymization and broad profile editing.
+These are implemented by the 2026-09-15 reference completion; see
+`REFERENCE_COMPLETION.md` for the appended migrations and validation.

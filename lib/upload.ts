@@ -1,5 +1,6 @@
 /** Max size for admin image uploads. */
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+export type ImageUploadMetadata = Pick<File, "name" | "type" | "size">;
 
 // Whitelisted image extensions. Persisted keys use one of these (lowercased);
 // the caller-supplied filename is never used in the storage key.
@@ -23,7 +24,7 @@ function normalizeExt(ext: string): string {
 }
 
 /** Pick a safe extension from a whitelist, preferring the filename then the MIME. */
-export function pickImageExtension(file: File): string {
+export function pickImageExtension(file: ImageUploadMetadata): string {
   const fromName = file.name.split(".").pop()?.toLowerCase() ?? "";
   if (IMAGE_EXTS.has(fromName)) return normalizeExt(fromName);
   const fromMime = file.type.split("/")[1]?.toLowerCase().replace("+xml", "") ?? "";
@@ -32,7 +33,10 @@ export function pickImageExtension(file: File): string {
 }
 
 /** Validate an admin image upload; throws with a user-facing message on failure. */
-export function assertImageUpload(file: File): void {
+export function assertImageUpload(file: ImageUploadMetadata): void {
+  if (!Number.isSafeInteger(file.size) || file.size <= 0) {
+    throw new Error("이미지 파일을 선택해 주세요.");
+  }
   if (!file.type.startsWith("image/")) {
     throw new Error("이미지 파일만 업로드할 수 있습니다.");
   }
@@ -42,6 +46,6 @@ export function assertImageUpload(file: File): void {
 }
 
 /** Build a randomized, extension-preserving storage key (never trusts file.name). */
-export function buildUploadKey(folder: string, file: File): string {
+export function buildUploadKey(folder: string, file: ImageUploadMetadata): string {
   return `${folder}/${Date.now()}-${crypto.randomUUID()}.${pickImageExtension(file)}`;
 }

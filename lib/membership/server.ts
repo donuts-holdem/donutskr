@@ -65,11 +65,24 @@ export async function requireReviewer() {
   return active.supabase;
 }
 
-export async function getReviewQueue(supabase: SupabaseClient, page = 1, status: ApplicationStatus = "PENDING") {
-  const { data, error, count } = await supabase.from("affiliation_requests").select(
+export interface ReviewScope { classIds: string[]; clubIds: string[]; excludeUserId?: string }
+
+export async function getReviewQueue(supabase: SupabaseClient, page = 1, status: ApplicationStatus = "PENDING", scope?: ReviewScope) {
+  if (scope && !scope.classIds.length && !scope.clubIds.length) return { requests: [], count: 0 };
+  let query = supabase.from("affiliation_requests").select(
     "id,user_id,kind,status,class_id,club_id,decision_reason,created_at,member:member_profiles!affiliation_requests_user_id_fkey(id,name,username,phone,status,other_school_name,school:schools(name)),requested_class:classes(name),requested_club:clubs(name)",
     { count: "exact" },
-  ).eq("status", status).order("created_at").range((page - 1) * 50, page * 50 - 1).returns<ReviewApplication[]>();
+  ).eq("status", status);
+  if (scope) {
+    // RLS also permits a member's own applications outside their leader scope.
+    // The operating queue includes only applications this leader can process.
+    const filters = [];
+    if (scope.classIds.length) filters.push(`and(kind.eq.CLASS,class_id.in.(${scope.classIds.join(",")}))`);
+    if (scope.clubIds.length) filters.push(`and(kind.eq.CLUB,club_id.in.(${scope.clubIds.join(",")}))`);
+    query = query.or(filters.join(","));
+    if (scope.excludeUserId) query = query.neq("user_id", scope.excludeUserId);
+  }
+  const { data, error, count } = await query.order("created_at").range((page - 1) * 50, page * 50 - 1).returns<ReviewApplication[]>();
   if (error) throw new Error("소속 신청 목록을 불러오지 못했습니다.");
   return { requests: data ?? [], count: count ?? 0 };
 }

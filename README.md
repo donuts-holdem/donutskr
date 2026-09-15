@@ -5,10 +5,10 @@ classes, clubs, meetings, partners, and daily learning application.
 
 The former public schedule and series, their operator tools, and their database
 tables are removed by migration `0031_remove_schedule_series.sql`.
-The first membership slice adds username login with email verification, signup
-requests, scoped approvals, and member home/profile screens. Its new migration
-and production Auth configuration must be deployed separately. Class sessions,
-meetings, partners, daily learning, and XP remain subsequent implementation slices.
+The app uses email login with verification, independent affiliation approvals,
+class sessions and attendance, club/DO:NUTS meetings, partners, daily learning,
+an auditable XP ledger and member administration. See the reference-completion
+report for the applied schema and remaining enrollment-content prerequisites.
 
 ## Start here
 
@@ -18,6 +18,7 @@ meetings, partners, daily learning, and XP remain subsequent implementation slic
 - [XP and daily learning](docs/handoff/donuts-class-developer-handoff-v1/docs/05_XP_DAILY_LEARNING.md)
 - [Database migration notes](supabase/README.md)
 - [Membership implementation and rollout](docs/MEMBERSHIP.md)
+- [Reference completion and verification](docs/REFERENCE_COMPLETION.md)
 - [Engineering and design rules](AGENTS.md)
 
 ## Development
@@ -27,7 +28,7 @@ Configure `.env.local` using the variables documented in `.env.example`:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (server-only username lookup and auth throttling)
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only auth throttling and withdrawal cleanup)
 - `SITE_URL` (canonical origin for authentication emails)
 - `ADMIN_EMAILS` (optional extra administrator restriction)
 

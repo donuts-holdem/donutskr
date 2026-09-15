@@ -4,6 +4,7 @@ import type { AttendanceMark, SessionStatus } from "@/lib/classes/types";
 
 export interface ClassActivity {
   total_xp: number;
+  weekly_xp: number;
   level: number;
   level_start_xp: number;
   next_level_xp: number;
@@ -12,7 +13,8 @@ export interface ClassActivity {
     scheduled_at: string; status: SessionStatus; cancelled_at: string | null;
     attendance_locked: boolean; mark: AttendanceMark;
   }[];
-  ledger: { id: string; delta: number; reason: string; created_at: string; class_name: string; session_number: number }[];
+  ledger: { id: string; delta: number; reason: string; created_at: string; class_name: string | null; session_number: number | null;
+    source_kind: "CLASS_ATTENDANCE" | "DAILY_LEARNING"; learning_day: string | null }[];
 }
 
 export async function getMyClassActivity(): Promise<ClassActivity> {

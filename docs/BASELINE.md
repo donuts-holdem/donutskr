@@ -2,6 +2,14 @@
 
 ## Current implementation update
 
+On 2026-09-15 the reference-completion work added the integrated member home,
+partner directory/administration, session content/detail/progress, club identity,
+leader mode/dashboard, member profile/affiliation/withdrawal operations, DO:NUTS
+meetings, and the five-question learning flow with unified XP history. Migrations
+0032–0035 have been applied after backup; all earlier migrations remain immutable.
+See `docs/REFERENCE_COMPLETION.md` for current verification and operational limits.
+This supersedes older unimplemented/unapplied checkpoints below.
+
 On 2026-09-14 the owner requested removal of the public schedule and series,
 including their operator tools and database data. Migration `0031` removes their
 four tables, the season activation function and the blind-row enum. The landing,

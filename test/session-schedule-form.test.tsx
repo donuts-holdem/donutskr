@@ -10,6 +10,7 @@ const classId = "10000000-0000-4000-8000-000000000001";
 const session: ClassSession = {
   id: "20000000-0000-4000-8000-000000000001", class_id: classId,
   session_number: 1, scheduled_at: "2026-09-10T10:00:00.000Z", status: "SCHEDULED",
+  title: "Position Game", description: "포지션별 오픈 범위",
   first_started_at: null, started_at: null, completed_at: null, cancelled_at: null,
   cancellation_reason: null, roster_run: 0, attendance_saved_at: null,
   attendance_locked: false, revision: 1,

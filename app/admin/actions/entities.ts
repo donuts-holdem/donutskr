@@ -72,7 +72,7 @@ export async function saveOperatingEntity(_state: FormState, form: FormData): Pr
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
   if (!id) redirect(`/admin/${kind === "CLASS" ? "classes" : "clubs"}/${result.data}`);
-  return { success: "기본 정보를 저장했습니다. 회차 날짜와 기존 회원의 학교는 별도로 유지됩니다." };
+  return { success: "기본 정보를 저장했습니다." };
 }
 
 export async function changeOperatingLeader(_state: FormState, form: FormData): Promise<FormState> {
@@ -88,7 +88,7 @@ export async function changeOperatingLeader(_state: FormState, form: FormData): 
     { p_kind: kind, p_entity_id: entityId, p_user_id: userId });
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
-  return { success: mode === "ASSIGN" ? "리더를 지정했습니다. 소속과 출석 명단에는 자동으로 추가되지 않습니다." : "리더 권한을 해제했습니다." };
+  return { success: mode === "ASSIGN" ? "리더를 지정했습니다." : "리더 권한을 해제했습니다." };
 }
 
 export async function removeOperatingMember(_state: FormState, form: FormData): Promise<FormState> {
@@ -101,7 +101,7 @@ export async function removeOperatingMember(_state: FormState, form: FormData): 
   const result = await supabase.rpc("remove_entity_member", payload);
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
-  return { success: "이 소속을 해제했습니다. 과거 출석·XP와 다른 소속, 별도 리더 권한은 유지됩니다." };
+  return { success: "소속을 해제했습니다." };
 }
 
 export async function retireOperatingEntity(_state: FormState, form: FormData): Promise<FormState> {
@@ -117,5 +117,5 @@ export async function retireOperatingEntity(_state: FormState, form: FormData): 
   if (result.error) return { error: operationErrorMessage(result.error) };
   refreshOperations();
   if (deleting) redirect(`/admin/${kind === "CLASS" ? "classes" : "clubs"}`);
-  return { success: "읽기 전용으로 보관했습니다. 기존 소속과 운영 이력은 삭제하지 않았습니다." };
+  return { success: "읽기 전용으로 보관했습니다." };
 }

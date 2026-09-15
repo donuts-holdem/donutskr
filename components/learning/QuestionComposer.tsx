@@ -10,19 +10,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { parseChoiceLines } from "@/lib/domains/validation";
 import type { AnswerMode, LearningVersion } from "@/lib/learning/types";
+import { PokerSpotFields } from "@/components/learning/PokerSpotFields";
 
 export function QuestionComposer({ initial }: { initial?: LearningVersion }) {
   const [lines, setLines] = useState(initial?.choices.map(c => c.text).join("\n") ?? "");
   const [mode, setMode] = useState<AnswerMode>(initial?.answer_mode ?? "SINGLE");
   const [kind, setKind] = useState(initial?.kind ?? "GENERAL");
-  const [correct, setCorrect] = useState<string[]>(initial?.correct_ids ?? []);
+  const [correct, setCorrect] = useState<string[]>(() => initial?.choices.flatMap((choice, index) => initial.correct_ids.includes(choice.id) ? ["option-" + (index + 1)] : []) ?? []);
   const choices = parseChoiceLines(lines);
   return <ActionForm action={saveQuestion} label={initial ? "수정 내용을 새 초안 버전으로 등록" : "자체 제작 문항 초안 등록"}>
     {initial && <input type="hidden" name="question_id" value={initial.question_id} />}
-    <p className="text-sm leading-relaxed text-muted-foreground">등록과 검수는 별도 단계입니다. 게시된 버전을 수정하지 않고 새 버전을 만듭니다. AI는 제작 보조 도구일 뿐, 자동 등록·검수·정답 결정에 사용하지 않습니다.</p>
-    <Area name="prompt" label="문제 · 필요한 모든 상황과 조건" defaultValue={initial?.prompt} maxLength={10000} />
-    <Pick name="difficulty" label="문항 난이도 · 활동 레벨과 별개" defaultValue={initial?.difficulty ?? "BEGINNER"} options={[{ value: "BEGINNER", label: "입문" }, { value: "INTERMEDIATE", label: "중급" }, { value: "ADVANCED", label: "고급" }]} />
+    <Area name="prompt" label="문제" defaultValue={initial?.prompt} maxLength={10000} />
+    <Pick name="difficulty" label="문항 난이도" defaultValue={initial?.difficulty ?? "BEGINNER"} options={[{ value: "BEGINNER", label: "입문" }, { value: "INTERMEDIATE", label: "중급" }, { value: "ADVANCED", label: "고급" }]} />
     <div className="space-y-2"><Label htmlFor="question-kind">문항 유형</Label><Select name="kind" value={kind} onValueChange={v => setKind(v as "GENERAL" | "GTO")}><SelectTrigger id="question-kind" className="min-h-11 w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="GENERAL">포커 기본·전략</SelectItem><SelectItem value="GTO">검증된 솔버 근거의 GTO</SelectItem></SelectContent></Select></div>
+    <PokerSpotFields initial={initial?.spot} kind={kind} />
     <div className="space-y-2"><Label htmlFor="answer-mode">정답 선택 방식</Label><Select name="answer_mode" value={mode} onValueChange={v => { setMode(v as AnswerMode); setCorrect([]); }}><SelectTrigger id="answer-mode" className="min-h-11 w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="SINGLE">단일 정답 · 하나 선택</SelectItem><SelectItem value="MULTIPLE">복수 정답 · 모두 선택</SelectItem></SelectContent></Select></div>
     <div className="space-y-2"><Label htmlFor="choice-lines">선택지 · 한 줄에 하나</Label><Textarea id="choice-lines" value={lines} onChange={e => { setLines(e.target.value); setCorrect([]); }} required rows={5} maxLength={30000} /><p className="text-xs text-muted-foreground">선택지를 변경하면 정답을 다시 지정해야 합니다.</p></div>
     <input type="hidden" name="choices" value={JSON.stringify(choices)} />

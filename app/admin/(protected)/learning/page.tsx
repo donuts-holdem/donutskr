@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { allRows } from "@/lib/membership/operations";
 import { requireUuid } from "@/lib/membership/validation";
 import { difficultyLabels, type LearningVersion } from "@/lib/learning/types";
+import { PokerSpot } from "@/components/learning/PokerSpot";
 import { QuestionComposer } from "@/components/learning/QuestionComposer";
 import { ActionForm } from "@/components/membership/ActionForm";
 import { Area, Check, Field, Pick } from "@/components/domains/Fields";
@@ -21,7 +22,6 @@ export default async function LearningAdminPage({ searchParams }: { searchParams
   const published = versions.filter(v => v.status === "PUBLISHED");
   return <div className="max-w-6xl space-y-12">
     <header><p className="text-xs tracking-widest text-gold">LEARNING / EDITORIAL DESK</p><h1 className="mt-4 text-3xl font-bold">문항 제작·검수·출제</h1>
-      <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">도너츠 자체 제작 문항만 등록합니다. 한 관리자가 작성과 검수를 모두 할 수 있지만, 검수 절차·체크리스트·검수자·버전·시각 기록은 생략할 수 없습니다.</p>
     </header>
     <div className="grid items-start gap-10 xl:grid-cols-2">
       <section><h2 className="mb-6 text-xl font-semibold">{selected ? "새 버전 작성 / v" + selected.version + " 기반" : "새 문항 작성"}</h2>
@@ -41,12 +41,12 @@ export default async function LearningAdminPage({ searchParams }: { searchParams
       </section>
     </div>
     <section className="border-t border-border pt-8"><h2 className="text-xl font-semibold">문항 버전과 검수 기록</h2>
-      {!versions.length && <p className="mt-5 text-sm text-muted-foreground">등록된 문항이 없습니다. AI 예시나 미검수 문항을 자동으로 채워 넣지 않습니다.</p>}
+      {!versions.length && <p className="mt-5 text-sm text-muted-foreground">등록된 문항이 없습니다.</p>}
       <div className="mt-5 divide-y divide-border">{versions.map(v => {
         const review = reviews.find(r => r.version_id === v.id);
         return <details key={v.id} className="py-5"><summary className="cursor-pointer py-2 focus-visible:outline-2 focus-visible:outline-gold"><span className="mr-3 text-xs text-gold">{v.status} / v{v.version} / {difficultyLabels[v.difficulty]}</span><span className="font-semibold">{v.prompt.slice(0, 120)}</span></summary>
           <div className="mt-5 max-w-3xl space-y-5"><p className="whitespace-pre-wrap text-sm leading-relaxed">{v.prompt}</p>
-            <ul className="space-y-2 text-sm">{v.choices.map(c => <li key={c.id} className={v.correct_ids.includes(c.id) ? "text-gold" : "text-muted-foreground"}>{v.correct_ids.includes(c.id) ? "정답 / " : ""}{c.text}</li>)}</ul>
+            <PokerSpot spot={v.spot} /><ul className="space-y-2 text-sm">{v.choices.map(c => <li key={c.id} className={v.correct_ids.includes(c.id) ? "text-gold" : "text-muted-foreground"}>{v.correct_ids.includes(c.id) ? "정답 / " : ""}{c.text}</li>)}</ul>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{v.explanation}</p>
             <p className="text-xs leading-relaxed text-muted-foreground">작성자 {v.authored_by} / {formatSessionDate(v.created_at)}<br />자체 제작 근거: {v.authorship_note} / AI 보조: {v.ai_assisted ? "사용" : "미사용"}</p>
             {v.gto_evidence && <dl className="space-y-3 text-sm">{Object.entries(v.gto_evidence).map(([key, value]) => <div key={key}><dt className="font-semibold">{key}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-muted-foreground">{value}</dd></div>)}</dl>}

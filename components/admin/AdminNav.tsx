@@ -5,20 +5,22 @@ import { Button } from "@/components/ui/button";
 
 const NAV_GROUPS = [
   { label: "DO:NUTS CLASS", links: [
-    { href: "/admin/members", label: "회원 · 소속 관리" },
-    { href: "/admin/classes", label: "클래스 · 회차 · 출석" },
-    { href: "/admin/successors", label: "후속 클래스" },
-    { href: "/admin/clubs", label: "클럽 관리" },
-    { href: "/admin/meetings", label: "클럽 모임" },
-    { href: "/admin/learning", label: "문항 · 데일리 학습" },
-    { href: "/admin/notifications", label: "알림 · 발송 관리" },
+    { href: "/admin/members/directory", label: "회원" },
+    { href: "/admin/classes", label: "클래스" },
+    { href: "/admin/clubs", label: "클럽" },
+    { href: "/admin/meetings", label: "모임" },
+    { href: "/admin/partners", label: "파트너" },
   ]},
-  { label: "공개 페이지 관리", links: [
+  { label: "운영", links: [
+    { href: "/admin/successors", label: "후속 클래스" },
+    { href: "/admin/learning", label: "학습 문항" },
+    { href: "/admin/notifications", label: "알림" },
     { href: "/admin/settings", label: "설정" },
   ]},
 ] as const;
 
 function isActive(pathname: string, href: string) {
+  if (href === "/admin/members/directory") return pathname.startsWith("/admin/members");
   return pathname === href || pathname.startsWith(href + "/");
 }
 

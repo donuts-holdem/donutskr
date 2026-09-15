@@ -21,6 +21,8 @@ export interface ClassSession {
   id: string;
   class_id: string;
   session_number: number;
+  title: string;
+  description: string;
   scheduled_at: string;
   status: SessionStatus;
   first_started_at: string | null;

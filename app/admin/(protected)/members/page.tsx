@@ -16,7 +16,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
   const { requests, count } = await getReviewQueue(supabase, page, status);
   return <div className="mx-auto max-w-5xl">
     <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
-      <div><h1 className="text-2xl font-semibold">소속 신청 승인</h1><p className="mt-2 text-sm text-muted-foreground">클래스·클럽 신청을 각각 처리합니다. 정회원 자격은 이메일 인증으로 부여됩니다. 현재 필터 {count}건.</p></div>
+      <div><h1 className="text-2xl font-semibold">소속 신청 승인</h1><p className="mt-2 text-sm text-muted-foreground">{count}건</p></div>
       <div className="flex flex-wrap gap-2"><Button asChild variant="outline" className="h-11"><Link href="/admin/members/directory">회원 관리</Link></Button><Button asChild variant="outline" className="h-11"><Link href="/admin/members/settings">초기 가입 설정</Link></Button></div>
     </header>
     <nav aria-label="소속 신청 상태" className="mb-6 flex flex-wrap gap-2">

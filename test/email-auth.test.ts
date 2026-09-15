@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
     auth: { signInWithPassword: vi.fn(), signUp: vi.fn(), signOut: vi.fn(), resetPasswordForEmail: vi.fn() },
     rpc: vi.fn(), from: vi.fn(),
   },
-  service: { rpc: vi.fn() }, profile: vi.fn(), session: vi.fn(), admin: vi.fn(),
+  service: { rpc: vi.fn() }, profile: vi.fn(), session: vi.fn(), admin: vi.fn(), assignments: vi.fn(),
   redirect: vi.fn(), revalidate: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
@@ -14,7 +14,7 @@ vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 vi.mock("@/lib/supabase/server", () => ({ createServerSupabase: async () => mocks.client }));
 vi.mock("@/lib/supabase/service-role", () => ({ createServiceRoleSupabase: () => mocks.service }));
-vi.mock("@/lib/membership/server", () => ({ getMembershipSession: mocks.session }));
+vi.mock("@/lib/membership/server", () => ({ getMembershipSession: mocks.session, getLeaderAssignments: mocks.assignments }));
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.admin }));
 
 import { loginMember, requestPasswordReset, signupMember } from "@/app/auth/actions";
@@ -47,10 +47,16 @@ beforeEach(() => {
   mocks.client.from.mockReturnValue({ select: () => ({ eq: () => ({ maybeSingle: mocks.profile }) }) });
   mocks.session.mockResolvedValue({ supabase: mocks.client, user: null, profile: null });
   mocks.admin.mockResolvedValue(mocks.client);
+  mocks.assignments.mockResolvedValue({ classIds: [], clubIds: [] });
 });
 afterEach(() => vi.unstubAllEnvs());
 
 describe("email-only login", () => {
+  it.each(["classIds", "clubIds"])("offers mode selection to an active %s leader", async key => {
+    mocks.assignments.mockResolvedValue({ classIds: [], clubIds: [], [key]: ["assigned-entity"] });
+    await expect(loginMember({}, form())).rejects.toThrow("REDIRECT:/mode");
+    expect(mocks.assignments).toHaveBeenCalledWith(mocks.client, user.id);
+  });
   it("normalizes email, authenticates directly and refreshes the shared session", async () => {
     await expect(loginMember({}, form("  MEMBER@EXAMPLE.COM  "))).rejects.toThrow("REDIRECT:/home");
     expect(mocks.client.auth.signInWithPassword).toHaveBeenCalledWith({ email: user.email, password });

@@ -43,7 +43,7 @@ export function actionError(error: unknown) {
 }
 
 export function refreshDomains() {
-  for (const path of ["/home", "/my", "/notifications", "/meetings", "/learn", "/learn/review", "/admin/successors", "/admin/meetings", "/admin/learning", "/admin/notifications"]) revalidatePath(path);
+  for (const path of ["/home", "/my", "/club", "/leader", "/leader/meetings", "/notifications", "/meetings", "/learn", "/learn/review", "/admin/successors", "/admin/meetings", "/admin/learning", "/admin/notifications"]) revalidatePath(path);
   revalidatePath("/meetings/[id]", "page");
   revalidatePath("/class/[id]", "page");
   revalidatePath("/leader/meetings/[id]", "page");

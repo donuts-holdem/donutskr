@@ -18,7 +18,7 @@ export async function saveMeeting(_: FormState, form: FormData): Promise<FormSta
     if (rawCapacity && (!/^\d+$/.test(rawCapacity) || !Number.isSafeInteger(Number(rawCapacity)))) throw new Error("정원은 0 이상의 정수로 입력해 주세요.");
     id = await domainRpc<string>(supabase, "save_club_meeting", {
       p_id: existing ? requireUuid(existing) : null, p_expected: existing ? positiveInteger(form, "revision") : null,
-      p_payload: { club_id: requireUuid(formText(form, "club_id")), title: requiredText(form, "title", 160),
+      p_payload: { club_id: formText(form, "club_id") === "DONUTS" ? null : requireUuid(formText(form, "club_id")), title: requiredText(form, "title", 160),
         description: formText(form, "description"), place: requiredText(form, "place", 300),
         scheduled_at: parseSeoulDateTime(formText(form, "scheduled_at")), capacity: rawCapacity ? Number(rawCapacity) : null,
         guest_allowed: form.get("guest_allowed") === "on", signup_open: form.get("signup_open") === "on",
@@ -34,7 +34,7 @@ export async function applyMeeting(_: FormState, form: FormData): Promise<FormSt
   try {
     await domainRpc(supabase, "apply_club_meeting", { p_id: requireUuid(formText(form, "id")) });
     refreshDomains();
-    return { success: "신청을 처리했습니다. 아래에서 참여 확정 또는 대기 상태를 확인해 주세요." };
+    return { success: "신청했습니다." };
   } catch (error) { return actionError(error); }
 }
 export async function respondMeeting(_: FormState, form: FormData): Promise<FormState> {
@@ -54,6 +54,6 @@ export async function closeMeeting(_: FormState, form: FormData): Promise<FormSt
     await domainRpc(supabase, "close_club_meeting", { p_id: requireUuid(formText(form, "id")),
       p_expected: positiveInteger(form, "revision"), p_status: formText(form, "status"), p_reason: requiredText(form, "reason", 500) });
     refreshDomains();
-    return { success: "모임을 마감했습니다. 신청 기록은 보존됩니다." };
+    return { success: "모임을 마감했습니다." };
   } catch (error) { return actionError(error); }
 }

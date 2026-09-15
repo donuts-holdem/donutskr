@@ -1,5 +1,5 @@
 export interface ClubMeeting {
-  id: string; club_id: string; created_by: string; title: string; description: string; place: string;
+  id: string; club_id: string | null; created_by: string; title: string; description: string; place: string;
   scheduled_at: string; capacity: number | null; guest_allowed: boolean; signup_open: boolean;
   hold_hours: number; hot: boolean; status: "OPEN" | "COMPLETED" | "CANCELLED";
   completed_at: string | null; archived_at: string | null; revision: number; created_at: string;
@@ -15,6 +15,10 @@ export interface MeetingBoard {
   meeting: ClubMeeting; can_manage: boolean; eligible: boolean; club_name: string;
   confirmed: number; reserved: number; waiting: number;
   application: MeetingApplication | null; people: MeetingApplication[];
+}
+export interface MeetingSummary extends ClubMeeting {
+  club_name: string; confirmed: number; reserved: number; waiting: number;
+  application: { status: MeetingApplicationStatus; offer_expires_at: string | null } | null;
 }
 export const applicationLabels: Record<MeetingApplicationStatus, string> = {
   CONFIRMED: "참여 확정", WAITLIST: "대기 중", OFFERED: "자리 제안 · 직접 확정 필요",

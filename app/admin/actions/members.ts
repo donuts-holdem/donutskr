@@ -99,7 +99,8 @@ export async function removeMembershipLeader(_state: FormState, form: FormData):
   if (error) return { error: databaseErrorMessage(error) };
   refreshMembership();
   refreshOperations();
-  return { success: "이 소속의 리더 권한을 해제했습니다." };
+  revalidatePath(`/admin/members/directory/${userId}`);
+  return { success: "리더 권한을 해제했습니다." };
 }
 
 export async function changeMemberSuspension(_state: FormState, form: FormData): Promise<FormState> {
@@ -116,5 +117,6 @@ export async function changeMemberSuspension(_state: FormState, form: FormData):
   if (error) return { error: databaseErrorMessage(error) };
   refreshMembership();
   refreshOperations();
-  return { success: mode === "SUSPEND" ? "이용을 정지하고 리더 권한을 해제했습니다. 소속과 기록은 보존됩니다." : "이용 정지를 해제했습니다. 리더 권한은 별도로 다시 지정해 주세요." };
+  revalidatePath(`/admin/members/directory/${userId}`);
+  return { success: mode === "SUSPEND" ? "이용을 정지하고 리더 권한을 해제했습니다." : "이용 정지를 해제했습니다. 리더 권한은 다시 지정해 주세요." };
 }

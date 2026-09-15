@@ -26,10 +26,13 @@ export const getClubOverview = cache(async (rawId: string) => {
   const record = await context.supabase.from("clubs").select("*").eq("id", id).maybeSingle<ClubRecord>();
   if (record.error) throw new Error("클럽 정보를 불러오지 못했습니다.");
   if (!record.data) notFound();
-  const school = await context.supabase.from("schools").select("name").eq("id", record.data.school_id).maybeSingle<{ name: string }>();
-  const permission = await context.supabase.rpc("can_review_affiliation", { p_kind: "CLUB", p_entity_id: id });
-  if (school.error || permission.error) throw new Error("클럽 운영 정보를 불러오지 못했습니다.");
-  return { ...context, club: record.data, school: school.data?.name ?? "학교 미등록", canManage: permission.data === true };
+  const [school, permission, count] = await Promise.all([
+    context.supabase.from("schools").select("name").eq("id", record.data.school_id).maybeSingle<{ name: string }>(),
+    context.supabase.rpc("can_review_affiliation", { p_kind: "CLUB", p_entity_id: id }),
+    context.supabase.rpc("get_club_member_count", { p_club_id: id }),
+  ]);
+  if (school.error || permission.error || count.error) throw new Error("클럽 정보를 불러오지 못했습니다.");
+  return { ...context, club: record.data, school: school.data?.name ?? "학교 미등록", memberCount: Number(count.data), canManage: permission.data === true };
 });
 
 export async function getManagedClub(id: string) {

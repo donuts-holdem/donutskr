@@ -91,6 +91,18 @@ layer(base);
   }
 }
 
+@layer components {
+  .progress-gold {
+    appearance: none;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-border);
+  }
+  .progress-gold::-webkit-progress-bar { background: var(--color-border); }
+  .progress-gold::-webkit-progress-value { background: var(--color-gold); }
+  .progress-gold::-moz-progress-bar { background: var(--color-gold); }
+}
+
 :root {
   --color-bg: #0A0908;
   --color-ink: #FFFFFF;
@@ -213,7 +225,7 @@ body {
   --muted-foreground: rgba(255, 255, 255, 0.62);
   --accent: oklch(0.269 0 0);
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: var(--color-coral-to);
   --warning: #d9a441;
   --warning-foreground: #0a0908;
   --border: rgba(255, 255, 255, 0.1);

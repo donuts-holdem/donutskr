@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({ rpc: vi.fn(), operator: vi.fn(), refresh: vi.f
 vi.mock("@/lib/membership/operations", () => ({ requireEntityOperator: mocks.operator, refreshOperations: mocks.refresh }));
 vi.mock("@/lib/auth", () => ({ requireAdmin: vi.fn() }));
 vi.mock("server-only", () => ({}));
-import { rescheduleClassSessions } from "@/app/classes/actions";
+import { rescheduleClassSessions, saveClassSessionContent } from "@/app/classes/actions";
 
 function submission() {
   const form = new FormData();
@@ -20,6 +20,45 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.operator.mockResolvedValue({ supabase: { rpc: mocks.rpc }, isAdmin: true });
   mocks.rpc.mockResolvedValue({ error: null });
+});
+
+describe("session content submission", () => {
+  function content() {
+    const form = submission();
+    form.set("revision", "3");
+    form.set("title", "  Position Game  ");
+    form.set("description", "오픈 범위\n포지션별 비교");
+    return form;
+  }
+
+  it.each([["title", "  "], ["title", "가".repeat(121)], ["description", "가".repeat(4001)], ["revision", "0"], ["revision", "1.5"]])("rejects invalid %s before writing", async (field, value) => {
+    const form = content(); form.set(field, value);
+    expect((await saveClassSessionContent({}, form)).error).toBeTruthy();
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("requires current operator permission", async () => {
+    mocks.operator.mockRejectedValue(new Error("Forbidden"));
+    await expect(saveClassSessionContent({}, content())).rejects.toThrow("Forbidden");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("passes both class and session identity with the revision and normalized content", async () => {
+    expect((await saveClassSessionContent({}, content())).success).toBeTruthy();
+    expect(mocks.rpc).toHaveBeenCalledWith("save_class_session_content", {
+      p_class_id: "10000000-0000-4000-8000-000000000001",
+      p_session_id: "20000000-0000-4000-8000-000000000001", p_expected_revision: 3,
+      p_title: "Position Game", p_description: "오픈 범위\n포지션별 비교",
+    });
+  });
+
+  it("returns a stale edit error without claiming success", async () => {
+    mocks.rpc.mockResolvedValue({ error: { message: "stale_operation" } });
+    const result = await saveClassSessionContent({}, content());
+    expect(result.error).toBeTruthy();
+    expect(result.success).toBeUndefined();
+    expect(mocks.refresh).not.toHaveBeenCalled();
+  });
 });
 
 describe("server-side schedule submission", () => {

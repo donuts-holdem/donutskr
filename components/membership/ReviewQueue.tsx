@@ -22,7 +22,7 @@ export function ReviewQueue({ requests }: { requests: ReviewApplication[] }) {
       {request.status === "PENDING" ? <div className="space-y-5">
         <ActionForm action={reviewMembership} label="이 소속 승인" pendingLabel="승인 처리 중..." disabled={request.member?.status !== "ACTIVE"}>
           <input type="hidden" name="request_id" value={request.id} /><input type="hidden" name="decision" value="APPROVED" />
-          <p className="text-sm leading-relaxed text-muted-foreground">{request.member?.status === "ACTIVE" ? "선택한 소속만 승인합니다. 다른 클래스·클럽 소속과 정회원 자격은 변경하지 않습니다." : "이메일 인증을 완료한 정회원만 승인할 수 있습니다. 정지·탈퇴 회원은 승인할 수 없습니다."}</p>
+          {request.member?.status !== "ACTIVE" && <p className="text-sm leading-relaxed text-muted-foreground">이메일 인증을 마친 정회원만 승인할 수 있으며, 정지·탈퇴 회원은 제외됩니다.</p>}
         </ActionForm>
         <details className="rounded-lg border border-border p-4">
           <summary className="cursor-pointer py-1 text-sm text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring">정보 보완이 필요한 경우 반려</summary>

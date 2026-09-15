@@ -35,3 +35,27 @@ export function sessionStatus(session: ClassSession) {
   if (session.status === "COMPLETED") return session.attendance_locked ? "완료" : "완료 · 출석 정정 중";
   return session.status === "IN_PROGRESS" ? (session.attendance_locked ? "진행 중 · 출석 확정" : "진행 중") : "예정";
 }
+
+export function courseProgress(sessions: ClassSession[]) {
+  const completed = sessions.filter(session => session.status === "COMPLETED" && !session.cancelled_at).length;
+  const cancelled = sessions.filter(session => session.cancelled_at).length;
+  const remaining = sessions.filter(session => !session.cancelled_at && session.status !== "COMPLETED")
+    .sort((a, b) => Date.parse(a.scheduled_at) - Date.parse(b.scheduled_at) || a.session_number - b.session_number);
+  return {
+    total: sessions.length, completed, cancelled, remaining: remaining.length,
+    current: remaining.find(session => session.status === "IN_PROGRESS") ?? remaining[0] ?? null,
+  };
+}
+
+export function suggestClassName(weekday: number, existingNames: string[]) {
+  if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) return "";
+  const names = new Set(existingNames.map(name => name.trim()));
+  for (let index = 1; ; index++) {
+    let suffix = "";
+    for (let value = index; value > 0; value = Math.floor((value - 1) / 26)) {
+      suffix = String.fromCharCode(65 + (value - 1) % 26) + suffix;
+    }
+    const name = `DO:NUTS CLASS·${weekdays[weekday]} ${suffix}`;
+    if (!names.has(name)) return name;
+  }
+}

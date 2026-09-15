@@ -23,15 +23,18 @@ export const getClassOverview = cache(async (rawId: string) => {
   const record = await context.supabase.from("classes").select("*").eq("id", id).maybeSingle<ClassRecord>();
   if (record.error) throw new Error("클래스 정보를 불러오지 못했습니다.");
   if (!record.data) notFound();
-  const permission = await context.supabase.rpc("can_review_affiliation", { p_kind: "CLASS", p_entity_id: id });
-  if (permission.error) throw new Error("클래스 운영 권한을 불러오지 못했습니다.");
+  const [permission, membership] = await Promise.all([
+    context.supabase.rpc("can_review_affiliation", { p_kind: "CLASS", p_entity_id: id }),
+    context.supabase.from("class_memberships").select("class_id").eq("class_id", id).eq("user_id", context.user.id).eq("active", true).maybeSingle<{ class_id: string }>(),
+  ]);
+  if (permission.error || membership.error) throw new Error("클래스 소속 정보를 불러오지 못했습니다.");
   const sessions = await allRows<ClassSession>((from, to) => context.supabase.from("class_sessions")
     .select("*").eq("class_id", id).order("session_number").range(from, to).returns<ClassSession[]>(), "회차를 불러오지 못했습니다.");
   const ownAttendance = await allRows<AttendanceEntry>((from, to) => context.supabase.from("class_attendance")
     .select("session_id,roster_run,user_id,snapshot_name,snapshot_username,mark,checked_at,class_sessions!inner(class_id)")
     .eq("user_id", context.user.id).eq("class_sessions.class_id", id).order("session_id").order("roster_run")
     .range(from, to).returns<AttendanceEntry[]>(), "내 출석 기록을 불러오지 못했습니다.");
-  return { ...context, course: record.data, sessions, ownAttendance, canManage: permission.data === true };
+  return { ...context, course: record.data, sessions, ownAttendance, hasAffiliation: Boolean(membership.data), canManage: permission.data === true };
 });
 
 export async function getManagedClass(id: string) {
@@ -40,6 +43,14 @@ export async function getManagedClass(id: string) {
   const people = await getEntityPeople(overview.supabase, "CLASS", overview.course.id);
   const candidates = overview.isAdmin ? await getLeaderCandidates(overview.supabase) : [];
   return { ...overview, people, candidates };
+}
+
+export async function getSessionOverview(classId: string, rawSessionId: string) {
+  const sessionId = routeUuid(rawSessionId);
+  const detail = await getClassOverview(classId);
+  const session = detail.sessions.find(item => item.id === sessionId);
+  if (!session) notFound();
+  return { ...detail, session, attendance: detail.ownAttendance.filter(row => row.session_id === sessionId) };
 }
 
 export async function getSessionBoard(classId: string, rawSessionId: string) {

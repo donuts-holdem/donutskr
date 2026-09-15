@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), board: vi.fn(), member: vi.fn() }));
 vi.mock("@/lib/domains/server", () => ({ domainRpc: mocks.rpc }));
@@ -35,12 +35,14 @@ beforeEach(() => { mocks.rpc.mockReset(); mocks.board.mockReset(); mocks.member.
 afterEach(cleanup);
 
 describe("domain screens", () => {
-  it("renders a five-question form without exposing answer keys", async () => {
+  it("starts a daily five without exposing answer keys", async () => {
     mocks.rpc.mockResolvedValue(daily);
     render(<MemberLayout>{await LearnPage()}</MemberLayout>);
-    expect(screen.getAllByRole("radio")).toHaveLength(12);
-    expect(screen.getAllByRole("checkbox")).toHaveLength(3);
-    expect(screen.getByRole("button", { name: "5문항 제출 · 서버 채점" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "학습 시작" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "학습 시작" }));
+    expect(screen.getAllByRole("radio")).toHaveLength(3);
+    expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+    expect(screen.getByRole("button", { name: "다음 문항" })).toBeDisabled();
     expect(screen.queryByText(/^정답:/)).not.toBeInTheDocument();
     snapshot("learn");
   });
@@ -48,7 +50,7 @@ describe("domain screens", () => {
     mocks.rpc.mockResolvedValue({ ...daily, available: false, questions: [] });
     render(<MemberLayout>{await LearnPage()}</MemberLayout>);
     expect(screen.getByRole("heading", { name: "오늘의 문항을 준비 중입니다" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /서버 채점/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "학습 시작" })).not.toBeInTheDocument();
     snapshot("learn-empty");
   });
   it("renders a reserved meeting offer with explicit confirm and decline controls", async () => {

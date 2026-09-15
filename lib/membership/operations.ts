@@ -55,7 +55,7 @@ export async function getEntityHistory(supabase: SupabaseClient, kind: Affiliati
 
 export function refreshOperations() {
   for (const path of ["/class", "/club", "/home", "/my", "/admin/classes", "/admin/clubs", "/admin/members",
-    "/admin/members/settings", "/admin/members/directory", "/leader/class", "/leader/club", "/leader/approvals"]) revalidatePath(path);
-  for (const path of ["/class/[id]", "/club/[id]", "/admin/classes/[id]", "/admin/clubs/[id]", "/leader/class/[id]",
+    "/admin/members/settings", "/admin/members/directory", "/mode", "/leader", "/leader/class", "/leader/club", "/leader/approvals"]) revalidatePath(path);
+  for (const path of ["/class/[id]", "/class/[id]/sessions/[sessionId]", "/club/[id]", "/admin/classes/[id]", "/admin/clubs/[id]", "/leader/class/[id]",
     "/leader/club/[id]", "/admin/classes/[id]/sessions/[sessionId]", "/leader/class/[id]/sessions/[sessionId]"]) revalidatePath(path, "page");
 }
