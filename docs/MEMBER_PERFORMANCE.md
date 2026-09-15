@@ -31,19 +31,58 @@ single Seoul function region through `vercel.json`.
 - [Response header definition](https://vercel.com/docs/headers/response-headers#x-vercel-id)
 - [Region identifiers](https://vercel.com/docs/regions)
 
-## Controlled correction
+## Correction and measured result
 
-First change only the existing deployment's function region to `icn1`. The
-database, authentication checks, RLS, runtime and feature behavior stay intact.
-Run the same browser measurements on the deployed change before deciding whether
-any query changes are necessary. No new database or service is provisioned.
+Commit `3ced1a8401f5d6405f68ceb44de12fe5208da055` changes only deployment
+configuration: the existing functions now run in `icn1`. No database or service
+was added. GitHub production deployment `6460794480` succeeded at 23:11 KST:
+<https://donutskr-onf0mgymj-donutskr.vercel.app>.
 
-Additional read-path findings to assess after the region correction:
+Every subsequent document response reports `icn1::icn1`. The same script,
+test member and viewport produced these two-load means:
+
+| Page | Before | Seoul | Reduction |
+| --- | ---: | ---: | ---: |
+| Home | 4,741 ms | 1,405 ms | 70.4% |
+| CLASS | 5,068 ms | 1,408 ms | 72.2% |
+| CLUB | 4,642 ms | 1,116 ms | 76.0% |
+| MY | 3,944 ms | 1,156 ms | 70.7% |
+| Partners | 2,455 ms | 916 ms | 62.7% |
+| Learning | 2,253 ms | 900 ms | 60.1% |
+
+Mobile menu navigation from home also improved:
+
+| Destination | Before | Seoul |
+| --- | ---: | ---: |
+| CLASS | 6,360 ms | 823 ms |
+| CLUB | 4,390 ms | 829 ms |
+| Partners | 2,839 ms | 808 ms |
+| MY | 3,336 ms | 951 ms |
+
+The same-page HOME click is excluded because it performs no navigation. The
+comparison demonstrates the deployment-region cause without changing any Auth,
+member status, administrator, leadership or RLS checks. Source inspection also
+identified additional round trips that could be tuned if a later measurement
+justifies changing the data paths:
 
 - Proxy and the member DAL both fetch the Auth user.
 - Member permission and profile reads are sequential.
 - Home and CLASS request full course detail, including unused attendance data.
 - Public meeting lists fetch operator assignments and operator club choices.
 
-Private timing evidence:
-`/private/tmp/donuts-reference-audit/member-performance/`.
+These are source-level observations; identical GET requests may already be
+memoized within a render. They were not changed as part of the regional fix.
+
+## Verification
+
+- Existing full suite on the merged change: **204 passed, 35 files**.
+- Vercel configuration parsed and checked against the official supported settings;
+  the actual production build and deployment succeeded.
+- Canonical-production smoke: **17 member/class-leader/club-leader/anonymous page
+  checks passed**, with HTTP 200, zero page errors, horizontal overflow or axe
+  WCAG 2 A/AA and 2.1 AA violations.
+- No implementation, dependency, migration, member data or permission changes.
+
+Private timing and smoke evidence:
+`/private/tmp/donuts-reference-audit/member-performance/` (`before.json`,
+`seoul.json`, `smoke/report.json`). Timing runs finished at 23:09 and 23:12 KST.
